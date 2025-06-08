@@ -142,29 +142,38 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
               {group.date}
             </div>
             {group.messages.map((msg) => {
-              const isOwn = msg.senderId === currentUser.id;
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
-                >
-                  <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
-                    <div
-                      className={`px-4 py-2 rounded-2xl ${
-                        isOwn
-                          ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-br-sm'
-                          : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
-                      }`}
-                    >
-                      <p className="text-sm">{msg.content}</p>
-                    </div>
-                    <div className={`text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : 'text-left'}`}>
-                      {formatTime(msg.timestamp)}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+      if (
+        typeof msg?.content !== 'string' ||
+        typeof msg?.senderId !== 'string' ||
+        typeof msg?.timestamp !== 'number'
+      ) {
+        console.warn('❌ 렌더링에서 제외된 메시지:', msg);
+        return null;
+      }
+
+      const isOwn = msg.senderId === currentUser.id;
+      return (
+        <div
+          key={msg.id}
+          className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
+        >
+          <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
+            <div
+              className={`px-4 py-2 rounded-2xl ${
+                isOwn
+                  ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-br-sm'
+                  : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
+              }`}
+            >
+              <p className="text-sm">{msg.content}</p>
+            </div>
+            <div className={`text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : 'text-left'}`}>
+              {formatTime(msg.timestamp)}
+            </div>
+          </div>
+        </div>
+      );
+    })}
           </div>
         ))}
         <div ref={messagesEndRef} />
