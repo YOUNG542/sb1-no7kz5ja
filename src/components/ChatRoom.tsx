@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, ArrowLeft } from 'lucide-react';
 import { User, Message } from '../types';
-import { doc, updateDoc, arrayUnion, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-
+import { query, orderBy, onSnapshot } from 'firebase/firestore';
 interface ChatRoomProps {
   roomId: string;
   currentUser: User;
@@ -25,33 +24,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const roomRef = doc(db, 'chatRooms', roomId);
-    const unsubscribe = onSnapshot(roomRef, (docSnap) => {
-      const data = docSnap.data();
-      if (!data) return;
-      const rawMessages = data.messages || [];
-      const sortedMessages = rawMessages
-      .map((m: any) => ({
-        ...m,
-        timestamp: typeof m.timestamp === 'number'
-          ? m.timestamp
-          : m.timestamp?.seconds * 1000 || Date.now(), // fallback
-      }))
-      .sort((a: any, b: any) => {
-        const at = typeof a.timestamp === 'number' ? a.timestamp : a.timestamp?.seconds * 1000 || 0;
-        const bt = typeof b.timestamp === 'number' ? b.timestamp : b.timestamp?.seconds * 1000 || 0;
-      
-        // 1️⃣ timestamp 기준
-        if (at !== bt) return at - bt;
-      
-        // 2️⃣ 동일하면 fallback으로 id 비교 (id에 Date.now() 있음)
-        return (a.id || '').localeCompare(b.id || '');
-      })
-      
-    
-      setMessages(sortedMessages);
+    const messagesRef = collection(db, 'chatRooms', roomId, 'messages');
+    const q = query(messagesRef, orderBy('createdAt'));
+  
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetched = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          senderId: data.senderId,
+          content: data.content,
+          timestamp: data.createdAt?.seconds ? data.createdAt.seconds * 1000 : Date.now(),
+        };
+      });
+      setMessages(fetched);
     });
-
+  
     return () => unsubscribe();
   }, [roomId]);
 
