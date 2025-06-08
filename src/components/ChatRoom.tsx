@@ -1,25 +1,51 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, ArrowLeft } from 'lucide-react';
 import { ChatRoom as ChatRoomType, User, Message } from '../types';
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp
+} from 'firebase/firestore';
+import { db } from '../firebase/config.ts'; // firebase.ts에서 export한 Firestore 인스턴스
 
 interface ChatRoomProps {
-  room: ChatRoomType;
+  roomId: string;
   currentUser: User;
   otherUser: User;
-  onSendMessage: (content: string) => void;
   onBack: () => void;
 }
 
 export const ChatRoom: React.FC<ChatRoomProps> = ({
-  room,
+  roomId,
   currentUser,
   otherUser,
-  onSendMessage,
   onBack
 }) => {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 실시간 메시지 구독
+  useEffect(() => {
+    const q = query(
+      collection(db, 'chatRooms', roomId, 'messages'),
+      orderBy('timestamp')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const newMessages: Message[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Message, 'id'>)
+      }));
+      setMessages(newMessages);
+    });
+
+    return () => unsubscribe();
+  }, [roomId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -27,14 +53,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [room.messages]);
+  }, [messages]);
 
   const handleSend = async () => {
     if (!message.trim() || isSending) return;
-
     setIsSending(true);
-    await new Promise(resolve => setTimeout(resolve, 300));
-    onSendMessage(message.trim());
+
+    await addDoc(collection(db, 'chatRooms', roomId, 'messages'), {
+      senderId: currentUser.id,
+      content: message.trim(),
+      timestamp: Date.now()
+    });
+
     setMessage('');
     setIsSending(false);
   };
@@ -48,10 +78,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('ko-KR', { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: false 
+      hour12: false
     });
   };
 
@@ -73,7 +103,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const groupMessagesByDate = (messages: Message[]) => {
     const groups: { date: string; messages: Message[] }[] = [];
     let currentDate = '';
-    
+
     messages.forEach(msg => {
       const msgDate = formatDate(msg.timestamp);
       if (msgDate !== currentDate) {
@@ -86,7 +116,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     return groups;
   };
 
-  const messageGroups = groupMessagesByDate(room.messages);
+  const messageGroups = groupMessagesByDate(messages);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-red-50 flex flex-col">
