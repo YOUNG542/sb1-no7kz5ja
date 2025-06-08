@@ -27,7 +27,7 @@ import {
   getAllUsers,
   saveMessageRequest,
   updateMessageRequest,
-  getMessageRequestsForUser,
+  subscribeToMessageRequestsForUser,
   saveChatRoom,
   updateChatRoom,
   getChatRoomsForUser,
@@ -94,8 +94,13 @@ function App() {
 
   useEffect(() => {
     if (!currentUser) return;
-    getMessageRequestsForUser(currentUser.id).then(setMessageRequests);
+  
+    const unsubscribeRequests = subscribeToMessageRequestsForUser(currentUser.id, setMessageRequests);
     getChatRoomsForUser(currentUser.id).then(setChatRooms);
+  
+    return () => {
+      unsubscribeRequests(); // 컴포넌트 unmount시 실시간 리스너 해제
+    };
   }, [currentUser]);
 
   const handleProfileComplete = async (user: User) => {

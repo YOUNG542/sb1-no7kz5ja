@@ -10,8 +10,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { User, MessageRequest, ChatRoom } from '../types';
-
-// 🔹 User 관련
+import { onSnapshot } from 'firebase/firestore';
 
 export const saveUser = async (user: User) => {
   await setDoc(doc(db, 'users', user.id), user);
@@ -45,16 +44,23 @@ export const updateMessageRequest = async (request: MessageRequest) => {
   });
 };
 
-export const getMessageRequestsForUser = async (
-  userId: string
-): Promise<MessageRequest[]> => {
+export const subscribeToMessageRequestsForUser = (
+  userId: string,
+  onUpdate: (requests: MessageRequest[]) => void
+): (() => void) => {
   const q = query(
     collection(db, 'messageRequests'),
     where('toUserId', '==', userId)
   );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => doc.data() as MessageRequest);
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const requests = snapshot.docs.map((doc) => doc.data() as MessageRequest);
+    onUpdate(requests);
+  });
+
+  return unsubscribe;
 };
+
 
 export const getSentMessageRequests = async (
   userId: string
