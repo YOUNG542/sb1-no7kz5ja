@@ -3,10 +3,11 @@ import { Heart, Sparkles } from 'lucide-react';
 import { User } from '../types';
 
 interface ProfileSetupProps {
+  uid: string;
   onComplete: (user: User) => void;
 }
 
-export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
+export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) => {
   const [nickname, setNickname] = useState('');
   const [intro, setIntro] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -17,11 +18,11 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
     setIsLoading(true);
     
-    // Simulate API call
+    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const newUser: User = {
-      id: `user_${Date.now()}`,
+      id: uid, // ✅ 여기서 UID 사용
       nickname: nickname.trim(),
       intro: intro.trim(),
       createdAt: Date.now(),

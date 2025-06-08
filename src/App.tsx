@@ -103,7 +103,7 @@ function App() {
   };
 
   if (!uid) return <div>로그인 중...</div>;
-  if (!currentUser) return <ProfileSetup onComplete={handleProfileComplete} />;
+  if (!currentUser) return <ProfileSetup uid={uid} onComplete={handleProfileComplete} />;
 
   const handleReact = async (userId: string, emoji: string) => {
     if (!currentUser) return;
