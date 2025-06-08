@@ -298,16 +298,14 @@ function App() {
         />
       )}
 
-      {currentScreen === 'chat' && (
-        <ChatList
-          chatRooms={chatRooms.filter((r) =>
-            r.participants.includes(currentUser.id)
-          )}
-          users={users}
-          currentUserId={currentUser.id}
-          onSelectChat={setSelectedChatRoom}
-        />
-      )}
+{currentScreen === 'chat' && (
+  <ChatList
+    users={users}
+    currentUserId={currentUser.id}
+    onSelectChat={setSelectedChatRoom}
+  />
+)}
+
 
       <BottomNavigation
         currentScreen={currentScreen}

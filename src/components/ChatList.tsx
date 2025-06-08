@@ -1,29 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { collection, query, where, onSnapshot, DocumentData } from 'firebase/firestore';
 import { MessageSquare, Clock } from 'lucide-react';
+import { db } from '../firebase/config'; // 너의 firebase 초기화 파일 경로 맞게 수정해
 import { ChatRoom, User, Message } from '../types';
 
 interface ChatListProps {
-  chatRooms: ChatRoom[];
   users: User[];
   currentUserId: string;
   onSelectChat: (roomId: string) => void;
 }
 
 export const ChatList: React.FC<ChatListProps> = ({
-  chatRooms,
   users,
   currentUserId,
   onSelectChat
 }) => {
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+
+  // ✅ 실시간 chatRooms 구독
+  useEffect(() => {
+    const q = query(
+      collection(db, 'chatRooms'),
+      where('participants', 'array-contains', currentUserId)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const rooms: ChatRoom[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<ChatRoom, 'id'>)  // 👈 핵심!
+      }));
+      setChatRooms(rooms);
+    });
+
+    return () => unsubscribe();
+  }, [currentUserId]);
+
   const getUserById = (id: string) => users.find(u => u.id === id);
-  
+
   const getOtherParticipant = (room: ChatRoom) => {
     const otherId = room.participants.find(id => id !== currentUserId);
     return otherId ? getUserById(otherId) : null;
   };
 
   const getLastMessage = (room: ChatRoom): Message | null => {
-    return room.messages.length > 0 
+    return room.messages.length > 0
       ? room.messages[room.messages.length - 1]
       : null;
   };
@@ -34,7 +54,7 @@ export const ChatList: React.FC<ChatListProps> = ({
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-    
+
     if (days > 0) return `${days}일 전`;
     if (hours > 0) return `${hours}시간 전`;
     if (minutes > 0) return `${minutes}분 전`;
@@ -70,7 +90,7 @@ export const ChatList: React.FC<ChatListProps> = ({
             {sortedRooms.map((room) => {
               const otherUser = getOtherParticipant(room);
               const lastMessage = getLastMessage(room);
-              
+
               if (!otherUser) return null;
 
               return (
@@ -88,9 +108,9 @@ export const ChatList: React.FC<ChatListProps> = ({
                       </div>
                     )}
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 mb-2">{otherUser.intro}</p>
-                  
+
                   {lastMessage ? (
                     <p className="text-sm text-gray-800 truncate">
                       {lastMessage.senderId === currentUserId ? '나: ' : ''}
