@@ -1,3 +1,9 @@
+declare global {
+  interface Navigator {
+    standalone?: boolean;
+  }
+}
+
 import React, { useState, useEffect } from 'react';
 import { ProfileSetup } from './components/ProfileSetup';
 import { ProfileFeed } from './components/ProfileFeed';
@@ -26,6 +32,8 @@ import {
   updateChatRoom,
   getChatRoomsForUser,
 } from './firebase/firestore';
+
+
 
 function App() {
   const [uid, setUid] = useState<string | null>(null);
