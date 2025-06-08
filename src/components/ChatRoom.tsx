@@ -7,9 +7,8 @@ import {
   onSnapshot,
   query,
   orderBy,
-  serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../firebase/config.ts'; // firebase.ts에서 export한 Firestore 인스턴스
+import { db } from '../firebase/config.ts'; // 너의 Firebase config 경로
 
 interface ChatRoomProps {
   roomId: string;
@@ -62,7 +61,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     await addDoc(collection(db, 'chatRooms', roomId, 'messages'), {
       senderId: currentUser.id,
       content: message.trim(),
-      timestamp: Date.now()
+      timestamp: Date.now() // number로 저장
     });
 
     setMessage('');
@@ -76,8 +75,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     }
   };
 
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
+  // 🔧 timestamp를 안전하게 파싱하는 헬퍼
+  const parseTimestamp = (raw: any): number => {
+    if (typeof raw === 'number') return raw;
+    if (raw?.seconds) return raw.seconds * 1000;
+    console.warn('❓ 잘못된 timestamp 형식:', raw);
+    return Date.now();
+  };
+
+  const formatTime = (timestamp: any) => {
+    const date = new Date(parseTimestamp(timestamp));
     return date.toLocaleTimeString('ko-KR', {
       hour: '2-digit',
       minute: '2-digit',
@@ -85,8 +92,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     });
   };
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
+  const formatDate = (timestamp: any) => {
+    const date = new Date(parseTimestamp(timestamp));
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -141,39 +148,39 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             <div className="text-center text-xs text-gray-500 py-2">
               {group.date}
             </div>
-            {group.messages.map((msg) => {
-      if (
-        typeof msg?.content !== 'string' ||
-        typeof msg?.senderId !== 'string' ||
-        typeof msg?.timestamp !== 'number'
-      ) {
-        console.warn('❌ 렌더링에서 제외된 메시지:', msg);
-        return null;
-      }
+            {group.messages.map((msg, idx) => {
+              if (
+                typeof msg?.content !== 'string' ||
+                typeof msg?.senderId !== 'string' ||
+                !msg?.timestamp
+              ) {
+                console.warn(`❌ [${idx}] 렌더링 제외된 메시지:`, msg);
+                return null;
+              }
 
-      const isOwn = msg.senderId === currentUser.id;
-      return (
-        <div
-          key={msg.id}
-          className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
-        >
-          <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
-            <div
-              className={`px-4 py-2 rounded-2xl ${
-                isOwn
-                  ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-br-sm'
-                  : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
-              }`}
-            >
-              <p className="text-sm">{msg.content}</p>
-            </div>
-            <div className={`text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : 'text-left'}`}>
-              {formatTime(msg.timestamp)}
-            </div>
-          </div>
-        </div>
-      );
-    })}
+              const isOwn = msg.senderId === currentUser.id;
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
+                >
+                  <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
+                    <div
+                      className={`px-4 py-2 rounded-2xl ${
+                        isOwn
+                          ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-br-sm'
+                          : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
+                      }`}
+                    >
+                      <p className="text-sm">{msg.content}</p>
+                    </div>
+                    <div className={`text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : 'text-left'}`}>
+                      {formatTime(msg.timestamp)}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ))}
         <div ref={messagesEndRef} />
