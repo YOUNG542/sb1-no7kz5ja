@@ -72,10 +72,19 @@ function App() {
 
   useEffect(() => {
     if (!uid) return;
+  
     getUserById(uid).then((user) => {
-      if (user) setCurrentUser(user);
+      if (user) {
+        setCurrentUser(user);
+      } else {
+        // 유저 정보가 없으면 ProfileSetup 유도
+        setCurrentUser(null);
+      }
+    }).catch((err) => {
+      console.error("유저 정보 불러오기 실패:", err);
     });
   }, [uid]);
+  
 
   useEffect(() => {
     getAllUsers().then(setUsers).catch(console.error);
