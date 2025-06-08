@@ -3,6 +3,7 @@ import { Send, ArrowLeft } from 'lucide-react';
 import { User, Message } from '../types';
 import { doc, updateDoc, arrayUnion, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface ChatRoomProps {
   roomId: string;
@@ -73,9 +74,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       timestamp: Date.now(),
     };
 
-    const roomRef = doc(db, 'chatRooms', roomId);
-    await updateDoc(roomRef, {
-      messages: arrayUnion(newMessage),
+    const messagesRef = collection(db, 'chatRooms', roomId, 'messages');
+    await addDoc(messagesRef, {
+      senderId: currentUser.id,
+      content: message.trim(),
+      createdAt: serverTimestamp(), // 중요
     });
 
     setMessage('');
