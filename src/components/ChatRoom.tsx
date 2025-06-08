@@ -5,36 +5,50 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 interface ChatRoomProps {
-  room: ChatRoomType;
+  roomId: string;
   currentUser: User;
   otherUser: User;
   onSendMessage: (content: string) => void;
   onBack: () => void;
 }
 
+
 export const ChatRoom: React.FC<ChatRoomProps> = ({
-  room,
+  roomId,
   currentUser,
   otherUser,
   onSendMessage,
   onBack
 }) => {
+  const [room, setRoom] = useState<ChatRoomType | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(room.messages); // 실시간 메시지 상태
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // ✅ Firestore에서 room 데이터 불러오기
   useEffect(() => {
-    const roomRef = doc(db, 'chatRooms', room.id);
-    const unsubscribe = onSnapshot(roomRef, (docSnap) => {
+    const ref = doc(db, 'chatRooms', roomId);
+    const unsubscribe = onSnapshot(ref, (docSnap) => {
       if (docSnap.exists()) {
-        const data = docSnap.data();
+        const data = docSnap.data() as ChatRoomType;
+        setRoom(data);
         setMessages(data.messages || []);
+      } else {
+        setRoom(null);
       }
+      setLoading(false);
     });
-    return () => unsubscribe();
-  }, [room.id]);
+
+    return unsubscribe;
+  }, [roomId]);
+
+  // ✅ 로딩 상태 처리
+  if (loading) return <div>채팅방 불러오는 중...</div>;
+  if (!room) return <div>채팅방을 찾을 수 없습니다</div>;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
