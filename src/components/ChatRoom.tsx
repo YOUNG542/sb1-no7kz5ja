@@ -8,7 +8,7 @@ import {
   query,
   orderBy,
 } from 'firebase/firestore';
-import { db } from '../firebase/config.ts'; // 너의 Firebase config 경로
+import { db } from '../firebase/config.ts';
 
 interface ChatRoomProps {
   roomId: string;
@@ -54,6 +54,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     scrollToBottom();
   }, [messages]);
 
+  // 👇 디버그 로그 (핵심 로그 그룹)
+  useEffect(() => {
+    console.groupCollapsed('🧠 [DEBUG] 유저 및 메시지 상태');
+    console.log('👤 currentUser:', currentUser);
+    console.log('👤 otherUser:', otherUser);
+    console.log('💬 messages.length:', messages.length);
+    messages.forEach((msg, idx) => {
+      console.log(`📦 [${idx}] 메시지`, msg);
+    });
+    console.groupEnd();
+  }, [currentUser, otherUser, messages]);
+
   const handleSend = async () => {
     if (!message.trim() || isSending) return;
     setIsSending(true);
@@ -61,7 +73,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     await addDoc(collection(db, 'chatRooms', roomId, 'messages'), {
       senderId: currentUser.id,
       content: message.trim(),
-      timestamp: Date.now() // number로 저장
+      timestamp: Date.now()
     });
 
     setMessage('');
@@ -75,7 +87,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     }
   };
 
-  // 🔧 timestamp를 안전하게 파싱하는 헬퍼
   const parseTimestamp = (raw: any): number => {
     if (typeof raw === 'number') return raw;
     if (raw?.seconds) return raw.seconds * 1000;
@@ -136,8 +147,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
         <div className="flex-1">
-          <h2 className="font-semibold text-gray-900">{otherUser.nickname}</h2>
-          <p className="text-sm text-gray-600 truncate">{otherUser.intro}</p>
+          <h2 className="font-semibold text-gray-900">{otherUser?.nickname || '❓ 닉네임 없음'}</h2>
+          <p className="text-sm text-gray-600 truncate">{otherUser?.intro || ''}</p>
         </div>
       </div>
 
@@ -149,19 +160,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
               {group.date}
             </div>
             {group.messages.map((msg, idx) => {
-              if (
-                typeof msg?.content !== 'string' ||
-                typeof msg?.senderId !== 'string' ||
-                !msg?.timestamp
-              ) {
-                console.warn(`❌ [${idx}] 렌더링 제외된 메시지:`, msg);
+              const missing = [];
+              if (!msg.id) missing.push('id');
+              if (typeof msg.content !== 'string') missing.push('content');
+              if (typeof msg.senderId !== 'string') missing.push('senderId');
+              if (!msg.timestamp) missing.push('timestamp');
+
+              if (missing.length > 0) {
+                console.warn(`❌ [${idx}] 누락된 필드(${missing.join(', ')}) → 렌더링 제외`, msg);
                 return null;
               }
 
               const isOwn = msg.senderId === currentUser.id;
               return (
                 <div
-                  key={msg.id}
+                  key={msg.id || `fallback-${idx}`}
                   className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
                 >
                   <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
