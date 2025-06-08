@@ -185,8 +185,8 @@ function App() {
 
     const chatRoom: ChatRoomType = {
       id: `chat_${Date.now()}`,
-       fromUserId: request.fromUserId,   // ✅ 추가
-  toUserId: request.toUserId,   
+      fromUserId: request.fromUserId,  // ✅ 추가
+      toUserId: request.toUserId,      // ✅ 추가
       participants: [request.fromUserId, request.toUserId],
       messages: [
         {
@@ -198,7 +198,7 @@ function App() {
       ],
       createdAt: Date.now(),
     };
-
+    
     await saveChatRoom(chatRoom);
     setChatRooms((prev) => [...prev, chatRoom]);
 
@@ -270,7 +270,7 @@ function App() {
   if (selectedRoom && otherUser) {
     return (
       <ChatRoom
-        roomId={selectedRoom.id}
+        room={selectedRoom}
         currentUser={currentUser}
         otherUser={otherUser}
         onSendMessage={handleSendMessage}

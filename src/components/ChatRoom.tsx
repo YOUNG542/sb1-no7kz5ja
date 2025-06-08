@@ -1,58 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, ArrowLeft } from 'lucide-react';
 import { ChatRoom as ChatRoomType, User, Message } from '../types';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebase/config';
 
 interface ChatRoomProps {
-  roomId: string;
+  room: ChatRoomType;
   currentUser: User;
   otherUser: User;
   onSendMessage: (content: string) => void;
   onBack: () => void;
 }
 
-
 export const ChatRoom: React.FC<ChatRoomProps> = ({
-  roomId,
+  room,
   currentUser,
   otherUser,
   onSendMessage,
   onBack
 }) => {
-  const [room, setRoom] = useState<ChatRoomType | null>(null);
-  const [loading, setLoading] = useState(true);
-
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Firestore에서 room 데이터 불러오기
-  useEffect(() => {
-    const ref = doc(db, 'chatRooms', roomId);
-    const unsubscribe = onSnapshot(ref, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data() as ChatRoomType;
-        setRoom(data);
-        setMessages(data.messages || []);
-      } else {
-        setRoom(null);
-      }
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, [roomId]);
-
-  // ✅ 로딩 상태 처리
-  if (loading) return <div>채팅방 불러오는 중...</div>;
-  if (!room) return <div>채팅방을 찾을 수 없습니다</div>;
-
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [room.messages]);
 
   const handleSend = async () => {
     if (!message.trim() || isSending) return;
@@ -73,7 +48,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return date.toLocaleTimeString('ko-KR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
   };
 
   const formatDate = (timestamp: number) => {
@@ -82,15 +61,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
-    if (date.toDateString() === today.toDateString()) return '오늘';
-    if (date.toDateString() === yesterday.toDateString()) return '어제';
-    return date.toLocaleDateString('ko-KR');
+    if (date.toDateString() === today.toDateString()) {
+      return '오늘';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return '어제';
+    } else {
+      return date.toLocaleDateString('ko-KR');
+    }
   };
 
   const groupMessagesByDate = (messages: Message[]) => {
     const groups: { date: string; messages: Message[] }[] = [];
     let currentDate = '';
-
+    
     messages.forEach(msg => {
       const msgDate = formatDate(msg.timestamp);
       if (msgDate !== currentDate) {
@@ -103,7 +86,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     return groups;
   };
 
-  const messageGroups = groupMessagesByDate(messages);
+  const messageGroups = groupMessagesByDate(room.messages);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-red-50 flex flex-col">
