@@ -15,6 +15,7 @@ interface ChatRoomProps {
   currentUser: User;
   otherUser: User;
   onBack: () => void;
+  onSendMessage: (content: string) => void; // ✅ 이 줄 추가
 }
 
 export const ChatRoom: React.FC<ChatRoomProps> = ({

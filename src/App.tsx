@@ -270,7 +270,7 @@ function App() {
   if (selectedRoom && otherUser) {
     return (
       <ChatRoom
-        room={selectedRoom}
+        roomId={selectedRoom.id}
         currentUser={currentUser}
         otherUser={otherUser}
         onSendMessage={handleSendMessage}
