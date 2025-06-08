@@ -29,7 +29,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       const data = docSnap.data();
       if (!data) return;
       const rawMessages = data.messages || [];
-      const sortedMessages = rawMessages.sort((a: any, b: any) => a.timestamp - b.timestamp);
+      const sortedMessages = rawMessages
+      .map((m: any) => ({
+        ...m,
+        timestamp: typeof m.timestamp === 'number'
+          ? m.timestamp
+          : m.timestamp?.seconds * 1000 || Date.now(), // fallback
+      }))
+      .sort((a: any, b: any) => a.timestamp - b.timestamp);
+    
       setMessages(sortedMessages);
     });
 
