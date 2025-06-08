@@ -185,6 +185,8 @@ function App() {
 
     const chatRoom: ChatRoomType = {
       id: `chat_${Date.now()}`,
+       fromUserId: request.fromUserId,   // ✅ 추가
+  toUserId: request.toUserId,   
       participants: [request.fromUserId, request.toUserId],
       messages: [
         {

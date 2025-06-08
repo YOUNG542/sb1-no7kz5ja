@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { User, MessageRequest, ChatRoom } from '../types';
 import { onSnapshot } from 'firebase/firestore';
+import { serverTimestamp } from 'firebase/firestore'; 
 
 export const saveUser = async (user: User) => {
   await setDoc(doc(db, 'users', user.id), user);
@@ -76,7 +77,11 @@ export const getSentMessageRequests = async (
 // 🔹 ChatRoom 관련
 
 export const saveChatRoom = async (room: ChatRoom) => {
-  await setDoc(doc(db, 'chatRooms', room.id), room);
+  await setDoc(doc(db, 'chatRooms', room.id), {
+    ...room, // 객체 구조 분해로 필드 모두 포함
+    participants: [room.fromUserId, room.toUserId], // ✅ 핵심 수정
+    createdAt: serverTimestamp(), // 서버 기준 시간
+  });
 };
 
 export const updateChatRoom = async (room: ChatRoom) => {
