@@ -32,6 +32,8 @@ import {
   updateChatRoom,
   getChatRoomsForUser,
 } from './firebase/firestore';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { db } from './firebase/config'; // ← 너의 실제 firebase 경로에 맞게
 
 
 
@@ -227,26 +229,21 @@ function App() {
 
   const handleSendMessage = async (content: string) => {
     if (!selectedChatRoom || !currentUser) return;
-
-    const room = chatRooms.find((r) => r.id === selectedChatRoom);
-    if (!room) return;
-
+  
     const message: Message = {
       id: `msg_${Date.now()}`,
       senderId: currentUser.id,
       content,
       timestamp: Date.now(),
     };
-
-    const updatedRoom = {
-      ...room,
-      messages: [...room.messages, message],
-    };
-
-    await updateChatRoom(updatedRoom);
-    setChatRooms((prev) =>
-      prev.map((r) => (r.id === selectedChatRoom ? updatedRoom : r))
-    );
+  
+    const roomRef = doc(db, 'chatRooms', selectedChatRoom);
+  
+    await updateDoc(roomRef, {
+      messages: arrayUnion(message),
+    });
+  
+    // ✅ 실시간 onSnapshot으로 반영되기 때문에 별도 setChatRooms 필요 없음
   };
 
   const pendingRequestCount = messageRequests.filter(
