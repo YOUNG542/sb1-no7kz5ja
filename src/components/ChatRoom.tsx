@@ -36,7 +36,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           ? m.timestamp
           : m.timestamp?.seconds * 1000 || Date.now(), // fallback
       }))
-      .sort((a: any, b: any) => a.timestamp - b.timestamp);
+      .sort((a: any, b: any) => {
+        const at = typeof a.timestamp === 'number' ? a.timestamp : a.timestamp?.seconds * 1000 || 0;
+        const bt = typeof b.timestamp === 'number' ? b.timestamp : b.timestamp?.seconds * 1000 || 0;
+      
+        // 1️⃣ timestamp 기준
+        if (at !== bt) return at - bt;
+      
+        // 2️⃣ 동일하면 fallback으로 id 비교 (id에 Date.now() 있음)
+        return (a.id || '').localeCompare(b.id || '');
+      })
+      
     
       setMessages(sortedMessages);
     });
