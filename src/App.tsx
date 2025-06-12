@@ -185,6 +185,38 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
     };
   }, [currentUser, chatRooms]);
 
+  useEffect(() => {
+    if (!currentUser || chatRooms.length === 0) return;
+  
+    const unsubscribes: (() => void)[] = [];
+  
+    const countMap = new Map<string, number>();
+  
+    chatRooms.forEach((room) => {
+      const messagesRef = collection(db, 'chatRooms', room.id, 'messages');
+  
+      const unreadQuery = query(
+        messagesRef,
+        where('to', '==', currentUser.id),
+        where('isRead', '==', false)
+      );
+  
+      const unsubscribe = onSnapshot(unreadQuery, (snapshot) => {
+        // 🧠 이 방에서 안 읽은 수 업데이트
+        countMap.set(room.id, snapshot.size);
+  
+        // 🔁 모든 방의 총합 계산
+        const total = Array.from(countMap.values()).reduce((a, b) => a + b, 0);
+        setUnreadMessageCount(total); // ⬅️ 이게 BottomNavigation으로 전달됨
+      });
+  
+      unsubscribes.push(unsubscribe);
+    });
+  
+    return () => {
+      unsubscribes.forEach((unsub) => unsub());
+    };
+  }, [currentUser, chatRooms]);
   
   
 
