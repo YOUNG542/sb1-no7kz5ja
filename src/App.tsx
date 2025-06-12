@@ -4,6 +4,7 @@ declare global {
   }
 }
 import { onSnapshot, query, collection, where } from 'firebase/firestore';
+import { addDoc } from 'firebase/firestore';
 import React, { useState, useEffect } from 'react';
 import { ProfileSetup } from './components/ProfileSetup';
 import { ProfileFeed } from './components/ProfileFeed';
@@ -258,25 +259,27 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
     const updatedRequest = { ...request, status: 'accepted' as const };
     await updateMessageRequest(updatedRequest);
     setMessageRequests((prev) => prev.map((r) => (r.id === requestId ? updatedRequest : r)));
+    const chatRoomId = `chat_${Date.now()}`;
     const chatRoom: ChatRoomType = {
-      id: `chat_${Date.now()}`,
+      id: chatRoomId,
       fromUserId: request.fromUserId,
       toUserId: request.toUserId,
       participants: [request.fromUserId, request.toUserId],
-      messages: [
-        {
-          id: `msg_${Date.now()}`,
-          senderId: request.fromUserId,
-          to: request.toUserId,
-          content: request.message,
-          timestamp: Date.now(),
-          isRead: false,
-        },
-      ],
-      
       createdAt: Date.now(),
     };
-    await saveChatRoom(chatRoom);
+    await saveChatRoom(chatRoom); // ✅ messages 없이 저장
+    
+    // 🔥 메시지는 별도로 messages 서브컬렉션에 저장
+    const firstMessage: Message = {
+      id: `msg_${Date.now()}`,
+      senderId: request.fromUserId,
+      to: request.toUserId,
+      content: request.message,
+      timestamp: Date.now(),
+      isRead: false,
+    };
+    await addDoc(collection(db, 'chatRooms', chatRoomId, 'messages'), firstMessage);
+    
     setChatRooms((prev) => [...prev, chatRoom]);
     const updatedUser = {
       ...currentUser,

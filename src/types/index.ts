@@ -22,7 +22,7 @@ export interface ChatRoom {
   toUserId: string;    // ✅ 추가
   participants: string[]; // 이건 선택사항 (saveChatRoom에서 덮어씌우기 때문에 없어도 됨)
   createdAt?: any;     // Firestore Timestamp 타입
-messages: Message[];
+
 }
 
 export interface Message {
