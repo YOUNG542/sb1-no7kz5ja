@@ -3,6 +3,8 @@ declare global {
     standalone?: boolean;
   }
 }
+
+import { limit, orderBy } from 'firebase/firestore';
 import { onSnapshot, query, collection, where } from 'firebase/firestore';
 import { addDoc } from 'firebase/firestore';
 import React, { useState, useEffect } from 'react';
@@ -138,23 +140,44 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
   
     chatRooms.forEach((room) => {
       const messagesRef = collection(db, 'chatRooms', room.id, 'messages');
-      const q = query(
+  
+      // ✅ 최신 메시지 1개만 실시간 감지
+      const latestMessageQuery = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));
+      const latestUnsub = onSnapshot(latestMessageQuery, (snapshot) => {
+        const latestDoc = snapshot.docs[0];
+        const lastMessage = latestDoc?.data() as Message | undefined;
+  
+        setEnrichedChatRooms((prev) => ({
+          ...prev,
+          [room.id]: {
+            ...prev[room.id],
+            lastMessage,
+          },
+        }));
+      });
+  
+      unsubscribes.push(latestUnsub);
+  
+      // ✅ 안 읽은 메시지 수 실시간 감지
+      const unreadQuery = query(
         messagesRef,
         where('to', '==', currentUser.id),
         where('isRead', '==', false)
       );
   
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        setUnreadCountMap((prevMap) => {
-          const newMap = new Map(prevMap);
-          newMap.set(room.id, snapshot.size);
-          const total = Array.from(newMap.values()).reduce((a, b) => a + b, 0);
-          setUnreadMessageCount(total);
-          return newMap;
-        });
+      const unreadUnsub = onSnapshot(unreadQuery, (snapshot) => {
+        const unreadCount = snapshot.size;
+  
+        setEnrichedChatRooms((prev) => ({
+          ...prev,
+          [room.id]: {
+            ...prev[room.id],
+            unreadCount,
+          },
+        }));
       });
   
-      unsubscribes.push(unsubscribe);
+      unsubscribes.push(unreadUnsub);
     });
   
     return () => {
