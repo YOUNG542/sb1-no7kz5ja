@@ -3,7 +3,7 @@ declare global {
     standalone?: boolean;
   }
 }
-
+import { onSnapshot, query, collection, where } from 'firebase/firestore';
 import React, { useState, useEffect } from 'react';
 import { ProfileSetup } from './components/ProfileSetup';
 import { ProfileFeed } from './components/ProfileFeed';
@@ -91,12 +91,29 @@ function App() {
 
   useEffect(() => {
     if (!currentUser) return;
+  
+    // ✅ chatRooms 실시간 구독
+    const q = query(
+      collection(db, 'chatRooms'),
+      where('participants', 'array-contains', currentUser.id)
+    );
+  
+    const unsubscribeChatRooms = onSnapshot(q, (snapshot) => {
+      const rooms: ChatRoomType[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<ChatRoomType, 'id'>),
+      }));
+      setChatRooms(rooms);
+    });
+  
+    // 기존 메시지 요청 구독
     const unsubscribeRequests = subscribeToMessageRequestsForUser(
       currentUser.id,
       setMessageRequests
     );
-    getChatRoomsForUser(currentUser.id).then(setChatRooms);
+  
     return () => {
+      unsubscribeChatRooms(); // 🔁 구독 해제
       if (typeof unsubscribeRequests === 'function') {
         unsubscribeRequests();
       }
