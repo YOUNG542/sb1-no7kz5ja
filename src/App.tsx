@@ -185,37 +185,6 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
     };
   }, [currentUser, chatRooms]);
 
-  useEffect(() => {
-    if (!currentUser || chatRooms.length === 0) return;
-  
-    const unsubscribes: (() => void)[] = [];
-  
-    chatRooms.forEach((room) => {
-      const messagesRef = collection(db, 'chatRooms', room.id, 'messages');
-      const unsubscribe = onSnapshot(messagesRef, (snapshot) => {
-        const messages = snapshot.docs.map((doc) => doc.data() as Message);
-        const sorted = messages.sort((a, b) => b.timestamp - a.timestamp);
-        const lastMessage = sorted[0];
-        const unreadCount = messages.filter(
-          (msg) => msg.to === currentUser.id && !msg.isRead
-        ).length;
-  
-        setEnrichedChatRooms((prev) => ({
-          ...prev,
-          [room.id]: {
-            lastMessage,
-            unreadCount,
-          },
-        }));
-      });
-  
-      unsubscribes.push(unsubscribe);
-    });
-  
-    return () => {
-      unsubscribes.forEach((unsub) => unsub());
-    };
-  }, [currentUser, chatRooms]);
   
   
 
