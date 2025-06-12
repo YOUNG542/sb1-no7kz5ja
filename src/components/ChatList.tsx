@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { MessageSquare, Clock, RefreshCcw } from 'lucide-react';
 import { db } from '../firebase/config';
 import { ChatRoom, User, Message } from '../types';
@@ -21,23 +21,42 @@ export const ChatList: React.FC<ChatListProps> = ({
   users,
   currentUserId,
   onSelectChat,
-  enrichedChatRooms,
 }) => {
-  
+  const [enrichedChatRooms, setEnrichedChatRooms] = useState<any>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Firestore 실시간 구독
+  useEffect(() => {
+    const roomsRef = collection(db, 'chatRooms');
+    const unsubscribe = onSnapshot(roomsRef, (snapshot) => {
+      const updatedChatRooms: any = {};
+      snapshot.forEach((doc) => {
+        const roomData = doc.data();
+        const lastMessage = roomData.lastMessage;
+        const unreadCount = roomData.unreadCount;
 
+        updatedChatRooms[doc.id] = {
+          lastMessage: lastMessage,
+          unreadCount: unreadCount,
+        };
+      });
 
-  
+      // 최신 데이터를 enrichedChatRooms에 반영
+      setEnrichedChatRooms(updatedChatRooms);
+    });
+
+    // 컴포넌트 언마운트 시 구독 해제
+    return () => unsubscribe();
+  }, [currentUserId]);
+
+  // 채팅방 아이디를 최신 시간 순으로 정렬
+  const sortedRoomIds = Object.keys(enrichedChatRooms).sort((a, b) => {
+    const aTime = enrichedChatRooms[a].lastMessage?.timestamp ?? 0;
+    const bTime = enrichedChatRooms[b].lastMessage?.timestamp ?? 0;
+    return bTime - aTime;
+  });
 
   const getUserById = (id: string) => users.find(u => u.id === id);
-
-  const getOtherParticipant = (room: ChatRoom) => {
-    const otherId = room.participants.find(id => id !== currentUserId);
-    return otherId ? getUserById(otherId) : null;
-  };
-
-
 
   const getTimeAgo = (timestamp: number) => {
     const now = Date.now();
@@ -51,16 +70,6 @@ export const ChatList: React.FC<ChatListProps> = ({
     if (minutes > 0) return `${minutes}분 전`;
     return '방금 전';
   };
-
-  const roomIds = Object.keys(enrichedChatRooms);
-const sortedRoomIds = roomIds.sort((a, b) => {
-  const aTime = enrichedChatRooms[a].lastMessage?.timestamp ?? 0;
-  const bTime = enrichedChatRooms[b].lastMessage?.timestamp ?? 0;
-  return bTime - aTime;
-});
-
-
-  
 
   const handleRoomClick = (roomId: string) => {
     try {
@@ -101,54 +110,52 @@ const sortedRoomIds = roomIds.sort((a, b) => {
           </div>
         ) : (
           <div className="space-y-3">
-           {sortedRoomIds.map((roomId) => {
-  const roomInfo = enrichedChatRooms[roomId];
-  const lastMessage = roomInfo.lastMessage;
-  const unreadCount = roomInfo.unreadCount;
-  const room = { id: roomId }; // 최소한의 방 정보
-  const otherUserId =
-  lastMessage?.senderId === currentUserId ? lastMessage?.to : lastMessage?.senderId;
-const otherUser = getUserById(otherUserId || '');
+            {sortedRoomIds.map((roomId) => {
+              const roomInfo = enrichedChatRooms[roomId];
+              const lastMessage = roomInfo.lastMessage;
+              const unreadCount = roomInfo.unreadCount;
+              const room = { id: roomId }; // 최소한의 방 정보
+              const otherUserId =
+                lastMessage?.senderId === currentUserId ? lastMessage?.to : lastMessage?.senderId;
+              const otherUser = getUserById(otherUserId || '');
 
+              if (!otherUser) return null;
 
-  if (!otherUser) return null;
+              return (
+                <button
+                  key={roomId}
+                  onClick={() => handleRoomClick(roomId)}
+                  className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 text-left"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900">{otherUser.nickname}</h3>
+                    {lastMessage && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Clock className="w-3 h-3" />
+                        {getTimeAgo(lastMessage.timestamp)}
+                      </div>
+                    )}
+                  </div>
 
-  return (
-    <button
-      key={roomId}
-      onClick={() => handleRoomClick(roomId)}
-      className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 text-left"
-    >
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-gray-900">{otherUser.nickname}</h3>
-        {lastMessage && (
-          <div className="flex items-center gap-1 text-xs text-gray-500">
-            <Clock className="w-3 h-3" />
-            {getTimeAgo(lastMessage.timestamp)}
-          </div>
-        )}
-      </div>
+                  <p className="text-sm text-gray-600 mb-2">{otherUser.intro}</p>
 
-      <p className="text-sm text-gray-600 mb-2">{otherUser.intro}</p>
+                  {lastMessage ? (
+                    <p className="text-sm text-gray-800 truncate">
+                      {lastMessage.senderId === currentUserId ? '나: ' : ''}
+                      {lastMessage.content}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">대화를 시작해보세요!</p>
+                  )}
 
-      {lastMessage ? (
-        <p className="text-sm text-gray-800 truncate">
-          {lastMessage.senderId === currentUserId ? '나: ' : ''}
-          {lastMessage.content}
-        </p>
-      ) : (
-        <p className="text-sm text-gray-500 italic">대화를 시작해보세요!</p>
-      )}
-
-      {unreadCount > 0 && (
-        <span className="text-xs bg-red-500 text-white rounded-full px-2 mt-1 inline-block">
-          {unreadCount} unread
-        </span>
-      )}
-    </button>
-  );
-})}
-
+                  {unreadCount > 0 && (
+                    <span className="text-xs bg-red-500 text-white rounded-full px-2 mt-1 inline-block">
+                      {unreadCount} 안 읽음
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

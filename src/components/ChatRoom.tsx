@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, ArrowLeft } from 'lucide-react';
 import { User, Message } from '../types';
 import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot,  where, getDocs, writeBatch, doc, } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, where, getDocs, writeBatch, doc, updateDoc } from 'firebase/firestore'; // updateDoc 임포트 추가
 
 interface ChatRoomProps {
   roomId: string;
@@ -52,30 +52,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     return () => unsubscribe();
   }, [roomId]);
 
-  // 🔽 2. 메시지 읽음 처리용 useEffect ← 추가!
-useEffect(() => {
-  if (!roomId || !currentUser?.id) return;
+  useEffect(() => {
+    if (!roomId || !currentUser?.id) return;
 
-  const markMessagesAsRead = async () => {
-    const q = query(
-      collection(db, 'chatRooms', roomId, 'messages'),
-      where('to', '==', currentUser.id),
-      where('isRead', '==', false)
-    );
+    const markMessagesAsRead = async () => {
+      const q = query(
+        collection(db, 'chatRooms', roomId, 'messages'),
+        where('to', '==', currentUser.id),
+        where('isRead', '==', false)
+      );
 
-    const snapshot = await getDocs(q);
-    const batch = writeBatch(db);
+      const snapshot = await getDocs(q);
+      const batch = writeBatch(db);
 
-    snapshot.forEach((docSnap) => {
-      const msgRef = doc(db, 'chatRooms', roomId, 'messages', docSnap.id);
-      batch.update(msgRef, { isRead: true });
-    });
+      snapshot.forEach((docSnap) => {
+        const msgRef = doc(db, 'chatRooms', roomId, 'messages', docSnap.id);
+        batch.update(msgRef, { isRead: true });
+      });
 
-    await batch.commit();
-  };
+      await batch.commit();
+    };
 
-  markMessagesAsRead();
-}, [roomId, currentUser?.id]);
+    markMessagesAsRead();
+  }, [roomId, currentUser?.id]);
   
 
   useEffect(() => {
@@ -96,18 +95,30 @@ useEffect(() => {
   const handleSend = async () => {
     if (!message.trim() || isSending) return;
     setIsSending(true);
-
+  
+    // Firestore에 메시지 저장
     await addDoc(collection(db, 'chatRooms', roomId, 'messages'), {
       senderId: currentUser.id,
-      to: otherUser.id, // 수신자 추가
-      isRead: false,    // 기본은 읽지 않은 상태
+      to: otherUser.id,
+      isRead: false,
       content: message.trim(),
       createdAt: serverTimestamp(),
     });
-
+  
+    // 해당 채팅방의 마지막 메시지 업데이트 (enrichedChatRooms 업데이트)
+    const roomRef = doc(db, 'chatRooms', roomId);
+    await updateDoc(roomRef, {
+      lastMessage: {
+        senderId: currentUser.id,
+        content: message.trim(),
+        timestamp: serverTimestamp(),
+      },
+    });
+  
     setMessage('');
     setIsSending(false);
   };
+  
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

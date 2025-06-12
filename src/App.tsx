@@ -35,7 +35,7 @@ import {
   updateChatRoom,
   getChatRoomsForUser,
 } from './firebase/firestore';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore'; // 추가된 부분
 import { db } from './firebase/config';
 
 function App() {
