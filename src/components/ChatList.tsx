@@ -36,39 +36,39 @@ export const ChatList: React.FC<ChatListProps> = ({
 
   useEffect(() => {
     const roomsRef = collection(db, 'chatRooms');
-
+  
     const unsubscribe = onSnapshot(roomsRef, (snapshot: QuerySnapshot) => {
       const updatedChatRooms: any = {};
-
+  
       snapshot.forEach((doc: DocumentSnapshot) => {
         const roomData = doc.data();
         if (!roomData) return;
-
+  
         const lastMessageRef = collection(db, 'chatRooms', doc.id, 'messages');
-        
         const latestMessageQuery = query(lastMessageRef, orderBy('timestamp', 'desc'), limit(1));
   
         onSnapshot(latestMessageQuery, (messageSnapshot: QuerySnapshot) => {
           const lastMessageDoc = messageSnapshot.docs[0];
           const lastMessage = lastMessageDoc ? lastMessageDoc.data() : null;
-
+  
           updatedChatRooms[doc.id] = {
             lastMessage: lastMessage,
             unreadCount: roomData.unreadCount || 0,
           };
-
+  
           setEnrichedChatRooms((prevState: any) => ({
-            ...prevState,
-            ...updatedChatRooms,
+            ...prevState, // 이전 상태 유지
+            [doc.id]: updatedChatRooms[doc.id], // 현재 방에 대한 업데이트만 반영
           }));
         });
       });
-
+  
       return () => unsubscribe();
     });
-
+  
     return () => unsubscribe();
   }, [currentUserId, setEnrichedChatRooms]);
+  
 
   const sortedRoomIds = Object.keys(enrichedChatRooms).sort((a, b) => {
     const aTime = enrichedChatRooms[a].lastMessage?.timestamp ?? 0;
@@ -162,7 +162,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 
                   {unreadCount > 0 && (
                     <span className="text-xs bg-red-500 text-white rounded-full px-2 mt-1 inline-block">
-                      {unreadCount} 안 읽음
+                       안 읽음 {unreadCount}
                     </span>
                   )}
                 </button>
