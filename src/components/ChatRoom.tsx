@@ -102,7 +102,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       to: otherUser.id,
       isRead: false,
       content: message.trim(),
-      createdAt: serverTimestamp(),
+      timestamp: serverTimestamp(), 
     });
   
     // 해당 채팅방의 마지막 메시지 업데이트 (enrichedChatRooms 업데이트)
