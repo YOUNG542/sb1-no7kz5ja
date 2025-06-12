@@ -50,7 +50,10 @@ export const ChatList: React.FC<ChatListProps> = ({
           };
 
           // 최신 데이터를 enrichedChatRooms에 반영
-          setEnrichedChatRooms(updatedChatRooms);
+          setEnrichedChatRooms((prevState: any) => ({
+            ...prevState,
+            ...updatedChatRooms,
+          }));
         });
       });
 
