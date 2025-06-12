@@ -6,12 +6,14 @@ interface BottomNavigationProps {
   currentScreen: Screen;
   onScreenChange: (screen: Screen) => void;
   messageRequestCount: number;
+  unreadMessageCount: number; // 🔹추가됨
 }
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   currentScreen,
   onScreenChange,
-  messageRequestCount
+  messageRequestCount,
+  unreadMessageCount // 🔹추가됨
 }) => {
   const navItems = [
     {
@@ -28,7 +30,8 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
     {
       id: 'chat' as Screen,
       icon: MessageSquare,
-      label: '채팅'
+      label: '채팅',
+      badge: unreadMessageCount // 🔹추가됨
     }
   ];
 

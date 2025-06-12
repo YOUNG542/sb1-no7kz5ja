@@ -8,39 +8,27 @@ interface ChatListProps {
   users: User[];
   currentUserId: string;
   onSelectChat: (roomId: string) => void;
+  enrichedChatRooms: {
+    [roomId: string]: {
+      lastMessage?: Message;
+      unreadCount: number;
+    };
+  };
 }
+
 
 export const ChatList: React.FC<ChatListProps> = ({
   users,
   currentUserId,
-  onSelectChat
+  onSelectChat,
+  enrichedChatRooms,
 }) => {
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchChatRooms = () => {
-    setIsRefreshing(true);
-    const q = query(
-      collection(db, 'chatRooms'),
-      where('participants', 'array-contains', currentUserId)
-    );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const rooms: ChatRoom[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<ChatRoom, 'id'>)
-      }));
-      setChatRooms(rooms);
-      setIsRefreshing(false);
-    });
 
-    return unsubscribe;
-  };
-
-  useEffect(() => {
-    const unsubscribe = fetchChatRooms();
-    return () => unsubscribe();
-  }, [currentUserId]);
+  
 
   const getUserById = (id: string) => users.find(u => u.id === id);
 
@@ -49,11 +37,7 @@ export const ChatList: React.FC<ChatListProps> = ({
     return otherId ? getUserById(otherId) : null;
   };
 
-  const getLastMessage = (room: ChatRoom): Message | null => {
-    return room.messages.length > 0
-      ? room.messages[room.messages.length - 1]
-      : null;
-  };
+
 
   const getTimeAgo = (timestamp: number) => {
     const now = Date.now();
@@ -68,13 +52,15 @@ export const ChatList: React.FC<ChatListProps> = ({
     return '방금 전';
   };
 
-  const sortedRooms = [...chatRooms].sort((a, b) => {
-    const aLastMsg = getLastMessage(a);
-    const bLastMsg = getLastMessage(b);
-    const aTime = aLastMsg?.timestamp || a.createdAt;
-    const bTime = bLastMsg?.timestamp || b.createdAt;
-    return bTime - aTime;
-  });
+  const roomIds = Object.keys(enrichedChatRooms);
+const sortedRoomIds = roomIds.sort((a, b) => {
+  const aTime = enrichedChatRooms[a].lastMessage?.timestamp ?? 0;
+  const bTime = enrichedChatRooms[b].lastMessage?.timestamp ?? 0;
+  return bTime - aTime;
+});
+
+
+  
 
   const handleRoomClick = (roomId: string) => {
     try {
@@ -92,7 +78,7 @@ export const ChatList: React.FC<ChatListProps> = ({
           <p className="text-gray-600">새로운 인연들과 대화해보세요</p>
         </div>
 
-        {sortedRooms.length === 0 ? (
+        {sortedRoomIds.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <MessageSquare className="w-8 h-8 text-gray-400" />
@@ -115,41 +101,54 @@ export const ChatList: React.FC<ChatListProps> = ({
           </div>
         ) : (
           <div className="space-y-3">
-            {sortedRooms.map((room) => {
-              const otherUser = getOtherParticipant(room);
-              const lastMessage = getLastMessage(room);
+           {sortedRoomIds.map((roomId) => {
+  const roomInfo = enrichedChatRooms[roomId];
+  const lastMessage = roomInfo.lastMessage;
+  const unreadCount = roomInfo.unreadCount;
+  const room = { id: roomId }; // 최소한의 방 정보
+  const otherUserId =
+  lastMessage?.senderId === currentUserId ? lastMessage?.to : lastMessage?.senderId;
+const otherUser = getUserById(otherUserId || '');
 
-              if (!otherUser) return null;
 
-              return (
-                <button
-                  key={room.id}
-                  onClick={() => handleRoomClick(room.id)}
-                  className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 text-left"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900">{otherUser.nickname}</h3>
-                    {lastMessage && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        {getTimeAgo(lastMessage.timestamp)}
-                      </div>
-                    )}
-                  </div>
+  if (!otherUser) return null;
 
-                  <p className="text-sm text-gray-600 mb-2">{otherUser.intro}</p>
+  return (
+    <button
+      key={roomId}
+      onClick={() => handleRoomClick(roomId)}
+      className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 text-left"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-gray-900">{otherUser.nickname}</h3>
+        {lastMessage && (
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Clock className="w-3 h-3" />
+            {getTimeAgo(lastMessage.timestamp)}
+          </div>
+        )}
+      </div>
 
-                  {lastMessage ? (
-                    <p className="text-sm text-gray-800 truncate">
-                      {lastMessage.senderId === currentUserId ? '나: ' : ''}
-                      {lastMessage.content}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">대화를 시작해보세요!</p>
-                  )}
-                </button>
-              );
-            })}
+      <p className="text-sm text-gray-600 mb-2">{otherUser.intro}</p>
+
+      {lastMessage ? (
+        <p className="text-sm text-gray-800 truncate">
+          {lastMessage.senderId === currentUserId ? '나: ' : ''}
+          {lastMessage.content}
+        </p>
+      ) : (
+        <p className="text-sm text-gray-500 italic">대화를 시작해보세요!</p>
+      )}
+
+      {unreadCount > 0 && (
+        <span className="text-xs bg-red-500 text-white rounded-full px-2 mt-1 inline-block">
+          {unreadCount} unread
+        </span>
+      )}
+    </button>
+  );
+})}
+
           </div>
         )}
       </div>

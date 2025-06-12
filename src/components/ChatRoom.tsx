@@ -39,10 +39,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         return {
           id: doc.id,
           senderId: data.senderId,
+          to: data.to,
           content: data.content,
           timestamp: data.createdAt?.toMillis?.() ?? Date.now(),
-        };
+          isRead: data.isRead ?? false,
+        } as Message; // 명시적으로 타입 지정
       });
+      
       setMessages(fetched);
     });
   

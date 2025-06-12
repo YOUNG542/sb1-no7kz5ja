@@ -28,8 +28,11 @@ messages: Message[];
 export interface Message {
   id: string;
   senderId: string;
+  to: string;
   content: string;
   timestamp: number;
+  isRead: boolean;
 }
+
 
 export type Screen = 'setup' | 'feed' | 'chat' | 'requests';

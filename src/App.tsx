@@ -47,6 +47,16 @@ function App() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+const [unreadMessageCount, setUnreadMessageCount] = useState(0); // 👈 추가
+const [unreadCountMap, setUnreadCountMap] = useState<Map<string, number>>(new Map()); // 👈 추가
+const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
+  [roomId: string]: {
+    lastMessage?: Message;
+    unreadCount: number;
+  };
+}>({});
+
+
 
   const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
   const isAndroid = () => /android/.test(window.navigator.userAgent.toLowerCase());
@@ -120,6 +130,71 @@ function App() {
     };
   }, [currentUser]);
 
+  useEffect(() => {
+    if (!currentUser || chatRooms.length === 0) return;
+  
+    const unsubscribes: (() => void)[] = [];
+  
+    chatRooms.forEach((room) => {
+      const messagesRef = collection(db, 'chatRooms', room.id, 'messages');
+      const q = query(
+        messagesRef,
+        where('to', '==', currentUser.id),
+        where('isRead', '==', false)
+      );
+  
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setUnreadCountMap((prevMap) => {
+          const newMap = new Map(prevMap);
+          newMap.set(room.id, snapshot.size);
+          const total = Array.from(newMap.values()).reduce((a, b) => a + b, 0);
+          setUnreadMessageCount(total);
+          return newMap;
+        });
+      });
+  
+      unsubscribes.push(unsubscribe);
+    });
+  
+    return () => {
+      unsubscribes.forEach((unsub) => unsub());
+    };
+  }, [currentUser, chatRooms]);
+
+  useEffect(() => {
+    if (!currentUser || chatRooms.length === 0) return;
+  
+    const unsubscribes: (() => void)[] = [];
+  
+    chatRooms.forEach((room) => {
+      const messagesRef = collection(db, 'chatRooms', room.id, 'messages');
+      const unsubscribe = onSnapshot(messagesRef, (snapshot) => {
+        const messages = snapshot.docs.map((doc) => doc.data() as Message);
+        const sorted = messages.sort((a, b) => b.timestamp - a.timestamp);
+        const lastMessage = sorted[0];
+        const unreadCount = messages.filter(
+          (msg) => msg.to === currentUser.id && !msg.isRead
+        ).length;
+  
+        setEnrichedChatRooms((prev) => ({
+          ...prev,
+          [room.id]: {
+            lastMessage,
+            unreadCount,
+          },
+        }));
+      });
+  
+      unsubscribes.push(unsubscribe);
+    });
+  
+    return () => {
+      unsubscribes.forEach((unsub) => unsub());
+    };
+  }, [currentUser, chatRooms]);
+  
+  
+
   const handleProfileComplete = async (user: User) => {
     await saveUser(user);
     setCurrentUser(user);
@@ -192,10 +267,13 @@ function App() {
         {
           id: `msg_${Date.now()}`,
           senderId: request.fromUserId,
+          to: request.toUserId,
           content: request.message,
           timestamp: Date.now(),
+          isRead: false,
         },
       ],
+      
       createdAt: Date.now(),
     };
     await saveChatRoom(chatRoom);
@@ -225,16 +303,21 @@ function App() {
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!selectedChatRoom || !currentUser) return;
+    if (!selectedChatRoom || !currentUser || !otherUser) return;
+  
     const message: Message = {
       id: `msg_${Date.now()}`,
       senderId: currentUser.id,
+      to: otherUser.id,
       content,
       timestamp: Date.now(),
+      isRead: false,
     };
+  
     const roomRef = doc(db, 'chatRooms', selectedChatRoom);
     await updateDoc(roomRef, { messages: arrayUnion(message) });
   };
+  
 
   if (!uid) return <div>로그인 중...</div>;
   if (!currentUser) return <ProfileSetup uid={uid} onComplete={handleProfileComplete} />;
@@ -284,14 +367,17 @@ function App() {
           users={users}
           currentUserId={currentUser.id}
           onSelectChat={setSelectedChatRoom}
+          enrichedChatRooms={enrichedChatRooms}
         />
       )}
 
-      <BottomNavigation
-        currentScreen={currentScreen}
-        onScreenChange={setCurrentScreen}
-        messageRequestCount={pendingRequestCount}
-      />
+<BottomNavigation
+  currentScreen={currentScreen}
+  onScreenChange={setCurrentScreen}
+  messageRequestCount={pendingRequestCount}
+  unreadMessageCount={unreadMessageCount} // 👈 추가
+/>
+
 
       {showMessageModal && (
         <MessageRequestModal
