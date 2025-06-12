@@ -41,16 +41,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           senderId: data.senderId,
           to: data.to,
           content: data.content,
-          timestamp: data.timestamp?.toMillis() ?? Date.now(),  // 'createdAt'이 아니라 'timestamp' 사용
+          timestamp: data.timestamp?.toMillis() ?? Date.now(),  // timestamp 처리
           isRead: data.isRead ?? false,
-        } as Message; // 명시적으로 타입 지정
+        } as Message;  // 명시적으로 타입 지정
       });
-      
+  
       setMessages(fetched);
     });
   
     return () => unsubscribe();
   }, [roomId]);
+  
   
 
   useEffect(() => {
