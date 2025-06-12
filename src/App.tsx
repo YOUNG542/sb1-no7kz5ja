@@ -189,7 +189,6 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
     if (!currentUser || chatRooms.length === 0) return;
   
     const unsubscribes: (() => void)[] = [];
-  
     const countMap = new Map<string, number>();
   
     chatRooms.forEach((room) => {
@@ -202,7 +201,6 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       );
   
       const unsubscribe = onSnapshot(unreadQuery, (snapshot) => {
-        // 🧠 이 방에서 안 읽은 수 업데이트
         countMap.set(room.id, snapshot.size);
   
         // 🔁 모든 방의 총합 계산
@@ -217,6 +215,7 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       unsubscribes.forEach((unsub) => unsub());
     };
   }, [currentUser, chatRooms]);
+  
   
   
 
