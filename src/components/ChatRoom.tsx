@@ -74,6 +74,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
     await addDoc(collection(db, 'chatRooms', roomId, 'messages'), {
       senderId: currentUser.id,
+      to: otherUser.id, // 수신자 추가
+      isRead: false,    // 기본은 읽지 않은 상태
       content: message.trim(),
       createdAt: serverTimestamp(),
     });
