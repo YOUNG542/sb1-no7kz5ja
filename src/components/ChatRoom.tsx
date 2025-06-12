@@ -145,9 +145,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   key={msg.id}
                   className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
                 >
-                  <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
+                  <div className={`max-w-[80%] ${isOwn ? 'order-2' : 'order-1'}`}>
                     <div
-                      className={`px-4 py-2 rounded-2xl ${
+                      className={`px-4 py-2 rounded-2xl break-words whitespace-pre-wrap ${
                         isOwn
                           ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-br-sm'
                           : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
@@ -169,20 +169,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
       {/* 입력창 */}
       <div className="bg-white/90 backdrop-blur-lg border-t border-gray-200 p-4 flex-shrink-0 w-full">
-        <div className="flex gap-3 w-full">
+        <div className="flex gap-2 w-full items-end">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="메시지를 입력하세요..."
-            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-sm"
             disabled={isSending}
           />
           <button
             onClick={handleSend}
             disabled={!message.trim() || isSending}
-            className="bg-gradient-to-r from-pink-500 to-red-500 text-white p-3 rounded-xl font-medium hover:from-pink-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-gradient-to-r from-pink-500 to-red-500 text-white p-3 rounded-xl font-medium hover:from-pink-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSending ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
