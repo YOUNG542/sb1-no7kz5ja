@@ -69,15 +69,23 @@ function App() {
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator.standalone === true);
   
-    console.log('📱 isMobile:', isMobile);
-    console.log('🧩 isInStandaloneMode:', isInStandaloneMode);
+    const isDev =
+      window.location.hostname.includes('localhost') ||
+      window.location.hostname.includes('vercel') ||
+      window.location.hostname.includes('stackblitz');
+  
+    if (isDev) {
+      setIsStandalone(true); // 개발환경에서는 항상 앱 실행 허용
+      return;
+    }
   
     if (isMobile) {
       setIsStandalone(isInStandaloneMode);
     } else {
-      setIsStandalone(true); // 데스크탑은 항상 true
+      setIsStandalone(true);
     }
   }, []);
+  
   
 
   const isIos = () => {
@@ -153,10 +161,15 @@ function App() {
 
   useEffect(() => {
     if (!currentUser) return;
+  
     const unsubscribeRequests = subscribeToMessageRequestsForUser(currentUser.id, setMessageRequests);
     getChatRoomsForUser(currentUser.id).then(setChatRooms);
-    return () => unsubscribeRequests();
+  
+    return () => {
+      if (unsubscribeRequests) unsubscribeRequests();
+    };
   }, [currentUser]);
+  
 
   const handleProfileComplete = async (user: User) => {
     await saveUser(user);
