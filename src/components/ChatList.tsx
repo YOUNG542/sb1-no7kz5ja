@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, limit, DocumentSnapshot, QuerySnapshot } from 'firebase/firestore';
 import { MessageSquare, Clock, RefreshCcw } from 'lucide-react';
 import { db } from '../firebase/config';
 import { ChatRoom, User, Message } from '../types';
@@ -16,7 +16,6 @@ interface ChatListProps {
   };
 }
 
-
 export const ChatList: React.FC<ChatListProps> = ({
   users,
   currentUserId,
@@ -25,27 +24,41 @@ export const ChatList: React.FC<ChatListProps> = ({
   const [enrichedChatRooms, setEnrichedChatRooms] = useState<any>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Firestore 실시간 구독
   useEffect(() => {
     const roomsRef = collection(db, 'chatRooms');
-    const unsubscribe = onSnapshot(roomsRef, (snapshot) => {
-      const updatedChatRooms: any = {};
-      snapshot.forEach((doc) => {
-        const roomData = doc.data();
-        const lastMessage = roomData.lastMessage;
-        const unreadCount = roomData.unreadCount;
 
-        updatedChatRooms[doc.id] = {
-          lastMessage: lastMessage,
-          unreadCount: unreadCount,
-        };
+    // 구독 함수의 타입을 명시적으로 지정합니다.
+    const unsubscribe = onSnapshot(roomsRef, (snapshot: QuerySnapshot) => {  // QuerySnapshot 타입 지정
+      const updatedChatRooms: any = {};
+
+      snapshot.forEach((doc: DocumentSnapshot) => {  // DocumentSnapshot 타입 지정
+        const roomData = doc.data();
+        if (!roomData) return; // roomData가 undefined일 경우 리턴
+
+        const lastMessageRef = collection(db, 'chatRooms', doc.id, 'messages');
+        
+        // 최신 메시지를 가져오기 위한 쿼리 설정
+        const latestMessageQuery = query(lastMessageRef, orderBy('timestamp', 'desc'), limit(1)); // limit, orderBy 오류 수정
+  
+        onSnapshot(latestMessageQuery, (messageSnapshot: QuerySnapshot) => {  // QuerySnapshot 타입 지정
+          const lastMessageDoc = messageSnapshot.docs[0];
+          const lastMessage = lastMessageDoc ? lastMessageDoc.data() : null;
+
+          updatedChatRooms[doc.id] = {
+            lastMessage: lastMessage,
+            unreadCount: roomData.unreadCount || 0, // 안전하게 unreadCount 접근
+          };
+
+          // 최신 데이터를 enrichedChatRooms에 반영
+          setEnrichedChatRooms(updatedChatRooms);
+        });
       });
 
-      // 최신 데이터를 enrichedChatRooms에 반영
-      setEnrichedChatRooms(updatedChatRooms);
+      // 구독 해제 함수 반환
+      return () => unsubscribe();
     });
 
-    // 컴포넌트 언마운트 시 구독 해제
+    // cleanup 함수로 구독 해제
     return () => unsubscribe();
   }, [currentUserId]);
 
@@ -55,6 +68,9 @@ export const ChatList: React.FC<ChatListProps> = ({
     const bTime = enrichedChatRooms[b].lastMessage?.timestamp ?? 0;
     return bTime - aTime;
   });
+
+  // 추가된 디버깅 코드
+  console.log("Sorted Room IDs:", sortedRoomIds);
 
   const getUserById = (id: string) => users.find(u => u.id === id);
 
