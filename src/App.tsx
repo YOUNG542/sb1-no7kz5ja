@@ -341,8 +341,7 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       isRead: false,
     };
   
-    const roomRef = doc(db, 'chatRooms', selectedChatRoom);
-    await updateDoc(roomRef, { messages: arrayUnion(message) });
+    await addDoc(collection(db, 'chatRooms', selectedChatRoom, 'messages'), message); // ✅ 서브컬렉션에 저장
   };
   
 

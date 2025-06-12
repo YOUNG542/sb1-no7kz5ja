@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, ArrowLeft } from 'lucide-react';
 import { User, Message } from '../types';
 import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot,  where, getDocs, writeBatch, doc, } from 'firebase/firestore';
 
 interface ChatRoomProps {
   roomId: string;
@@ -51,6 +51,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   
     return () => unsubscribe();
   }, [roomId]);
+
+  // 🔽 2. 메시지 읽음 처리용 useEffect ← 추가!
+useEffect(() => {
+  if (!roomId || !currentUser?.id) return;
+
+  const markMessagesAsRead = async () => {
+    const q = query(
+      collection(db, 'chatRooms', roomId, 'messages'),
+      where('to', '==', currentUser.id),
+      where('isRead', '==', false)
+    );
+
+    const snapshot = await getDocs(q);
+    const batch = writeBatch(db);
+
+    snapshot.forEach((docSnap) => {
+      const msgRef = doc(db, 'chatRooms', roomId, 'messages', docSnap.id);
+      batch.update(msgRef, { isRead: true });
+    });
+
+    await batch.commit();
+  };
+
+  markMessagesAsRead();
+}, [roomId, currentUser?.id]);
   
 
   useEffect(() => {
