@@ -47,7 +47,8 @@ function App() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallMessage, setShowInstallMessage] = useState(false);
-  const [isStandalone, setIsStandalone] = useState<boolean | null>(null); 
+  const [isStandalone, setIsStandalone] = useState<boolean | null>(null);
+  const [checkedStandalone, setCheckedStandalone] = useState(false);
 
   useEffect(() => {
     initAnonymousAuth().then(setUid).catch(console.error);
@@ -64,26 +65,32 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
-    const isInStandaloneMode =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator.standalone === true);
+    const checkStandalone = () => {
+      const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
+      const isInStandaloneMode =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator.standalone === true);
 
-    const isDev =
-      window.location.hostname.includes('localhost') ||
-      window.location.hostname.includes('vercel') ||
-      window.location.hostname.includes('stackblitz');
+      const isDev =
+        window.location.hostname.includes('localhost') ||
+        window.location.hostname.includes('vercel') ||
+        window.location.hostname.includes('stackblitz');
 
-    if (isDev) {
-      setIsStandalone(true);
-      return;
-    }
+      if (isDev) {
+        setIsStandalone(true);
+        setCheckedStandalone(true);
+        return;
+      }
 
-    if (isMobile) {
-      setIsStandalone(isInStandaloneMode);
-    } else {
-      setIsStandalone(true);
-    }
+      if (isMobile) {
+        setIsStandalone(isInStandaloneMode);
+        setCheckedStandalone(true);
+      } else {
+        setIsStandalone(true);
+        setCheckedStandalone(true);
+      }
+    };
+    checkStandalone();
   }, []);
 
   useEffect(() => {
@@ -238,6 +245,14 @@ function App() {
     );
   };
 
+  if (!checkedStandalone) {
+    return (
+      <div className="h-screen flex items-center justify-center text-center">
+        <p className="text-gray-500 text-lg">앱 환경을 확인 중입니다...</p>
+      </div>
+    );
+  }
+
   if (isStandalone === false) {
     return (
       <div className="h-screen flex items-center justify-center px-6 text-center">
@@ -274,14 +289,6 @@ function App() {
             </>
           )}
         </div>
-      </div>
-    );
-  }
-
-  if (isStandalone === null) {
-    return (
-      <div className="h-screen flex items-center justify-center text-center">
-        <p className="text-gray-500 text-lg">앱 환경을 확인 중입니다...</p>
       </div>
     );
   }
