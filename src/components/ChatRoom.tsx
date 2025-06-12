@@ -36,12 +36,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetched = snapshot.docs.map((doc) => {
         const data = doc.data();
+        const timestamp = data.timestamp; // data에서 timestamp 필드를 가져오기
+  
         return {
           id: doc.id,
           senderId: data.senderId,
           to: data.to,
           content: data.content,
-          timestamp: data.timestamp?.toMillis() ?? Date.now(),  // timestamp 처리
+          timestamp: timestamp && timestamp.toMillis ? timestamp.toMillis() : Date.now(),  // timestamp 처리
           isRead: data.isRead ?? false,
         } as Message;  // 명시적으로 타입 지정
       });
@@ -51,6 +53,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   
     return () => unsubscribe();
   }, [roomId]);
+  
   
   
 
