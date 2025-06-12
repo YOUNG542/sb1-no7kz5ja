@@ -304,7 +304,7 @@ function App() {
             </button>
           ) : isIos() ? (
             <p>
-              사파리에서 <strong>하단 공유 버튼</strong> 클릭 → 홈 화면에 추가로 설치하세요.
+              오른쪽 아래 <strong>위로 향한 공유 버튼</strong> 클릭 → safari로 열기를 누른 후, 같은 과정을 반복해 홈 화면에 추가하세요!(앱처럼 사용하실 수 있어요!!)
             </p>
           ) : null}
         </div>
