@@ -46,8 +46,7 @@ function App() {
   const [showMessageModal, setShowMessageModal] = useState<User | null>(null);
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isStandalone, setIsStandalone] = useState<boolean | null>(true);
-  const [checkedStandalone, setCheckedStandalone] = useState(true);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
   const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
   const isAndroid = () => /android/.test(window.navigator.userAgent.toLowerCase());
@@ -60,9 +59,19 @@ function App() {
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      if (isAndroid()) {
+        setShowInstallPrompt(true);
+      }
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  useEffect(() => {
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+    if (isIos() && !isInStandaloneMode) {
+      setShowInstallPrompt(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -273,6 +282,32 @@ function App() {
           onSend={handleSendMessageRequest}
           onClose={() => setShowMessageModal(null)}
         />
+      )}
+
+      {showInstallPrompt && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow z-50">
+          {isAndroid() && deferredPrompt ? (
+            <button
+              onClick={async () => {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                  console.log('User accepted install');
+                } else {
+                  console.log('User dismissed install');
+                }
+                setDeferredPrompt(null);
+                setShowInstallPrompt(false);
+              }}
+            >
+              앱 설치하기
+            </button>
+          ) : isIos() ? (
+            <p>
+              사파리에서 <strong>하단 공유 버튼</strong> 클릭 → 홈 화면에 추가로 설치하세요.
+            </p>
+          ) : null}
+        </div>
       )}
     </div>
   );
