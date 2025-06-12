@@ -47,7 +47,7 @@ function App() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallMessage, setShowInstallMessage] = useState(false);
-  const [isStandalone, setIsStandalone] = useState<boolean>(false);
+  const [isStandalone, setIsStandalone] = useState<boolean>(true); // 기본값을 true로 설정하여 PC 허용
 
   useEffect(() => {
     initAnonymousAuth().then(setUid).catch(console.error);
@@ -64,9 +64,15 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
     const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator.standalone === true;
-    setIsStandalone(isInStandaloneMode);
+
+    if (isMobile) {
+      setIsStandalone(isInStandaloneMode);
+    } else {
+      setIsStandalone(true); // PC는 항상 true로 간주
+    }
   }, []);
 
   const isIos = () => {
