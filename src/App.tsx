@@ -147,13 +147,16 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
         const latestDoc = snapshot.docs[0];
         const lastMessage = latestDoc?.data() as Message | undefined;
   
-        setEnrichedChatRooms((prev) => ({
-          ...prev,
+        setEnrichedChatRooms((prevState: any) => ({
+          ...prevState, // 이전 상태 복사
           [room.id]: {
-            ...prev[room.id],
-            lastMessage,
+            ...prevState[room.id], // 기존 데이터 유지
+            lastMessage,  // 최신 메시지 반영
+            unreadCount: unreadCountMap.get(room.id) || 0,  // unreadCountMap에서 해당 room의 unreadCount 값 가져오기
           },
         }));
+        
+        
       });
   
       unsubscribes.push(latestUnsub);
@@ -168,6 +171,14 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       const unreadUnsub = onSnapshot(unreadQuery, (snapshot) => {
         const unreadCount = snapshot.size;
   
+        // Set unread count into unreadCountMap (updated map)
+        setUnreadCountMap((prevMap) => {
+          const updatedMap = new Map(prevMap);
+          updatedMap.set(room.id, unreadCount); // Update the unread count for the room
+          return updatedMap;
+        });
+  
+        // Also update enrichedChatRooms with the unreadCount
         setEnrichedChatRooms((prev) => ({
           ...prev,
           [room.id]: {
