@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, ArrowLeft } from 'lucide-react';
 import { User, Message } from '../types';
 import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore';
+
 interface ChatRoomProps {
   roomId: string;
   currentUser: User;
@@ -26,7 +26,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   useEffect(() => {
     const messagesRef = collection(db, 'chatRooms', roomId, 'messages');
     const q = query(messagesRef, orderBy('createdAt'));
-  
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetched = snapshot.docs.map((doc) => {
         const data = doc.data();
@@ -39,35 +39,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       });
       setMessages(fetched);
     });
-    
-  
+
     return () => unsubscribe();
   }, [roomId]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSend = async () => {
     if (!message.trim() || isSending) return;
     setIsSending(true);
 
-    const newMessage = {
-      id: `msg_${Date.now()}`,
+    await addDoc(collection(db, 'chatRooms', roomId, 'messages'), {
       senderId: currentUser.id,
       content: message.trim(),
-      timestamp: Date.now(),
-    };
-
-    const messagesRef = collection(db, 'chatRooms', roomId, 'messages');
-    await addDoc(messagesRef, {
-      senderId: currentUser.id,
-      content: message.trim(),
-      createdAt: serverTimestamp(), // 중요
+      createdAt: serverTimestamp(),
     });
 
     setMessage('');
@@ -127,7 +114,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const messageGroups = groupMessagesByDate(messages);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-red-50 flex flex-col">
+    <div className="h-screen w-full flex flex-col bg-gradient-to-br from-pink-50 via-orange-50 to-red-50">
+      {/* 상단 헤더 */}
       <div className="bg-white/90 backdrop-blur-lg border-b border-gray-200 p-4 flex items-center gap-4">
         <button
           onClick={onBack}
@@ -141,7 +129,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* 메시지 영역 */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {messageGroups.map((group, groupIndex) => (
           <div key={groupIndex}>
             <div className="text-center text-xs text-gray-500 py-2">{group.date}</div>
@@ -178,8 +167,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="bg-white/90 backdrop-blur-lg border-t border-gray-200 p-4">
-        <div className="flex gap-3 max-w-2xl mx-auto">
+      {/* 입력창 */}
+      <div className="bg-white/90 backdrop-blur-lg border-t border-gray-200 p-4 flex-shrink-0 w-full">
+        <div className="flex gap-3 w-full">
           <input
             type="text"
             value={message}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, DocumentData } from 'firebase/firestore';
-import { MessageSquare, Clock } from 'lucide-react';
-import { db } from '../firebase/config'; // 너의 firebase 초기화 파일 경로 맞게 수정해
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { MessageSquare, Clock, RefreshCcw } from 'lucide-react';
+import { db } from '../firebase/config';
 import { ChatRoom, User, Message } from '../types';
 
 interface ChatListProps {
@@ -16,9 +16,10 @@ export const ChatList: React.FC<ChatListProps> = ({
   onSelectChat
 }) => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // ✅ 실시간 chatRooms 구독
-  useEffect(() => {
+  const fetchChatRooms = () => {
+    setIsRefreshing(true);
     const q = query(
       collection(db, 'chatRooms'),
       where('participants', 'array-contains', currentUserId)
@@ -27,11 +28,17 @@ export const ChatList: React.FC<ChatListProps> = ({
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const rooms: ChatRoom[] = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...(doc.data() as Omit<ChatRoom, 'id'>)  // 👈 핵심!
+        ...(doc.data() as Omit<ChatRoom, 'id'>)
       }));
       setChatRooms(rooms);
+      setIsRefreshing(false);
     });
 
+    return unsubscribe;
+  };
+
+  useEffect(() => {
+    const unsubscribe = fetchChatRooms();
     return () => unsubscribe();
   }, [currentUserId]);
 
@@ -69,6 +76,14 @@ export const ChatList: React.FC<ChatListProps> = ({
     return bTime - aTime;
   });
 
+  const handleRoomClick = (roomId: string) => {
+    try {
+      onSelectChat(roomId);
+    } catch (error) {
+      alert('⚠️ 채팅방에 들어갈 수 없습니다. 새로고침 후 다시 시도해주세요.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-red-50 pb-24">
       <div className="max-w-2xl mx-auto p-4">
@@ -83,7 +98,20 @@ export const ChatList: React.FC<ChatListProps> = ({
               <MessageSquare className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">아직 진행 중인 채팅이 없어요</h3>
-            <p className="text-gray-600">메시지 요청을 수락하면 채팅을 시작할 수 있어요!</p>
+            <p className="text-gray-600 mb-2">
+              메시지 요청을 수락하면 채팅을 시작할 수 있어요!
+            </p>
+            <p className="text-sm text-red-500 mb-4">
+              ※ 채팅방이 열리지 않거나 들어가지지 않는 경우, 아래 버튼을 눌러 새로고침 해주세요.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-pink-500 hover:bg-pink-600 rounded-xl transition-all"
+              disabled={isRefreshing}
+            >
+              <RefreshCcw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              새로고침
+            </button>
           </div>
         ) : (
           <div className="space-y-3">
@@ -96,7 +124,7 @@ export const ChatList: React.FC<ChatListProps> = ({
               return (
                 <button
                   key={room.id}
-                  onClick={() => onSelectChat(room.id)}
+                  onClick={() => handleRoomClick(room.id)}
                   className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 text-left"
                 >
                   <div className="flex items-center justify-between mb-2">
