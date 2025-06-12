@@ -228,7 +228,37 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
   }, [currentUser, chatRooms]);
   
   
-  
+   // 채팅 데이터를 불러오는 함수
+   const loadChatData = () => {
+    if (!currentUser || chatRooms.length === 0) return;
+
+    const unsubscribes: (() => void)[] = [];
+    const countMap = new Map<string, number>();
+
+    chatRooms.forEach((room) => {
+      const messagesRef = collection(db, 'chatRooms', room.id, 'messages');
+
+      const unreadQuery = query(
+        messagesRef,
+        where('to', '==', currentUser.id),
+        where('isRead', '==', false)
+      );
+
+      const unsubscribe = onSnapshot(unreadQuery, (snapshot) => {
+        countMap.set(room.id, snapshot.size);
+
+        // 모든 방의 총합 계산
+        const total = Array.from(countMap.values()).reduce((a, b) => a + b, 0);
+        setUnreadMessageCount(total);
+      });
+
+      unsubscribes.push(unsubscribe);
+    });
+
+    return () => {
+      unsubscribes.forEach((unsub) => unsub());
+    };
+  };
 
   const handleProfileComplete = async (user: User) => {
     await saveUser(user);
@@ -414,6 +444,7 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
   onScreenChange={setCurrentScreen}
   messageRequestCount={pendingRequestCount}
   unreadMessageCount={unreadMessageCount} // 👈 추가
+  loadChatData={loadChatData}  
 />
 
 
