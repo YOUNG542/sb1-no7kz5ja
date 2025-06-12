@@ -22,6 +22,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const [isSending, setIsSending] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const messagesRef = collection(db, 'chatRooms', roomId, 'messages');
@@ -46,6 +47,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    // 키보드 올라올 때 입력창이 안 가려지게 자동 스크롤
+    const handler = () => {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    };
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   const handleSend = async () => {
     if (!message.trim() || isSending) return;
@@ -171,6 +183,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       <div className="bg-white/90 backdrop-blur-lg border-t border-gray-200 p-4 flex-shrink-0 w-full">
         <div className="flex gap-2 w-full items-end">
           <input
+            ref={inputRef}
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
