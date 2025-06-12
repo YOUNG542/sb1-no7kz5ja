@@ -14,7 +14,7 @@ interface ChatListProps {
       unreadCount: number;
     };
   };
-  setEnrichedChatRooms: React.Dispatch<React.SetStateAction<any>>; 
+  setEnrichedChatRooms: React.Dispatch<React.SetStateAction<any>>; // setEnrichedChatRooms 전달 받기
 }
 
 export const ChatList: React.FC<ChatListProps> = ({
@@ -37,29 +37,26 @@ export const ChatList: React.FC<ChatListProps> = ({
   useEffect(() => {
     const roomsRef = collection(db, 'chatRooms');
 
-    // 구독 함수의 타입을 명시적으로 지정합니다.
-    const unsubscribe = onSnapshot(roomsRef, (snapshot: QuerySnapshot) => {  // QuerySnapshot 타입 지정
+    const unsubscribe = onSnapshot(roomsRef, (snapshot: QuerySnapshot) => {
       const updatedChatRooms: any = {};
 
-      snapshot.forEach((doc: DocumentSnapshot) => {  // DocumentSnapshot 타입 지정
+      snapshot.forEach((doc: DocumentSnapshot) => {
         const roomData = doc.data();
-        if (!roomData) return; // roomData가 undefined일 경우 리턴
+        if (!roomData) return;
 
         const lastMessageRef = collection(db, 'chatRooms', doc.id, 'messages');
         
-        // 최신 메시지를 가져오기 위한 쿼리 설정
-        const latestMessageQuery = query(lastMessageRef, orderBy('timestamp', 'desc'), limit(1)); // limit, orderBy 오류 수정
+        const latestMessageQuery = query(lastMessageRef, orderBy('timestamp', 'desc'), limit(1));
   
-        onSnapshot(latestMessageQuery, (messageSnapshot: QuerySnapshot) => {  // QuerySnapshot 타입 지정
+        onSnapshot(latestMessageQuery, (messageSnapshot: QuerySnapshot) => {
           const lastMessageDoc = messageSnapshot.docs[0];
           const lastMessage = lastMessageDoc ? lastMessageDoc.data() : null;
 
           updatedChatRooms[doc.id] = {
             lastMessage: lastMessage,
-            unreadCount: roomData.unreadCount || 0, // 안전하게 unreadCount 접근
+            unreadCount: roomData.unreadCount || 0,
           };
 
-          // 최신 데이터를 enrichedChatRooms에 반영
           setEnrichedChatRooms((prevState: any) => ({
             ...prevState,
             ...updatedChatRooms,
@@ -67,15 +64,12 @@ export const ChatList: React.FC<ChatListProps> = ({
         });
       });
 
-      // 구독 해제 함수 반환
       return () => unsubscribe();
     });
 
-    // cleanup 함수로 구독 해제
     return () => unsubscribe();
   }, [currentUserId, setEnrichedChatRooms]);
 
-  // 채팅방 아이디를 최신 시간 순으로 정렬
   const sortedRoomIds = Object.keys(enrichedChatRooms).sort((a, b) => {
     const aTime = enrichedChatRooms[a].lastMessage?.timestamp ?? 0;
     const bTime = enrichedChatRooms[b].lastMessage?.timestamp ?? 0;
