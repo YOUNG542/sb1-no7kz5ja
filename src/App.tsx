@@ -68,81 +68,23 @@ function App() {
     const isInStandaloneMode =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator.standalone === true);
-  
+
     const isDev =
       window.location.hostname.includes('localhost') ||
       window.location.hostname.includes('vercel') ||
       window.location.hostname.includes('stackblitz');
-  
+
     if (isDev) {
-      setIsStandalone(true); // 개발환경에서는 항상 앱 실행 허용
+      setIsStandalone(true);
       return;
     }
-  
+
     if (isMobile) {
       setIsStandalone(isInStandaloneMode);
     } else {
       setIsStandalone(true);
     }
   }, []);
-  
-  
-
-  const isIos = () => {
-    return (
-      /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) &&
-      !window.navigator.standalone
-    );
-  };
-
-  if (isStandalone === false) {
-    return (
-      <div className="h-screen flex items-center justify-center px-6 text-center">
-        <div className="max-w-md">
-          {isIos() ? (
-            <p className="text-lg font-semibold text-gray-800">
-              iOS에서는 Safari에서 공유 버튼을 누른 후 "홈 화면에 추가"를 눌러 앱을 설치해주세요.
-            </p>
-          ) : (
-            <>
-              <p className="text-lg font-semibold text-gray-800">
-                이 앱은 설치 후에만 사용할 수 있습니다.
-              </p>
-              {deferredPrompt ? (
-                <button
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-                  onClick={async () => {
-                    try {
-                      await deferredPrompt.prompt();
-                      const result = await deferredPrompt.userChoice;
-                      if (result.outcome === 'accepted') {
-                        console.log('✅ 사용자 설치 완료');
-                      }
-                    } catch (err) {
-                      console.error('설치 프롬프트 오류:', err);
-                    }
-                    setDeferredPrompt(null);
-                    setShowInstallMessage(false);
-                  }}
-                >
-                  설치하기
-                </button>
-              ) : null}
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
-  
-  if (isStandalone === null) {
-    return (
-      <div className="h-screen flex items-center justify-center text-center">
-        <p className="text-gray-500 text-lg">앱 환경을 확인 중입니다...</p>
-      </div>
-    );
-  }
-  
 
   useEffect(() => {
     if (!uid) return;
@@ -161,24 +103,23 @@ function App() {
 
   useEffect(() => {
     if (!currentUser) return;
-  
-    const unsubscribeRequests = subscribeToMessageRequestsForUser(currentUser.id, setMessageRequests);
+    const unsubscribeRequests = subscribeToMessageRequestsForUser(
+      currentUser.id,
+      setMessageRequests
+    );
     getChatRoomsForUser(currentUser.id).then(setChatRooms);
-  
     return () => {
-      if (unsubscribeRequests) unsubscribeRequests();
+      if (typeof unsubscribeRequests === 'function') {
+        unsubscribeRequests();
+      }
     };
   }, [currentUser]);
-  
 
   const handleProfileComplete = async (user: User) => {
     await saveUser(user);
     setCurrentUser(user);
     setUsers((prev) => [...prev, user]);
   };
-
-  if (!uid) return <div>로그인 중...</div>;
-  if (!currentUser) return <ProfileSetup uid={uid} onComplete={handleProfileComplete} />;
 
   const handleReact = async (userId: string, emoji: string) => {
     if (!currentUser) return;
@@ -289,6 +230,64 @@ function App() {
     const roomRef = doc(db, 'chatRooms', selectedChatRoom);
     await updateDoc(roomRef, { messages: arrayUnion(message) });
   };
+
+  const isIos = () => {
+    return (
+      /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) &&
+      !window.navigator.standalone
+    );
+  };
+
+  if (isStandalone === false) {
+    return (
+      <div className="h-screen flex items-center justify-center px-6 text-center">
+        <div className="max-w-md">
+          {isIos() ? (
+            <p className="text-lg font-semibold text-gray-800">
+              iOS에서는 Safari에서 공유 버튼을 누른 후 "홈 화면에 추가"를 눌러 앱을 설치해주세요.
+            </p>
+          ) : (
+            <>
+              <p className="text-lg font-semibold text-gray-800">
+                이 앱은 설치 후에만 사용할 수 있습니다.
+              </p>
+              {deferredPrompt ? (
+                <button
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+                  onClick={async () => {
+                    try {
+                      await deferredPrompt.prompt();
+                      const result = await deferredPrompt.userChoice;
+                      if (result.outcome === 'accepted') {
+                        console.log('✅ 사용자 설치 완료');
+                      }
+                    } catch (err) {
+                      console.error('설치 프롬프트 오류:', err);
+                    }
+                    setDeferredPrompt(null);
+                    setShowInstallMessage(false);
+                  }}
+                >
+                  설치하기
+                </button>
+              ) : null}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (isStandalone === null) {
+    return (
+      <div className="h-screen flex items-center justify-center text-center">
+        <p className="text-gray-500 text-lg">앱 환경을 확인 중입니다...</p>
+      </div>
+    );
+  }
+
+  if (!uid) return <div>로그인 중...</div>;
+  if (!currentUser) return <ProfileSetup uid={uid} onComplete={handleProfileComplete} />;
 
   const pendingRequestCount = messageRequests.filter(
     (r) => r.status === 'pending' && r.toUserId === currentUser.id
