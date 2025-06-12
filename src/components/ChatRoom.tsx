@@ -34,11 +34,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           id: doc.id,
           senderId: data.senderId,
           content: data.content,
-          timestamp: data.createdAt?.seconds ? data.createdAt.seconds * 1000 : Date.now(),
+          timestamp: data.createdAt?.toMillis?.() ?? Date.now(),
         };
       });
       setMessages(fetched);
     });
+    
   
     return () => unsubscribe();
   }, [roomId]);
