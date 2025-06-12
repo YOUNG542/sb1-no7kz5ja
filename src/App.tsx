@@ -47,7 +47,7 @@ function App() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallMessage, setShowInstallMessage] = useState(false);
-  const [isStandalone, setIsStandalone] = useState<boolean>(true); // 기본값을 true로 설정하여 PC 허용
+  const [isStandalone, setIsStandalone] = useState<boolean | null>(null); 
 
   useEffect(() => {
     initAnonymousAuth().then(setUid).catch(console.error);
@@ -64,16 +64,21 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true;
-
+    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
+    const isInStandaloneMode =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator.standalone === true);
+  
+    console.log('📱 isMobile:', isMobile);
+    console.log('🧩 isInStandaloneMode:', isInStandaloneMode);
+  
     if (isMobile) {
       setIsStandalone(isInStandaloneMode);
     } else {
-      setIsStandalone(true); // PC는 항상 true로 간주
+      setIsStandalone(true); // 데스크탑은 항상 true
     }
   }, []);
+  
 
   const isIos = () => {
     return (
@@ -82,7 +87,7 @@ function App() {
     );
   };
 
-  if (!isStandalone) {
+  if (isStandalone === false) {
     return (
       <div className="h-screen flex items-center justify-center px-6 text-center">
         <div className="max-w-md">
@@ -95,14 +100,18 @@ function App() {
               <p className="text-lg font-semibold text-gray-800">
                 이 앱은 설치 후에만 사용할 수 있습니다.
               </p>
-              {deferredPrompt && (
+              {deferredPrompt ? (
                 <button
                   className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
                   onClick={async () => {
-                    deferredPrompt.prompt();
-                    const result = await deferredPrompt.userChoice;
-                    if (result.outcome === 'accepted') {
-                      console.log('✅ 사용자 설치 완료');
+                    try {
+                      await deferredPrompt.prompt();
+                      const result = await deferredPrompt.userChoice;
+                      if (result.outcome === 'accepted') {
+                        console.log('✅ 사용자 설치 완료');
+                      }
+                    } catch (err) {
+                      console.error('설치 프롬프트 오류:', err);
                     }
                     setDeferredPrompt(null);
                     setShowInstallMessage(false);
@@ -110,13 +119,22 @@ function App() {
                 >
                   설치하기
                 </button>
-              )}
+              ) : null}
             </>
           )}
         </div>
       </div>
     );
   }
+  
+  if (isStandalone === null) {
+    return (
+      <div className="h-screen flex items-center justify-center text-center">
+        <p className="text-gray-500 text-lg">앱 환경을 확인 중입니다...</p>
+      </div>
+    );
+  }
+  
 
   useEffect(() => {
     if (!uid) return;
