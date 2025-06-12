@@ -25,9 +25,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (!roomId) {
+      console.warn('🚫 roomId가 아직 없습니다. 채팅방 구독 보류');
+      return;
+    }
+  
     const messagesRef = collection(db, 'chatRooms', roomId, 'messages');
     const q = query(messagesRef, orderBy('createdAt'));
-
+  
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetched = snapshot.docs.map((doc) => {
         const data = doc.data();
@@ -40,9 +45,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       });
       setMessages(fetched);
     });
-
+  
     return () => unsubscribe();
   }, [roomId]);
+  
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
