@@ -25,7 +25,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
       id: uid, // ✅ 여기서 UID 사용
       nickname: nickname.trim(),
       intro: intro.trim(),
-      createdAt: Date.now(),
+      timestamp: Date.now(),
       reactions: {},
       messageRequestCount: 0
     };

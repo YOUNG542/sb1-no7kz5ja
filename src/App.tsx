@@ -271,7 +271,7 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       toUserId: showMessageModal.id,
       message,
       status: 'pending',
-      createdAt: Date.now(),
+      timestamp: Date.now(),
     };
     await saveMessageRequest(request);
     setMessageRequests((prev) => [...prev, request]);
@@ -299,7 +299,7 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       fromUserId: request.fromUserId,
       toUserId: request.toUserId,
       participants: [request.fromUserId, request.toUserId],
-      createdAt: Date.now(),
+      timestamp: Date.now(),
     };
     await saveChatRoom(chatRoom); // ✅ messages 없이 저장
     

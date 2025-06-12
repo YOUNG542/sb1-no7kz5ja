@@ -2,7 +2,7 @@ export interface User {
   id: string;
   nickname: string;
   intro: string;
-  createdAt: number;
+  timestamp: number;
   reactions: Record<string, string[]>; // emoji -> user IDs
   messageRequestCount: number;
 }
@@ -13,7 +13,7 @@ export interface MessageRequest {
   toUserId: string;
   message: string;
   status: 'pending' | 'accepted' | 'rejected';
-  createdAt: number;
+  timestamp: number;
 }
 
 export interface ChatRoom {
@@ -21,7 +21,7 @@ export interface ChatRoom {
   fromUserId: string;  // ✅ 추가
   toUserId: string;    // ✅ 추가
   participants: string[]; // 이건 선택사항 (saveChatRoom에서 덮어씌우기 때문에 없어도 됨)
-  createdAt?: any;     // Firestore Timestamp 타입
+  timestamp?: any;     // Firestore Timestamp 타입
 
 }
 

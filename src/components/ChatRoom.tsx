@@ -31,7 +31,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     }
   
     const messagesRef = collection(db, 'chatRooms', roomId, 'messages');
-    const q = query(messagesRef, orderBy('createdAt'));
+    const q = query(messagesRef, orderBy('timestamp'));  // 'timestamp' 필드로 정렬
   
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetched = snapshot.docs.map((doc) => {
@@ -41,7 +41,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           senderId: data.senderId,
           to: data.to,
           content: data.content,
-          timestamp: data.createdAt?.toMillis?.() ?? Date.now(),
+          timestamp: data.timestamp?.toMillis() ?? Date.now(),  // 'createdAt'이 아니라 'timestamp' 사용
           isRead: data.isRead ?? false,
         } as Message; // 명시적으로 타입 지정
       });
@@ -51,6 +51,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   
     return () => unsubscribe();
   }, [roomId]);
+  
 
   useEffect(() => {
     if (!roomId || !currentUser?.id) return;

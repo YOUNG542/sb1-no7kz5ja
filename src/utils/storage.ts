@@ -87,7 +87,7 @@ export const initializeSampleData = () => {
         id: 'sample1',
         nickname: '커피좋아',
         intro: '카페에서 책 읽는 시간이 가장 행복해요 ☕',
-        createdAt: Date.now() - 3600000,
+        timestamp: Date.now() - 3600000,
         reactions: {},
         messageRequestCount: 0
       },
@@ -95,7 +95,7 @@ export const initializeSampleData = () => {
         id: 'sample2', 
         nickname: '밤하늘',
         intro: '별 보는 걸 좋아하는 천문학과 학생입니다 ✨',
-        createdAt: Date.now() - 7200000,
+        timestamp: Date.now() - 7200000,
         reactions: {},
         messageRequestCount: 2
       },
@@ -103,7 +103,7 @@ export const initializeSampleData = () => {
         id: 'sample3',
         nickname: '음악덕후',
         intro: '인디밴드 라이브 공연 같이 보러 갈 사람?',
-        createdAt: Date.now() - 1800000,
+        timestamp: Date.now() - 1800000,
         reactions: {},
         messageRequestCount: 1
       },
@@ -111,7 +111,7 @@ export const initializeSampleData = () => {
         id: 'sample4',
         nickname: '등산러버',
         intro: '주말마다 산에 오르는 게 취미예요 🏔️',
-        createdAt: Date.now() - 5400000,
+        timestamp: Date.now() - 5400000,
         reactions: {},
         messageRequestCount: 0
       }

@@ -60,7 +60,7 @@ export const MessageRequests: React.FC<MessageRequestsProps> = ({
                         <h3 className="text-lg font-bold text-gray-900">{sender.nickname}</h3>
                         <div className="flex items-center gap-1 text-xs text-gray-500">
                           <Clock className="w-3 h-3" />
-                          {getTimeAgo(request.createdAt)}
+                          {getTimeAgo(request.timestamp)}
                         </div>
                       </div>
                       <p className="text-gray-600 text-sm mb-3">{sender.intro}</p>

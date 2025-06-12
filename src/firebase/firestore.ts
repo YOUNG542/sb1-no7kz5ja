@@ -80,7 +80,7 @@ export const saveChatRoom = async (room: ChatRoom) => {
   await setDoc(doc(db, 'chatRooms', room.id), {
     ...room, // 객체 구조 분해로 필드 모두 포함
     participants: [room.fromUserId, room.toUserId], // ✅ 핵심 수정
-    createdAt: serverTimestamp(), // 서버 기준 시간
+    timestamp: serverTimestamp(), // 서버 기준 시간
   });
 };
 
