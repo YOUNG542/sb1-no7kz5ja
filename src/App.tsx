@@ -393,6 +393,8 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
           currentUserId={currentUser.id}
           onSelectChat={setSelectedChatRoom}
           enrichedChatRooms={enrichedChatRooms}
+           setEnrichedChatRooms={setEnrichedChatRooms} // Passing the setEnrichedChatRooms function here
+   
         />
       )}
 

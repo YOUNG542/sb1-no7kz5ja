@@ -14,15 +14,25 @@ interface ChatListProps {
       unreadCount: number;
     };
   };
+  setEnrichedChatRooms: React.Dispatch<React.SetStateAction<any>>; 
 }
 
 export const ChatList: React.FC<ChatListProps> = ({
   users,
   currentUserId,
   onSelectChat,
+  enrichedChatRooms,
+  setEnrichedChatRooms,
 }) => {
-  const [enrichedChatRooms, setEnrichedChatRooms] = useState<any>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRoomClick = (roomId: string) => {
+    try {
+      onSelectChat(roomId);
+    } catch (error) {
+      alert('⚠️ 채팅방에 들어갈 수 없습니다. 새로고침 후 다시 시도해주세요.');
+    }
+  };
 
   useEffect(() => {
     const roomsRef = collection(db, 'chatRooms');
@@ -63,7 +73,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 
     // cleanup 함수로 구독 해제
     return () => unsubscribe();
-  }, [currentUserId]);
+  }, [currentUserId, setEnrichedChatRooms]);
 
   // 채팅방 아이디를 최신 시간 순으로 정렬
   const sortedRoomIds = Object.keys(enrichedChatRooms).sort((a, b) => {
@@ -71,9 +81,6 @@ export const ChatList: React.FC<ChatListProps> = ({
     const bTime = enrichedChatRooms[b].lastMessage?.timestamp ?? 0;
     return bTime - aTime;
   });
-
-  // 추가된 디버깅 코드
-  console.log("Sorted Room IDs:", sortedRoomIds);
 
   const getUserById = (id: string) => users.find(u => u.id === id);
 
@@ -88,14 +95,6 @@ export const ChatList: React.FC<ChatListProps> = ({
     if (hours > 0) return `${hours}시간 전`;
     if (minutes > 0) return `${minutes}분 전`;
     return '방금 전';
-  };
-
-  const handleRoomClick = (roomId: string) => {
-    try {
-      onSelectChat(roomId);
-    } catch (error) {
-      alert('⚠️ 채팅방에 들어갈 수 없습니다. 새로고침 후 다시 시도해주세요.');
-    }
   };
 
   return (
