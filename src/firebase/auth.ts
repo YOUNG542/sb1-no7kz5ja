@@ -1,7 +1,9 @@
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { app } from './config';
 
-const auth = getAuth(app);
+const auth = getAuth(app);  // ← 이게 먼저 선언돼야 함
+
+console.log('🚀 auth.currentUser?.uid:', auth.currentUser?.uid);
 
 export const initAnonymousAuth = (): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -12,7 +14,7 @@ export const initAnonymousAuth = (): Promise<string> => {
       } else {
         signInAnonymously(auth)
           .then((result) => {
-            console.log('🔥 익명 로그인 성공:', result.user.uid); // 여기에 로그 추가
+            console.log('🔥 익명 로그인 성공:', result.user.uid);
             resolve(result.user.uid);
           })
           .catch(reject);
