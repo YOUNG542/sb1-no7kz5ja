@@ -3,6 +3,7 @@ import { collection, onSnapshot, query, orderBy, limit, DocumentSnapshot, QueryS
 import { MessageSquare, Clock, RefreshCcw } from 'lucide-react';
 import { db } from '../firebase/config';
 import { ChatRoom, User, Message } from '../types';
+import { Timestamp } from 'firebase/firestore';
 
 interface ChatListProps {
   users: User[];
@@ -69,12 +70,12 @@ export const ChatList: React.FC<ChatListProps> = ({
     return () => unsubscribe();
   }, [currentUserId, setEnrichedChatRooms]);
   
-
   const sortedRoomIds = Object.keys(enrichedChatRooms).sort((a, b) => {
     const aTime = enrichedChatRooms[a].lastMessage?.timestamp ?? 0;
     const bTime = enrichedChatRooms[b].lastMessage?.timestamp ?? 0;
     return bTime - aTime;
   });
+ 
 
   const getUserById = (id: string) => users.find(u => u.id === id);
 
@@ -144,7 +145,7 @@ export const ChatList: React.FC<ChatListProps> = ({
                     {lastMessage && (
                       <div className="flex items-center gap-1 text-xs text-gray-500">
                         <Clock className="w-3 h-3" />
-                        {getTimeAgo(lastMessage.timestamp)}
+                        {getTimeAgo(lastMessage.timestamp || 0)}
                       </div>
                     )}
                   </div>

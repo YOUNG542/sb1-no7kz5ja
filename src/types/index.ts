@@ -1,8 +1,10 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface User {
   id: string;
   nickname: string;
   intro: string;
-  timestamp: number;
+  createdAt: Timestamp;
   reactions: Record<string, string[]>; // emoji -> user IDs
   messageRequestCount: number;
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, Sparkles } from 'lucide-react';
 import { User } from '../types';
+import { Timestamp } from 'firebase/firestore';
 
 interface ProfileSetupProps {
   uid: string;
@@ -25,7 +26,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
       id: uid, // ✅ 여기서 UID 사용
       nickname: nickname.trim(),
       intro: intro.trim(),
-      timestamp: Date.now(),
+      createdAt: Timestamp.fromDate(new Date()),
       reactions: {},
       messageRequestCount: 0
     };

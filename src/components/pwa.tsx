@@ -37,10 +37,9 @@ export const PwaPrompt = () => {
       )}
       {platform === 'android' && (
         <p>
-        📱 Android 사용자는 브라우저에서 열어주세요. <br />
-        1. 우측 상단 <strong>⋮ 또는 공유 버튼</strong> 누르기 <br />
-        2. <strong>"브라우저에서 열기"</strong> 또는 <strong>"기본 브라우저로 열기"</strong> 선택 <br />
-        3. 이후 <strong>'홈 화면에 추가'</strong>로 설치 가능해요!
+        📱 Android 사용자는 지금 계신 웹 브라우저에서 <br />
+         <strong>⋮ 또는 공유 버튼을 누르고 홈 화면에 추가하기 혹은 설치를 해주세요!</strong>
+        만약 안된다면? 링크를 복사해서 '크롬'에서 여신 뒤 같은 작업을 해주세요!
       </p>
       )}
     </div>
