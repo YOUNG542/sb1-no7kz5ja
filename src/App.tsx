@@ -83,6 +83,8 @@ function App() {
   useEffect(() => {
     if (!uid) return;
     getUserById(uid).then((user) => {
+      console.log("🔥 auth.uid", uid);
+      console.log("🔥 currentUser.id", user?.id);
       if (user) {
         setCurrentUser(user);
       } else {
