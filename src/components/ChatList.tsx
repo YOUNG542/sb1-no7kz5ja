@@ -79,13 +79,18 @@ export const ChatList: React.FC<ChatListProps> = ({
 
   const getUserById = (id: string) => users.find(u => u.id === id);
 
-  const getTimeAgo = (timestamp: number) => {
+  const getTimeAgo = (timestamp: number | Timestamp) => {
+    const timeInMillis =
+      typeof timestamp === 'number'
+        ? timestamp
+        : timestamp.toMillis?.() || 0;
+  
     const now = Date.now();
-    const diff = now - timestamp;
+    const diff = now - timeInMillis;
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-
+  
     if (days > 0) return `${days}일 전`;
     if (hours > 0) return `${hours}시간 전`;
     if (minutes > 0) return `${minutes}분 전`;
