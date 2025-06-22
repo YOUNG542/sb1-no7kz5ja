@@ -82,15 +82,20 @@ function App() {
 
   useEffect(() => {
     if (!uid) return;
-    getUserById(uid).then((user) => {
-      console.log("🔥 auth.uid", uid);
-      console.log("🔥 currentUser.id", user?.id);
-      if (user) {
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
-      }
-    }).catch(console.error);
+    getUserById(uid)
+  .then((user) => {
+    console.log('🔥 auth.uid:', uid);
+    console.log('🔥 currentUser.id:', user?.id);
+
+    if (user) {
+      setCurrentUser(user);
+    } else {
+      setCurrentUser(null);
+    }
+  })
+  .catch((error) => {
+    console.error('❌ getUserById 오류:', error);
+  });
   }, [uid]);
 
   useEffect(() => {

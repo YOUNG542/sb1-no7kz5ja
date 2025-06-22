@@ -9,12 +9,12 @@ export const initAnonymousAuth = (): Promise<string> => {
   return new Promise((resolve, reject) => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log('🔥 로그인 완료 (onAuthStateChanged):', user.uid);
+        console.log('🔥 로그인 완료 (onAuthStateChanged): auth.uid:', user.uid);
         resolve(user.uid);
       } else {
         signInAnonymously(auth)
           .then((result) => {
-            console.log('🔥 익명 로그인 성공:', result.user.uid);
+            console.log('🔥 익명 로그인 성공: auth.uid:', result.user.uid);
             resolve(result.user.uid);
           })
           .catch(reject);
