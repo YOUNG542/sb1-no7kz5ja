@@ -40,7 +40,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-pink-500 to-red-500 rounded-full mb-4">
             <Heart className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">끝나지 않는 홍개팅</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">네버엔딩 홍개팅</h1>
           <p className="text-gray-600">새로운 인연을 만나보세요</p>
         </div>
 
