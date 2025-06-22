@@ -69,7 +69,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
         <div className="flex items-center gap-1">
           <Clock className="w-3 h-3" />
-          {getTimeAgo(user.createdAt)}
+          {getTimeAgo(user.createdAt.toDate().getTime())}
         </div>
         <div className="flex items-center gap-1">
           <Eye className="w-3 h-3" />

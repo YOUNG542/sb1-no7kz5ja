@@ -32,7 +32,7 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
     .filter(user => user.id !== currentUser.id)
     .sort((a, b) => {
       if (sortBy === 'newest') {
-        return b.timestamp - a.timestamp;
+        return b.createdAt.toMillis() - a.createdAt.toMillis();
       } else {
         const aPopularity = Object.values(a.reactions).flat().length;
         const bPopularity = Object.values(b.reactions).flat().length;
