@@ -344,7 +344,14 @@ function App() {
   };
 
   if (!uid) return <div>로그인 중...</div>;
-  if (!currentUser) return <ProfileSetup uid={uid} onComplete={handleProfileComplete} />;
+  if (!currentUser) {
+    return (
+      <>
+        <PwaPrompt /> {/* 🔥 안내문을 ProfileSetup 단계에서도 보여줌 */}
+        <ProfileSetup uid={uid} onComplete={handleProfileComplete} />
+      </>
+    );
+  }
 
   const pendingRequestCount = messageRequests.filter(
     (r) => r.status === 'pending' && r.toUserId === currentUser.id

@@ -30,14 +30,14 @@ export const PwaPrompt = () => {
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow z-50 text-sm">
       {platform === 'ios' && (
         <p>
-          사파리에서{' '}
-          <strong>공유 버튼 → "홈 화면에 추가"</strong>를 눌러주세요.
+          1. 오른쪽 아래에{' '}
+          <strong>공유 버튼 → "safari로 열기"</strong>를 눌러주세요. 2. safari에서 공유 버튼 누르고 '홈 화면에 추가'로 설치해주세요.
         </p>
       )}
       {platform === 'android' && (
         <p>
-          크롬 우측 상단의{' '}
-          <strong>⋮ 버튼 → "홈 화면에 추가"</strong>를 눌러주세요.
+          현재 계신 웹사이트에서{' '}
+          <strong>⋮ 모양과 같은 공유 버튼 → "홈 화면에 추가"</strong>로 설치해주세요.
         </p>
       )}
     </div>
