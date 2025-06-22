@@ -15,6 +15,8 @@ import { ChatList } from './components/ChatList';
 import { ChatRoom } from './components/ChatRoom';
 import { MessageRequestModal } from './components/MessageRequestModal';
 import { BottomNavigation } from './components/BottomNavigation';
+import { PwaPrompt } from './components/pwa'; // ✅ 추가된 부분
+
 import {
   User,
   MessageRequest,
@@ -35,7 +37,7 @@ import {
   updateChatRoom,
   getChatRoomsForUser,
 } from './firebase/firestore';
-import { doc, updateDoc } from 'firebase/firestore'; // 추가된 부분
+import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase/config';
 
 function App() {
@@ -48,43 +50,17 @@ function App() {
   const [selectedChatRoom, setSelectedChatRoom] = useState<string | null>(null);
   const [showMessageModal, setShowMessageModal] = useState<User | null>(null);
 
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-const [unreadMessageCount, setUnreadMessageCount] = useState(0); // 👈 추가
-const [unreadCountMap, setUnreadCountMap] = useState<Map<string, number>>(new Map()); // 👈 추가
-const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
-  [roomId: string]: {
-    lastMessage?: Message;
-    unreadCount: number;
-  };
-}>({});
-
-
-
-  const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-  const isAndroid = () => /android/.test(window.navigator.userAgent.toLowerCase());
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [unreadCountMap, setUnreadCountMap] = useState<Map<string, number>>(new Map());
+  const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
+    [roomId: string]: {
+      lastMessage?: Message;
+      unreadCount: number;
+    };
+  }>({});
 
   useEffect(() => {
     initAnonymousAuth().then(setUid).catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      if (isAndroid()) {
-        setShowInstallPrompt(true);
-      }
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-
-  useEffect(() => {
-    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
-    if (isIos() && !isInStandaloneMode) {
-      setShowInstallPrompt(true);
-    }
   }, []);
 
   useEffect(() => {
@@ -104,13 +80,12 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
 
   useEffect(() => {
     if (!currentUser) return;
-  
-    // ✅ chatRooms 실시간 구독
+
     const q = query(
       collection(db, 'chatRooms'),
       where('participants', 'array-contains', currentUser.id)
     );
-  
+
     const unsubscribeChatRooms = onSnapshot(q, (snapshot) => {
       const rooms: ChatRoomType[] = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -118,15 +93,14 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       }));
       setChatRooms(rooms);
     });
-  
-    // 기존 메시지 요청 구독
+
     const unsubscribeRequests = subscribeToMessageRequestsForUser(
       currentUser.id,
       setMessageRequests
     );
-  
+
     return () => {
-      unsubscribeChatRooms(); // 🔁 구독 해제
+      unsubscribeChatRooms();
       if (typeof unsubscribeRequests === 'function') {
         unsubscribeRequests();
       }
@@ -135,50 +109,44 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
 
   useEffect(() => {
     if (!currentUser || chatRooms.length === 0) return;
-  
+
     const unsubscribes: (() => void)[] = [];
-  
+
     chatRooms.forEach((room) => {
       const messagesRef = collection(db, 'chatRooms', room.id, 'messages');
-  
-      // ✅ 최신 메시지 1개만 실시간 감지
+
       const latestMessageQuery = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));
       const latestUnsub = onSnapshot(latestMessageQuery, (snapshot) => {
         const latestDoc = snapshot.docs[0];
         const lastMessage = latestDoc?.data() as Message | undefined;
-  
+
         setEnrichedChatRooms((prevState: any) => ({
-          ...prevState, // 이전 상태 복사
+          ...prevState,
           [room.id]: {
-            ...prevState[room.id], // 기존 데이터 유지
-            lastMessage,  // 최신 메시지 반영
-            unreadCount: unreadCountMap.get(room.id) || 0,  // unreadCountMap에서 해당 room의 unreadCount 값 가져오기
+            ...prevState[room.id],
+            lastMessage,
+            unreadCount: unreadCountMap.get(room.id) || 0,
           },
         }));
-        
-        
       });
-  
+
       unsubscribes.push(latestUnsub);
-  
-      // ✅ 안 읽은 메시지 수 실시간 감지
+
       const unreadQuery = query(
         messagesRef,
         where('to', '==', currentUser.id),
         where('isRead', '==', false)
       );
-  
+
       const unreadUnsub = onSnapshot(unreadQuery, (snapshot) => {
         const unreadCount = snapshot.size;
-  
-        // Set unread count into unreadCountMap (updated map)
+
         setUnreadCountMap((prevMap) => {
           const updatedMap = new Map(prevMap);
-          updatedMap.set(room.id, unreadCount); // Update the unread count for the room
+          updatedMap.set(room.id, unreadCount);
           return updatedMap;
         });
-  
-        // Also update enrichedChatRooms with the unreadCount
+
         setEnrichedChatRooms((prev) => ({
           ...prev,
           [room.id]: {
@@ -187,10 +155,10 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
           },
         }));
       });
-  
+
       unsubscribes.push(unreadUnsub);
     });
-  
+
     return () => {
       unsubscribes.forEach((unsub) => unsub());
     };
@@ -198,38 +166,34 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
 
   useEffect(() => {
     if (!currentUser || chatRooms.length === 0) return;
-  
+
     const unsubscribes: (() => void)[] = [];
     const countMap = new Map<string, number>();
-  
+
     chatRooms.forEach((room) => {
       const messagesRef = collection(db, 'chatRooms', room.id, 'messages');
-  
+
       const unreadQuery = query(
         messagesRef,
         where('to', '==', currentUser.id),
         where('isRead', '==', false)
       );
-  
+
       const unsubscribe = onSnapshot(unreadQuery, (snapshot) => {
         countMap.set(room.id, snapshot.size);
-  
-        // 🔁 모든 방의 총합 계산
         const total = Array.from(countMap.values()).reduce((a, b) => a + b, 0);
-        setUnreadMessageCount(total); // ⬅️ 이게 BottomNavigation으로 전달됨
+        setUnreadMessageCount(total);
       });
-  
+
       unsubscribes.push(unsubscribe);
     });
-  
+
     return () => {
       unsubscribes.forEach((unsub) => unsub());
     };
   }, [currentUser, chatRooms]);
-  
-  
-   // 채팅 데이터를 불러오는 함수
-   const loadChatData = () => {
+
+  const loadChatData = () => {
     if (!currentUser || chatRooms.length === 0) return;
 
     const unsubscribes: (() => void)[] = [];
@@ -246,8 +210,6 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
 
       const unsubscribe = onSnapshot(unreadQuery, (snapshot) => {
         countMap.set(room.id, snapshot.size);
-
-        // 모든 방의 총합 계산
         const total = Array.from(countMap.values()).reduce((a, b) => a + b, 0);
         setUnreadMessageCount(total);
       });
@@ -331,9 +293,7 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       participants: [request.fromUserId, request.toUserId],
       timestamp: Date.now(),
     };
-    await saveChatRoom(chatRoom); // ✅ messages 없이 저장
-    
-    // 🔥 메시지는 별도로 messages 서브컬렉션에 저장
+    await saveChatRoom(chatRoom);
     const firstMessage: Message = {
       id: `msg_${Date.now()}`,
       senderId: request.fromUserId,
@@ -343,7 +303,6 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       isRead: false,
     };
     await addDoc(collection(db, 'chatRooms', chatRoomId, 'messages'), firstMessage);
-    
     setChatRooms((prev) => [...prev, chatRoom]);
     const updatedUser = {
       ...currentUser,
@@ -371,7 +330,7 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
 
   const handleSendMessage = async (content: string) => {
     if (!selectedChatRoom || !currentUser || !otherUser) return;
-  
+
     const message: Message = {
       id: `msg_${Date.now()}`,
       senderId: currentUser.id,
@@ -380,10 +339,9 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
       timestamp: Date.now(),
       isRead: false,
     };
-  
-    await addDoc(collection(db, 'chatRooms', selectedChatRoom, 'messages'), message); // ✅ 서브컬렉션에 저장
+
+    await addDoc(collection(db, 'chatRooms', selectedChatRoom, 'messages'), message);
   };
-  
 
   if (!uid) return <div>로그인 중...</div>;
   if (!currentUser) return <ProfileSetup uid={uid} onComplete={handleProfileComplete} />;
@@ -409,6 +367,8 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
 
   return (
     <div className="min-h-screen">
+      <PwaPrompt /> {/* ✅ 새롭게 적용된 설치 안내 */}
+
       {currentScreen === 'feed' && (
         <ProfileFeed
           users={users}
@@ -434,19 +394,17 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
           currentUserId={currentUser.id}
           onSelectChat={setSelectedChatRoom}
           enrichedChatRooms={enrichedChatRooms}
-           setEnrichedChatRooms={setEnrichedChatRooms} // Passing the setEnrichedChatRooms function here
-   
+          setEnrichedChatRooms={setEnrichedChatRooms}
         />
       )}
 
-<BottomNavigation
-  currentScreen={currentScreen}
-  onScreenChange={setCurrentScreen}
-  messageRequestCount={pendingRequestCount}
-  unreadMessageCount={unreadMessageCount} // 👈 추가
-  loadChatData={loadChatData}  
-/>
-
+      <BottomNavigation
+        currentScreen={currentScreen}
+        onScreenChange={setCurrentScreen}
+        messageRequestCount={pendingRequestCount}
+        unreadMessageCount={unreadMessageCount}
+        loadChatData={loadChatData}
+      />
 
       {showMessageModal && (
         <MessageRequestModal
@@ -454,32 +412,6 @@ const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
           onSend={handleSendMessageRequest}
           onClose={() => setShowMessageModal(null)}
         />
-      )}
-
-      {showInstallPrompt && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow z-50">
-          {isAndroid() && deferredPrompt ? (
-            <button
-              onClick={async () => {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                  console.log('User accepted install');
-                } else {
-                  console.log('User dismissed install');
-                }
-                setDeferredPrompt(null);
-                setShowInstallPrompt(false);
-              }}
-            >
-              앱 설치하기
-            </button>
-          ) : isIos() ? (
-            <p>
-             오른쪽 아래 공유 버튼 → Safari로 열기 → 다시 공유 버튼 → 홈 화면에 추가!(앱 설치)
-            </p>
-          ) : null}
-        </div>
       )}
     </div>
   );
