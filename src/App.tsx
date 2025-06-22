@@ -3,7 +3,7 @@ declare global {
     standalone?: boolean;
   }
 }
-
+import { BackgroundAura } from './components/BackgroundAura';
 import { limit, orderBy } from 'firebase/firestore';
 import { onSnapshot, query, collection, where } from 'firebase/firestore';
 import { addDoc } from 'firebase/firestore';
@@ -16,7 +16,7 @@ import { ChatRoom } from './components/ChatRoom';
 import { MessageRequestModal } from './components/MessageRequestModal';
 import { BottomNavigation } from './components/BottomNavigation';
 import { PwaPrompt } from './components/pwa'; // ✅ 추가된 부분
-
+import { Intro } from './components/intro';
 import {
   User,
   MessageRequest,
@@ -49,6 +49,7 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('feed');
   const [selectedChatRoom, setSelectedChatRoom] = useState<string | null>(null);
   const [showMessageModal, setShowMessageModal] = useState<User | null>(null);
+  const [showIntro, setShowIntro] = useState(true);
 
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadCountMap, setUnreadCountMap] = useState<Map<string, number>>(new Map());
@@ -58,6 +59,13 @@ function App() {
       unreadCount: number;
     };
   }>({});
+
+  useEffect(() => {
+    const introSeen = localStorage.getItem('introSeen');
+    if (introSeen === 'true') {
+      setShowIntro(false); // 이미 봤다면 생략
+    }
+  }, []);
 
   // ✅ 새 버전 서비스워커 적용 시 자동 새로고침
   useEffect(() => {
@@ -231,6 +239,11 @@ function App() {
     };
   };
 
+  const handleIntroFinish = () => {
+    localStorage.setItem('introSeen', 'true');
+    setShowIntro(false);
+  };
+
   const handleProfileComplete = async (user: User) => {
     await saveUser(user);
     setCurrentUser(user);
@@ -352,6 +365,10 @@ function App() {
     await addDoc(collection(db, 'chatRooms', selectedChatRoom, 'messages'), message);
   };
 
+  if (showIntro) {
+    return <Intro onFinish={handleIntroFinish} />;
+  }
+
   if (!uid) return <div>로그인 중...</div>;
   if (!currentUser) {
     return (
@@ -382,9 +399,12 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen">
-      <PwaPrompt /> {/* ✅ 새롭게 적용된 설치 안내 */}
-
+    <div className="relative w-screen min-h-screen overflow-hidden">
+      <BackgroundAura /> {/* 🔥 오오라 배경 추가 */}
+  
+      {/* 기존 구조 그대로 유지 */}
+      <PwaPrompt />
+      
       {currentScreen === 'feed' && (
         <ProfileFeed
           users={users}
@@ -394,7 +414,7 @@ function App() {
           onRefresh={() => window.location.reload()}
         />
       )}
-
+  
       {currentScreen === 'requests' && (
         <MessageRequests
           requests={messageRequests.filter((r) => r.toUserId === currentUser.id)}
@@ -403,7 +423,7 @@ function App() {
           onReject={handleRejectRequest}
         />
       )}
-
+  
       {currentScreen === 'chat' && (
         <ChatList
           users={users}
@@ -413,7 +433,7 @@ function App() {
           setEnrichedChatRooms={setEnrichedChatRooms}
         />
       )}
-
+  
       <BottomNavigation
         currentScreen={currentScreen}
         onScreenChange={setCurrentScreen}
@@ -421,7 +441,7 @@ function App() {
         unreadMessageCount={unreadMessageCount}
         loadChatData={loadChatData}
       />
-
+  
       {showMessageModal && (
         <MessageRequestModal
           targetUser={showMessageModal}
