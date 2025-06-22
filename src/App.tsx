@@ -59,6 +59,15 @@ function App() {
     };
   }>({});
 
+  // ✅ 새 버전 서비스워커 적용 시 자동 새로고침
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
+  }, []);
+
   useEffect(() => {
     initAnonymousAuth().then(setUid).catch(console.error);
   }, []);
