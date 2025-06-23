@@ -56,7 +56,7 @@ export const ProfileScreen: React.FC = () => {
       await deleteDoc(doc(db, 'users', user.uid));
       alert('사용자 정보가 삭제되었습니다. 앱을 종료합니다.');
       window.close(); // 일부 브라우저에서는 동작하지 않을 수 있음
-    } catch (error) {d
+    } catch (error) {
       console.error('삭제 실패:', error);
       alert('❌ 삭제 중 문제가 발생했습니다.');
     }
