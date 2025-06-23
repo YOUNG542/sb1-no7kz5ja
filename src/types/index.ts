@@ -37,4 +37,4 @@ export interface Message {
 }
 
 
-export type Screen = 'setup' | 'feed' | 'chat' | 'requests';
+export type Screen = 'setup' | 'feed' | 'chat' | 'requests' | 'profile';

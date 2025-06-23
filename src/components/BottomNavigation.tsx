@@ -1,12 +1,12 @@
 import React from 'react';
-import { Users, MessageSquare, Bell } from 'lucide-react';
+import { Users, MessageSquare, Bell, User } from 'lucide-react'; // 🔹 User 아이콘 추가
 import { Screen } from '../types';
 
 interface BottomNavigationProps {
   currentScreen: Screen;
   onScreenChange: (screen: Screen) => void;
   messageRequestCount: number;
-  unreadMessageCount: number; // 🔹추가됨
+  unreadMessageCount: number;
   loadChatData: () => void;
 }
 
@@ -14,7 +14,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   currentScreen,
   onScreenChange,
   messageRequestCount,
-  unreadMessageCount, // 🔹추가됨
+  unreadMessageCount,
   loadChatData
 }) => {
   const navItems = [
@@ -33,7 +33,12 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       id: 'chat' as Screen,
       icon: MessageSquare,
       label: '채팅',
-      badge: unreadMessageCount // 🔹추가됨
+      badge: unreadMessageCount
+    },
+    {
+      id: 'profile' as Screen, // 🔹 추가
+      icon: User,              // 🔹 아이콘 추가
+      label: '프로필'           // 🔹 라벨 추가
     }
   ];
 
@@ -41,10 +46,9 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
     onScreenChange(screen);
 
     if (screen === 'chat') {
-      loadChatData(); // Call loadChatData when the chat screen is selected
+      loadChatData();
     }
   };
-
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-gray-200 px-4 py-2 safe-bottom">
@@ -52,11 +56,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentScreen === item.id;
-          
+
           return (
             <button
               key={item.id}
-              onClick={() => handleScreenChange(item.id)}  // Handle screen change here
+              onClick={() => handleScreenChange(item.id)}
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 relative ${
                 isActive 
                   ? 'text-pink-600 bg-pink-50' 

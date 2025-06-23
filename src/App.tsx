@@ -3,6 +3,8 @@ declare global {
     standalone?: boolean;
   }
 }
+import { ProfileScreen } from './components/ProfileScreen'; // ✅ 추가
+
 import { BackgroundAura } from './components/BackgroundAura';
 import { limit, orderBy } from 'firebase/firestore';
 import { onSnapshot, query, collection, where } from 'firebase/firestore';
@@ -440,6 +442,11 @@ function App() {
           setEnrichedChatRooms={setEnrichedChatRooms}
         />
       )}
+
+{currentScreen === 'profile' && (
+  <ProfileScreen />
+)}
+
   
       <BottomNavigation
         currentScreen={currentScreen}
