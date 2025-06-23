@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, Eye, MessageCircle, Clock } from 'lucide-react';
 import { User } from '../types';
+import AdBanner from './AdBanner'; // ✅ 광고 컴포넌트 import
 
 interface ProfileCardProps {
   user: User;
@@ -9,23 +10,24 @@ interface ProfileCardProps {
   currentUserId: string;
 }
 
-export const ProfileCard: React.FC<ProfileCardProps> = ({ 
-  user, 
-  onReact, 
-  onMessageRequest, 
-  currentUserId 
+export const ProfileCard: React.FC<ProfileCardProps> = ({
+  user,
+  onReact,
+  onMessageRequest,
+  currentUserId
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  const [showAd, setShowAd] = useState(false); // ✅ 광고 표시 여부
 
   const reactions = ['❤️', '👀', '😊', '🔥', '✨'];
-  
+
   const getTimeAgo = (timestamp: number) => {
     const now = Date.now();
     const diff = now - timestamp;
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
-    
+
     if (hours > 0) return `${hours}시간 전`;
     if (minutes > 0) return `${minutes}분 전`;
     return '방금 전';
@@ -37,6 +39,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     setTimeout(() => setSelectedEmoji(null), 600);
   };
 
+  const handleMessageRequest = () => {
+    onMessageRequest(user.id);
+    setShowAd(true); // ✅ 메시지 클릭 후 광고 표시
+  };
+
   const getReactionCount = (emoji: string) => {
     return user.reactions[emoji]?.length || 0;
   };
@@ -46,7 +53,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   };
 
   return (
-    <div 
+    <div
       className={`bg-white rounded-2xl shadow-lg border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
         isHovered ? 'transform-gpu' : ''
       }`}
@@ -82,14 +89,14 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           {reactions.map((emoji) => {
             const count = getReactionCount(emoji);
             const userReacted = hasUserReacted(emoji);
-            
+
             return (
               <button
                 key={emoji}
                 onClick={() => handleReaction(emoji)}
                 className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-all duration-200 ${
-                  userReacted 
-                    ? 'bg-pink-100 text-pink-600 scale-110' 
+                  userReacted
+                    ? 'bg-pink-100 text-pink-600 scale-110'
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                 } ${selectedEmoji === emoji ? 'animate-bounce' : ''}`}
               >
@@ -101,13 +108,20 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         </div>
 
         <button
-          onClick={() => onMessageRequest(user.id)}
+          onClick={handleMessageRequest}
           className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 py-2 rounded-xl font-medium hover:from-pink-600 hover:to-red-600 transition-all duration-200 flex items-center gap-2 text-sm"
         >
           <MessageCircle className="w-4 h-4" />
           메시지
         </button>
       </div>
+
+      {/* ✅ 광고 삽입 위치 */}
+      {showAd && (
+        <div className="mt-6">
+          <AdBanner />
+        </div>
+      )}
     </div>
   );
 };
