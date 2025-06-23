@@ -41,8 +41,10 @@ import {
 } from './firebase/firestore';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase/config';
+import GenderNoticeModal from './components/GenderNoticeModal';
 
 function App() {
+  const [showGenderNotice, setShowGenderNotice] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -61,6 +63,13 @@ function App() {
       unreadCount: number;
     };
   }>({});
+
+  useEffect(() => {
+    const seen = localStorage.getItem('genderNoticeSeen');
+    if (!seen) {
+      setShowGenderNotice(true);
+    }
+  }, []);
 
   useEffect(() => {
     const introSeen = localStorage.getItem('introSeen');
@@ -157,6 +166,12 @@ function App() {
       });
 
       unsubscribes.push(latestUnsub);
+
+      const handleCloseNotice = () => {
+        localStorage.setItem('genderNoticeSeen', 'true');
+        setShowGenderNotice(false);
+      };
+    
 
       const unreadQuery = query(
         messagesRef,
@@ -463,6 +478,16 @@ function App() {
           onClose={() => setShowMessageModal(null)}
         />
       )}
+
+       {/* ✅ 여기! 성별 알림 모달 */}
+    {showGenderNotice && (
+      <GenderNoticeModal
+        onClose={() => {
+          localStorage.setItem('genderNoticeSeen', 'true');
+          setShowGenderNotice(false);
+        }}
+      />
+    )}
     </div>
   );
 }
