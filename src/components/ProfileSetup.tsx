@@ -11,21 +11,21 @@ interface ProfileSetupProps {
 export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) => {
   const [nickname, setNickname] = useState('');
   const [intro, setIntro] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | ''>(''); // 🔥 성별 상태 추가
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nickname.trim() || !intro.trim()) return;
+    if (!nickname.trim() || !intro.trim() || !gender) return;
 
     setIsLoading(true);
-    
-    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const newUser: User = {
-      id: uid, // ✅ 여기서 UID 사용
+      id: uid,
       nickname: nickname.trim(),
       intro: intro.trim(),
+      gender, // 🔥 성별 저장
       createdAt: Timestamp.fromDate(new Date()),
       reactions: {},
       messageRequestCount: 0
@@ -47,6 +47,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
 
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-white/20 backdrop-blur-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 닉네임 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 닉네임
@@ -66,6 +67,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
               </div>
             </div>
 
+            {/* 한줄소개 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 한 줄 소개
@@ -85,9 +87,40 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
               </div>
             </div>
 
+            {/* 성별 선택 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                성별
+              </label>
+              <div className="flex gap-3">
+                {[
+                  { label: '남자', value: 'male' },
+                  { label: '여자', value: 'female' }
+                ].map(({ label, value }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setGender(value as 'male' | 'female')}
+                    className={`w-full py-2 rounded-xl font-semibold border transition-all duration-200 ${
+                      gender === value
+                        ? 'bg-pink-500 text-white border-pink-500'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-pink-400'
+                    }`}
+                    disabled={isLoading}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {gender === '' && (
+                <p className="text-xs text-red-500 mt-1">성별을 선택해주세요</p>
+              )}
+            </div>
+
+            {/* 제출 버튼 */}
             <button
               type="submit"
-              disabled={!nickname.trim() || !intro.trim() || isLoading}
+              disabled={!nickname.trim() || !intro.trim() || !gender || isLoading}
               className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-3 px-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-pink-600 hover:to-red-600 transition-all duration-200 flex items-center justify-center gap-2"
             >
               {isLoading ? (
@@ -102,7 +135,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
           </form>
 
           <div className="mt-6 text-center text-xs text-gray-500">
-            <p>💡 닉네임과 한 줄 소개만으로 새로운 인연을 만나보세요</p>
+            <p>💡 닉네임과 한 줄 소개, 성별 선택만으로 새로운 인연을 만나보세요</p>
           </div>
         </div>
       </div>

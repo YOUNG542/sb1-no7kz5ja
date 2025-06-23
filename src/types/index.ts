@@ -4,6 +4,7 @@ export interface User {
   id: string;
   nickname: string;
   intro: string;
+  gender: 'male' | 'female';
   createdAt: Timestamp;
   reactions: Record<string, string[]>; // emoji -> user IDs
   messageRequestCount: number;

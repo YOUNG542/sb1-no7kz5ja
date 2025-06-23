@@ -29,16 +29,27 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
   };
 
   const filteredUsers = users
-    .filter(user => user.id !== currentUser.id)
-    .sort((a, b) => {
-      if (sortBy === 'newest') {
-        return b.createdAt.toMillis() - a.createdAt.toMillis();
-      } else {
-        const aPopularity = Object.values(a.reactions).flat().length;
-        const bPopularity = Object.values(b.reactions).flat().length;
-        return bPopularity - aPopularity;
-      }
-    });
+  .filter(user => {
+    // 1. 나 자신 제외
+    if (user.id === currentUser.id) return false;
+
+    // 2. 성별이 없는 유저는 제외
+    if (!user.gender || !currentUser.gender) return false;
+
+    // 3. 성별이 같으면 제외
+    if (user.gender === currentUser.gender) return false;
+
+    return true;
+  })
+  .sort((a, b) => {
+    if (sortBy === 'newest') {
+      return b.createdAt.toMillis() - a.createdAt.toMillis();
+    } else {
+      const aPopularity = Object.values(a.reactions).flat().length;
+      const bPopularity = Object.values(b.reactions).flat().length;
+      return bPopularity - aPopularity;
+    }
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-red-50">
