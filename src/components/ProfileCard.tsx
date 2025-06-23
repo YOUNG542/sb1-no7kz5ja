@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Heart, Eye, MessageCircle, Clock } from 'lucide-react';
 import { User } from '../types';
-import AdBanner from './AdBanner'; // ✅ 광고 컴포넌트 import
+import AdBanner from './AdBanner';
 
 interface ProfileCardProps {
   user: User;
@@ -18,7 +18,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-  const [showAd, setShowAd] = useState(false); // ✅ 광고 표시 여부
+  const [showAd, setShowAd] = useState(false);
 
   const reactions = ['❤️', '👀', '😊', '🔥', '✨'];
 
@@ -27,7 +27,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     const diff = now - timestamp;
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
-
     if (hours > 0) return `${hours}시간 전`;
     if (minutes > 0) return `${minutes}분 전`;
     return '방금 전';
@@ -41,7 +40,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   const handleMessageRequest = () => {
     onMessageRequest(user.id);
-    setShowAd(true); // ✅ 메시지 클릭 후 광고 표시
+    setShowAd(true);
   };
 
   const getReactionCount = (emoji: string) => {
@@ -50,6 +49,18 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   const hasUserReacted = (emoji: string) => {
     return user.reactions[emoji]?.includes(currentUserId) || false;
+  };
+
+  const getGenderLabel = (gender: 'male' | 'female' | undefined) => {
+    if (gender === 'male') return '👨 남성';
+    if (gender === 'female') return '👩 여성';
+    return '';
+  };
+
+  const getGenderBadgeClass = (gender: 'male' | 'female' | undefined) => {
+    if (gender === 'male') return 'bg-blue-100 text-blue-600';
+    if (gender === 'female') return 'bg-pink-100 text-pink-600';
+    return 'bg-gray-100 text-gray-500';
   };
 
   return (
@@ -62,7 +73,12 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{user.nickname}</h3>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-xl font-bold text-gray-900">{user.nickname}</h3>
+            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getGenderBadgeClass(user.gender)}`}>
+              {getGenderLabel(user.gender)}
+            </span>
+          </div>
           <p className="text-gray-700 leading-relaxed">{user.intro}</p>
         </div>
         {user.messageRequestCount > 0 && (
@@ -89,7 +105,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           {reactions.map((emoji) => {
             const count = getReactionCount(emoji);
             const userReacted = hasUserReacted(emoji);
-
             return (
               <button
                 key={emoji}
@@ -116,7 +131,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         </button>
       </div>
 
-      {/* ✅ 광고 삽입 위치 */}
       {showAd && (
         <div className="mt-6">
           <AdBanner />
