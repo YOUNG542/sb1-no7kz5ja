@@ -393,7 +393,7 @@ function App() {
     const month = now.getMonth() + 1;
   
     const startOfMonth = new Date(year, month - 1, 1);
-    const startTimestamp = Timestamp.fromDate(startOfMonth); // Date.now()가 아니라 Firestore Timestamp 사용
+    const startTimestamp = startOfMonth.getTime(); // ✅ 핵심 수정: 숫자형으로
   
     const q = query(
       collection(db, 'messageRequests'),
@@ -408,6 +408,7 @@ function App() {
       console.error('❌ 이번 달 메시지 요청 수 계산 실패:', err);
     }
   };
+  
 
   const handleRejectRequest = async (requestId: string) => {
     const request = messageRequests.find((r) => r.id === requestId);
