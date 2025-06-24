@@ -4,6 +4,7 @@ declare global {
   }
 }
 import { ProfileScreen } from './components/ProfileScreen'; // ✅ 추가
+import { getCountFromServer } from 'firebase/firestore'; // 🔥 총 개수 계산용
 
 import { BackgroundAura } from './components/BackgroundAura';
 import { limit, orderBy } from 'firebase/firestore';
@@ -270,6 +271,23 @@ function App() {
       unsubscribes.forEach((unsub) => unsub());
     };
   };
+
+  // ✅ 여기에 추가하세요
+  const logTotalMessageRequestCount = async () => {
+    const q = collection(db, 'messageRequests');
+    try {
+      const snapshot = await getCountFromServer(q);
+      const count = snapshot.data().count;
+      console.log(`📊 총 누적 메시지 요청 수: ${count}`);
+    } catch (err) {
+      console.error('❌ 메시지 요청 수 계산 실패:', err);
+    }
+  };
+
+  // ✅ 앱 시작 시 1회 실행: 운영자 콘솔에 수치 출력됨
+  useEffect(() => {
+    logTotalMessageRequestCount();
+  }, []);
 
   const handleIntroFinish = () => {
     localStorage.setItem('introSeen', 'true');
