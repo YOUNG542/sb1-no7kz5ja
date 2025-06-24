@@ -110,8 +110,16 @@ function App() {
   }, [uid]);
 
   useEffect(() => {
-    getAllUsers().then(setUsers).catch(console.error);
+    getAllUsers()
+      .then((users) => {
+        console.log(`📦 총 ${users.length}명의 유저를 Firestore에서 읽었습니다.`);
+        setUsers(users);
+      })
+      .catch((err) => {
+        console.error('❌ Firestore read 실패:', err);
+      });
   }, []);
+  
 
   useEffect(() => {
     if (!currentUser) return;
