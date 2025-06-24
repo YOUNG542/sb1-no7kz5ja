@@ -3,6 +3,7 @@ declare global {
     standalone?: boolean;
   }
 }
+import { Timestamp } from 'firebase/firestore'; 
 import { ProfileScreen } from './components/ProfileScreen'; // ✅ 추가
 import { getCountFromServer } from 'firebase/firestore'; // 🔥 총 개수 계산용
 
@@ -287,6 +288,7 @@ function App() {
   // ✅ 앱 시작 시 1회 실행: 운영자 콘솔에 수치 출력됨
   useEffect(() => {
     logTotalMessageRequestCount();
+    logMonthlyMessageRequestCount();
   }, []);
 
   const handleIntroFinish = () => {
@@ -383,6 +385,28 @@ function App() {
     updateUser(updatedUser);
     setCurrentUser(updatedUser);
     setUsers((prev) => prev.map((u) => (u.id === currentUser.id ? updatedUser : u)));
+  };
+
+  const logMonthlyMessageRequestCount = async () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+  
+    const startOfMonth = new Date(year, month - 1, 1);
+    const startTimestamp = Timestamp.fromDate(startOfMonth); // Date.now()가 아니라 Firestore Timestamp 사용
+  
+    const q = query(
+      collection(db, 'messageRequests'),
+      where('timestamp', '>=', startTimestamp)
+    );
+  
+    try {
+      const snapshot = await getCountFromServer(q);
+      const count = snapshot.data().count;
+      console.log(`📆 [${year}년 ${month}월] 메시지 요청 수 (광고 노출 수): ${count}건`);
+    } catch (err) {
+      console.error('❌ 이번 달 메시지 요청 수 계산 실패:', err);
+    }
   };
 
   const handleRejectRequest = async (requestId: string) => {
