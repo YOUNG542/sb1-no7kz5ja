@@ -134,24 +134,30 @@ useEffect(() => {
       });
     };
 
-  const handleDeleteComment = async (postId: string, idx: number) => {
-    const postRef = doc(db, 'posts', postId);
-    const post = posts.find((p) => p.id === postId);
-    if (!post || !post.comments) return;
+    const handleDeleteComment = async (postId: string, idx: number) => {
+      const postRef = doc(db, 'posts', postId);
+      const post = posts.find((p) => p.id === postId);
+      if (!post || !post.comments) return;
+    
+      const targetComment = post.comments[idx];
+      if (!targetComment || targetComment.userId !== userId) return; // 🔒 본인 댓글이 아니면 차단
+    
+      const updatedComments = post.comments.filter((_, i) => i !== idx);
+      await updateDoc(postRef, { comments: updatedComments });
+    };
   
-    const updatedComments = post.comments.filter((_, i) => i !== idx);
-    await updateDoc(postRef, { comments: updatedComments });
-  };
-  
-  const handleEditComment = async (postId: string, idx: number, newText: string) => {
-    const postRef = doc(db, 'posts', postId);
-    const post = posts.find((p) => p.id === postId);
-    if (!post || !post.comments) return;
-  
-    const updatedComments = [...post.comments];
-    updatedComments[idx].text = newText;
-    await updateDoc(postRef, { comments: updatedComments });
-  };
+    const handleEditComment = async (postId: string, idx: number, newText: string) => {
+      const postRef = doc(db, 'posts', postId);
+      const post = posts.find((p) => p.id === postId);
+      if (!post || !post.comments) return;
+    
+      const targetComment = post.comments[idx];
+      if (!targetComment || targetComment.userId !== userId) return; // 🔒 본인 댓글이 아니면 차단
+    
+      const updatedComments = [...post.comments];
+      updatedComments[idx].text = newText;
+      await updateDoc(postRef, { comments: updatedComments });
+    };
 
   return (
     <div className="p-4">
