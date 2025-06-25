@@ -43,9 +43,9 @@ import {
   updateChatRoom,
   getChatRoomsForUser,
 } from './firebase/firestore';
-import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase/config';
 import GenderNoticeModal from './components/GenderNoticeModal';
+import { incrementDailyMessageRequest } from './components/incrementDailyMessageRequest';
 
 function App() {
   const [showGenderNotice, setShowGenderNotice] = useState(false);
@@ -368,6 +368,7 @@ function App() {
       timestamp: Date.now(),
     };
     await saveMessageRequest(request);
+    await incrementDailyMessageRequest();
     setMessageRequests((prev) => [...prev, request]);
     const updatedUsers = users.map((user) => {
       if (user.id === showMessageModal.id) {
