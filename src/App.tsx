@@ -69,6 +69,8 @@ function App() {
       participants: string[];
     };
   }>({});
+  const [showRoomNotice, setShowRoomNotice] = useState(false);
+
 
   useEffect(() => {
     const seen = localStorage.getItem('genderNoticeSeen');
@@ -104,6 +106,15 @@ function App() {
   useEffect(() => {
     initAnonymousAuth().then(setUid).catch(console.error);
   }, []);
+
+  useEffect(() => {
+    const seen = localStorage.getItem('roomNoticeSeen');
+    if (!seen) {
+      setShowRoomNotice(true);
+      localStorage.setItem('roomNoticeSeen', 'true');
+    }
+  }, []);
+  
 
   useEffect(() => {
     if (!uid) return;
@@ -539,6 +550,43 @@ function App() {
     </button>
   </div>
 )}
+
+{showRoomNotice && (
+  <div className="fixed top-[72px] left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-md bg-white/80 backdrop-blur-md border border-red-300 text-red-800 px-6 py-4 rounded-2xl shadow-lg animate-fade-in">
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-3">
+        <div className="mt-1 text-red-500">
+          <svg
+            className="w-5 h-5 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v2m0 4h.01M5.07 19H18.93A2.07 2.07 0 0021 16.93L12 3 3 16.93A2.07 2.07 0 005.07 19z"
+            />
+          </svg>
+        </div>
+        <div className="text-sm leading-snug">
+          <p className="font-semibold">채팅방 오류 안내</p>
+          <p className="mt-1">
+            최근 채팅방 생성 기능에 일시적인 오류가 있었으나, 현재는 모두 정상 작동합니다.
+          </p>
+        </div>
+      </div>
+      <button
+        onClick={() => setShowRoomNotice(false)}
+        className="text-sm text-red-500 hover:underline mt-1"
+      >
+        닫기
+      </button>
+    </div>
+  </div>
+)}
+
   
       {/* 아래 기존 화면 전환 로직들 */}
       {currentScreen === 'feed' && (
