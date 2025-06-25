@@ -4,7 +4,7 @@ declare global {
   }
 }
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-
+import { PostFeed } from './components/PostFeed';
 import { trackDAU } from './components/trackDAU';
 import { Timestamp } from 'firebase/firestore'; 
 import { ProfileScreen } from './components/ProfileScreen'; // ✅ 추가
@@ -510,6 +510,10 @@ function App() {
           onRefresh={() => window.location.reload()}
         />
       )}
+
+{currentScreen === 'posts' && (
+  <PostFeed />
+)}
   
       {currentScreen === 'requests' && (
         <MessageRequests

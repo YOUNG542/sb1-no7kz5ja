@@ -1,5 +1,11 @@
 import React from 'react';
-import { Users, MessageSquare, Bell, User } from 'lucide-react'; // 🔹 User 아이콘 추가
+import {
+  Users,
+  MessageSquare,
+  Bell,
+  User,
+  Image // ✅ 포스트 탭용 아이콘 추가
+} from 'lucide-react';
 import { Screen } from '../types';
 
 interface BottomNavigationProps {
@@ -24,6 +30,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       label: '둘러보기'
     },
     {
+      id: 'posts' as Screen, // ✅ 포스트 탭 추가
+      icon: Image,
+      label: '포스트'
+    },
+    {
       id: 'requests' as Screen,
       icon: Bell,
       label: '알림',
@@ -36,9 +47,9 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       badge: unreadMessageCount
     },
     {
-      id: 'profile' as Screen, // 🔹 추가
-      icon: User,              // 🔹 아이콘 추가
-      label: '프로필'           // 🔹 라벨 추가
+      id: 'profile' as Screen,
+      icon: User,
+      label: '프로필'
     }
   ];
 
@@ -62,8 +73,8 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
               key={item.id}
               onClick={() => handleScreenChange(item.id)}
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 relative ${
-                isActive 
-                  ? 'text-pink-600 bg-pink-50' 
+                isActive
+                  ? 'text-pink-600 bg-pink-50'
                   : 'text-gray-600 hover:text-pink-600 hover:bg-pink-50'
               }`}
             >
