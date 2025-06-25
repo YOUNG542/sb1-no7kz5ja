@@ -66,25 +66,66 @@ useEffect(() => {
   }, [userId]);
 
   const handleLike = async (postId: string) => {
-    if (userReactionMap[postId] === 'like') return; // 중복 방지
-
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+  
     const ref = doc(db, 'posts', postId);
-    await updateDoc(ref, {
-      likes: increment(1),
+    const currentReaction = userReactionMap[postId];
+  
+    if (currentReaction === 'like') return; // ✅ 이미 좋아요 누름
+  
+    const updates: any = {
       reactions: arrayUnion({ userId, type: 'like' }),
-    });
-  };
-
-  const handleDislike = async (postId: string) => {
-    if (userReactionMap[postId] === 'dislike') return; // 중복 방지
-
-    const ref = doc(db, 'posts', postId);
+    };
+  
+    if (currentReaction === 'dislike') {
+      // 싫어요 취소하고 좋아요로 전환
+      updates.likes = increment(1);
+      updates.dislikes = increment(-1);
+      updates.reactionsToRemove = { userId, type: 'dislike' };
+    } else {
+      // 순수 좋아요
+      updates.likes = increment(1);
+    }
+  
+    // 먼저 기존 reactions에서 제거 (Firestore에서는 수동으로)
+    const newReactions = post.reactions?.filter(r => !(r.userId === userId)) || [];
     await updateDoc(ref, {
-      dislikes: increment(1),
-      reactions: arrayUnion({ userId, type: 'dislike' }),
+      ...updates,
+      reactions: [...newReactions, { userId, type: 'like' }]
     });
   };
-
+  
+  const handleDislike = async (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+  
+    const ref = doc(db, 'posts', postId);
+    const currentReaction = userReactionMap[postId];
+  
+    if (currentReaction === 'dislike') return; // ✅ 이미 싫어요 누름
+  
+    const updates: any = {
+      reactions: arrayUnion({ userId, type: 'dislike' }),
+    };
+  
+    if (currentReaction === 'like') {
+      // 좋아요 취소하고 싫어요로 전환
+      updates.likes = increment(-1);
+      updates.dislikes = increment(1);
+    } else {
+      // 순수 싫어요
+      updates.dislikes = increment(1);
+    }
+  
+    // 기존 reactions 배열에서 userId 제거 후 새로 추가
+    const newReactions = post.reactions?.filter(r => !(r.userId === userId)) || [];
+    await updateDoc(ref, {
+      ...updates,
+      reactions: [...newReactions, { userId, type: 'dislike' }]
+    });
+  };
+  
     // ✅ 댓글 작성 시 닉네임 사용
     const handleComment = async (postId: string, text: string) => {
       const ref = doc(db, 'posts', postId);
