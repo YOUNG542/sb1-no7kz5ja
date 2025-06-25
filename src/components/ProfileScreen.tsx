@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { getAuth } from 'firebase/auth';
-
+import { ComplaintForm } from './ComplaintForm';
 export const ProfileScreen: React.FC = () => {
   const auth = getAuth();
   const user = auth.currentUser;
@@ -12,7 +12,7 @@ export const ProfileScreen: React.FC = () => {
   const [genderSet, setGenderSet] = useState(false); // 🔥 추가
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
-
+  const [showComplaint, setShowComplaint] = useState(false);
   useEffect(() => {
     if (user) {
       const fetchProfile = async () => {
@@ -63,6 +63,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   if (loading) return <div className="p-4 text-center">불러오는 중...</div>;
+  if (showComplaint) return <ComplaintForm onBack={() => setShowComplaint(false)} />;
 
   return (
     <div className="p-4 max-w-md mx-auto">
@@ -126,6 +127,15 @@ export const ProfileScreen: React.FC = () => {
       >
         정보 삭제
       </button>
+
+       {/* 불만사항 버튼 */}
+       <button
+        onClick={() => setShowComplaint(true)}
+        className="w-full mt-3 bg-yellow-300 text-black py-2 rounded-lg font-semibold hover:bg-yellow-400 transition"
+      >
+        불만사항 제출하기
+      </button>
+
 
       {/* 메시지 */}
       {message && <p className="mt-4 text-center text-sm">{message}</p>}
