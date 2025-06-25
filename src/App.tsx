@@ -11,8 +11,8 @@ import { getCountFromServer } from 'firebase/firestore'; // 🔥 총 개수 계�
 import { getDAUForDates } from './components/checkDAU';
 import { BackgroundAura } from './components/BackgroundAura';
 import { limit, orderBy } from 'firebase/firestore';
-import { onSnapshot, query, collection, where } from 'firebase/firestore';
-import { addDoc } from 'firebase/firestore';
+import { onSnapshot, query, where } from 'firebase/firestore';
+
 import React, { useState, useEffect } from 'react';
 import { ProfileSetup } from './components/ProfileSetup';
 import { ProfileFeed } from './components/ProfileFeed';
@@ -46,6 +46,7 @@ import {
 import { db } from './firebase/config';
 import GenderNoticeModal from './components/GenderNoticeModal';
 import { incrementDailyMessageRequest } from './components/incrementDailyMessageRequest';
+import { addDoc, collection, doc, updateDoc, increment } from 'firebase/firestore';
 
 function App() {
   const [showGenderNotice, setShowGenderNotice] = useState(false);
@@ -456,17 +457,31 @@ function App() {
 
   const handleSendMessage = async (content: string) => {
     if (!selectedChatRoom || !currentUser || !otherUser) return;
-
+  
+    const now = Date.now();
+  
     const message: Message = {
-      id: `msg_${Date.now()}`,
+      id: `msg_${now}`,
       senderId: currentUser.id,
       to: otherUser.id,
       content,
-      timestamp: Date.now(),
+      timestamp: now,
       isRead: false,
     };
-
+  
+    // 1. 메시지 저장 (기존과 동일)
     await addDoc(collection(db, 'chatRooms', selectedChatRoom, 'messages'), message);
+  
+    // 2. chatRooms/{roomId} 문서에 최신 메시지 및 안 읽은 수 업데이트
+    const chatRoomRef = doc(db, 'chatRooms', selectedChatRoom);
+    await updateDoc(chatRoomRef, {
+      lastMessage: {
+        content,
+        timestamp: now,
+        senderId: currentUser.id,
+      },
+      [`unreadCounts.${otherUser.id}`]: increment(1),
+    });
   };
 
   if (showIntro) {

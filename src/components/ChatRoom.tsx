@@ -12,6 +12,13 @@ interface ChatRoomProps {
   onSendMessage: (content: string) => void;
 }
 
+const resetUnreadCount = async (roomId: string, userId: string) => {
+  const chatRoomRef = doc(db, 'chatRooms', roomId);
+  await updateDoc(chatRoomRef, {
+    [`unreadCounts.${userId}`]: 0,
+  });
+};
+
 export const ChatRoom: React.FC<ChatRoomProps> = ({
   roomId,
   currentUser,
@@ -85,6 +92,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (!roomId || !currentUser?.id) return;
+    resetUnreadCount(roomId, currentUser.id);
+  }, [roomId, currentUser?.id]);
 
   useEffect(() => {
     // 키보드 올라올 때 입력창이 안 가려지게 자동 스크롤

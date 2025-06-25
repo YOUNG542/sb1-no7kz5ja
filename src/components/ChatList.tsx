@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, limit, DocumentSnapshot, QuerySnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy, limit, DocumentSnapshot, QuerySnapshot } from 'firebase/firestore';
 import { MessageSquare, Clock, RefreshCcw } from 'lucide-react';
 import { db } from '../firebase/config';
 import { ChatRoom, User, Message } from '../types';
@@ -37,34 +37,22 @@ export const ChatList: React.FC<ChatListProps> = ({
 
   useEffect(() => {
     const roomsRef = collection(db, 'chatRooms');
+    const q = query(roomsRef, where('participants', 'array-contains', currentUserId));
   
-    const unsubscribe = onSnapshot(roomsRef, (snapshot: QuerySnapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const updatedChatRooms: any = {};
   
-      snapshot.forEach((doc: DocumentSnapshot) => {
-        const roomData = doc.data();
-        if (!roomData) return;
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (!data) return;
   
-        const lastMessageRef = collection(db, 'chatRooms', doc.id, 'messages');
-        const latestMessageQuery = query(lastMessageRef, orderBy('timestamp', 'desc'), limit(1));
-  
-        onSnapshot(latestMessageQuery, (messageSnapshot: QuerySnapshot) => {
-          const lastMessageDoc = messageSnapshot.docs[0];
-          const lastMessage = lastMessageDoc ? lastMessageDoc.data() : null;
-  
-          updatedChatRooms[doc.id] = {
-            lastMessage: lastMessage,
-            unreadCount: roomData.unreadCount || 0,
-          };
-  
-          setEnrichedChatRooms((prevState: any) => ({
-            ...prevState, // 이전 상태 유지
-            [doc.id]: updatedChatRooms[doc.id], // 현재 방에 대한 업데이트만 반영
-          }));
-        });
+        updatedChatRooms[doc.id] = {
+          lastMessage: data.lastMessage || null,
+          unreadCount: data.unreadCounts?.[currentUserId] || 0,
+        };
       });
   
-      return () => unsubscribe();
+      setEnrichedChatRooms(updatedChatRooms);
     });
   
     return () => unsubscribe();
