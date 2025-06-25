@@ -3,6 +3,7 @@ declare global {
     standalone?: boolean;
   }
 }
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 import { trackDAU } from './components/trackDAU';
 import { Timestamp } from 'firebase/firestore'; 
@@ -225,8 +226,15 @@ function App() {
   }, [currentUser, chatRooms]);
 
   useEffect(() => {
-    trackDAU(); // ✅ 앱 시작 시 DAU 기록
+    const unsubscribe = onAuthStateChanged(getAuth(), (user) => {
+      if (user) {
+        console.log('🔥 DAU 기록 시작:', user.uid);
+        trackDAU();
+      }
+    });
+    return () => unsubscribe();
   }, []);
+  
 
   useEffect(() => {
     if (!currentUser || chatRooms.length === 0) return;
