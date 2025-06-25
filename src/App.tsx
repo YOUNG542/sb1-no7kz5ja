@@ -6,7 +6,6 @@ declare global {
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { PostFeed } from './components/PostFeed';
 import { trackDAU } from './components/trackDAU';
-import { Timestamp } from 'firebase/firestore'; 
 import { ProfileScreen } from './components/ProfileScreen'; // ✅ 추가
 import { getCountFromServer } from 'firebase/firestore'; // 🔥 총 개수 계산용
 import { getDAUForDates } from './components/checkDAU';

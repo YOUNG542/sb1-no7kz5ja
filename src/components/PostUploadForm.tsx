@@ -4,7 +4,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../firebase/config';
 import { storage } from '../firebase/config';
 import { getAuth } from 'firebase/auth';
-
+import { getDoc, doc } from 'firebase/firestore'; // 추가
 export const PostUploadForm: React.FC = () => {
   const [content, setContent] = useState('');
   const [images, setImages] = useState<FileList | null>(null);
@@ -32,13 +32,23 @@ export const PostUploadForm: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!user || !content.trim()) return;
-
+  
     setIsSubmitting(true);
     try {
       const imageUrls = await uploadImages();
+  
+      // 🔽 Firestore에서 nickname 가져오기
+      let nickname = '익명';
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        nickname = userSnap.data().nickname || '익명';
+      }
+  
+      // 🔽 Firestore에 포스트 저장
       await addDoc(collection(db, 'posts'), {
         user: {
-          nickname: user.displayName || '익명',
+          nickname,
         },
         userId: user.uid,
         content,
@@ -49,7 +59,7 @@ export const PostUploadForm: React.FC = () => {
         comments: [],
         createdAt: Timestamp.now(),
       });
-
+  
       setContent('');
       setImages(null);
       alert('게시 완료!');

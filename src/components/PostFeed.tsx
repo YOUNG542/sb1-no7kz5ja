@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { PostUploadForm } from './PostUploadForm';
-
+import { getDoc } from 'firebase/firestore';
 interface PostData {
     id: string;
     user: { nickname: string };
@@ -26,8 +26,24 @@ interface PostData {
 export const PostFeed: React.FC = () => {
     const [posts, setPosts] = useState<PostData[]>([]);
   const [userReactionMap, setUserReactionMap] = useState<Record<string, 'like' | 'dislike' | null>>({});
+  const [userNickname, setUserNickname] = useState('익명'); // ✅ 닉네임 상태 추가
+
   const auth = getAuth();
   const userId = auth.currentUser?.uid || 'anonymous';
+
+// ✅ 닉네임 불러오기 useEffect
+useEffect(() => {
+  const fetchNickname = async () => {
+    if (userId === 'anonymous') return;
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const nickname = userSnap.data().nickname;
+      setUserNickname(nickname);
+    }
+  };
+  fetchNickname();
+}, [userId]);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'posts'), (snapshot) => {
@@ -69,12 +85,13 @@ export const PostFeed: React.FC = () => {
     });
   };
 
-  const handleComment = async (postId: string, text: string) => {
-    const ref = doc(db, 'posts', postId);
-    await updateDoc(ref, {
-      comments: arrayUnion({ user: userId, userId, text }), 
-    });
-  };
+    // ✅ 댓글 작성 시 닉네임 사용
+    const handleComment = async (postId: string, text: string) => {
+      const ref = doc(db, 'posts', postId);
+      await updateDoc(ref, {
+        comments: arrayUnion({ user: userNickname, userId, text }),
+      });
+    };
 
   const handleDeleteComment = async (postId: string, idx: number) => {
     const postRef = doc(db, 'posts', postId);
