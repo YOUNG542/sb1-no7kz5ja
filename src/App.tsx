@@ -3,10 +3,12 @@ declare global {
     standalone?: boolean;
   }
 }
+
+import { trackDAU } from './components/trackDAU';
 import { Timestamp } from 'firebase/firestore'; 
 import { ProfileScreen } from './components/ProfileScreen'; // ✅ 추가
 import { getCountFromServer } from 'firebase/firestore'; // 🔥 총 개수 계산용
-
+import { getDAUForDates } from './components/checkDAU';
 import { BackgroundAura } from './components/BackgroundAura';
 import { limit, orderBy } from 'firebase/firestore';
 import { onSnapshot, query, collection, where } from 'firebase/firestore';
@@ -121,6 +123,13 @@ function App() {
         console.error('❌ Firestore read 실패:', err);
       });
   }, []);
+
+  useEffect(() => {
+    getDAUForDates(['2025-06-23', '2025-06-24', '2025-06-25']).then((res) =>
+      res.forEach(({ date, count }) => console.log(`📅 ${date}: ${count}명`))
+    );
+  }, []);
+  
   
 
   useEffect(() => {
@@ -214,6 +223,10 @@ function App() {
       unsubscribes.forEach((unsub) => unsub());
     };
   }, [currentUser, chatRooms]);
+
+  useEffect(() => {
+    trackDAU(); // ✅ 앱 시작 시 DAU 기록
+  }, []);
 
   useEffect(() => {
     if (!currentUser || chatRooms.length === 0) return;
