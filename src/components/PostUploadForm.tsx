@@ -40,6 +40,7 @@ export const PostUploadForm: React.FC = () => {
         user: {
           nickname: user.displayName || '익명',
         },
+        userId: user.uid,
         content,
         imageUrls,
         likes: 0,
