@@ -8,42 +8,44 @@ import {
   increment,
   arrayUnion,
   onSnapshot,
+  getDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { PostUploadForm } from './PostUploadForm';
-import { getDoc } from 'firebase/firestore';
+import { ProfileModal } from './ProfileModal'; // ✅ 추가
+import { addDoc, serverTimestamp } from 'firebase/firestore';
 interface PostData {
-    id: string;
-    user: { nickname: string };
-    content: string;
-    imageUrls?: string[];
-    likes?: number;
-    dislikes?: number;
-    reactions?: { userId: string; type: 'like' | 'dislike' }[];
-    comments?: { user: string; userId: string; text: string }[];
-  }
+  id: string;
+  user: { nickname: string; userId: string }; // ✅ userId 포함
+  content: string;
+  imageUrls?: string[];
+  likes?: number;
+  dislikes?: number;
+  reactions?: { userId: string; type: 'like' | 'dislike' }[];
+  comments?: { user: string; userId: string; text: string }[];
+}
 
 export const PostFeed: React.FC = () => {
-    const [posts, setPosts] = useState<PostData[]>([]);
+  const [posts, setPosts] = useState<PostData[]>([]);
   const [userReactionMap, setUserReactionMap] = useState<Record<string, 'like' | 'dislike' | null>>({});
-  const [userNickname, setUserNickname] = useState('익명'); // ✅ 닉네임 상태 추가
+  const [userNickname, setUserNickname] = useState('익명');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // ✅ 상태 추가
 
   const auth = getAuth();
   const userId = auth.currentUser?.uid || 'anonymous';
 
-// ✅ 닉네임 불러오기 useEffect
-useEffect(() => {
-  const fetchNickname = async () => {
-    if (userId === 'anonymous') return;
-    const userRef = doc(db, 'users', userId);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      const nickname = userSnap.data().nickname;
-      setUserNickname(nickname);
-    }
-  };
-  fetchNickname();
-}, [userId]);
+  useEffect(() => {
+    const fetchNickname = async () => {
+      if (userId === 'anonymous') return;
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const nickname = userSnap.data().nickname;
+        setUserNickname(nickname);
+      }
+    };
+    fetchNickname();
+  }, [userId]);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'posts'), (snapshot) => {
@@ -51,142 +53,167 @@ useEffect(() => {
         id: doc.id,
         ...doc.data()
       } as PostData));
-  
+
       const reactionState: Record<string, 'like' | 'dislike' | null> = {};
       data.forEach((post) => {
         const reaction = post.reactions?.find((r) => r.userId === userId);
         reactionState[post.id] = reaction?.type ?? null;
       });
-  
+
       setPosts(data);
       setUserReactionMap(reactionState);
     });
-  
+
     return () => unsubscribe();
   }, [userId]);
 
   const handleLike = async (postId: string) => {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
-  
+
     const ref = doc(db, 'posts', postId);
     const currentReaction = userReactionMap[postId];
-  
-    if (currentReaction === 'like') return; // ✅ 이미 좋아요 누름
-  
+
+    if (currentReaction === 'like') return;
+
     const updates: any = {
       reactions: arrayUnion({ userId, type: 'like' }),
     };
-  
+
     if (currentReaction === 'dislike') {
-      // 싫어요 취소하고 좋아요로 전환
       updates.likes = increment(1);
       updates.dislikes = increment(-1);
-      updates.reactionsToRemove = { userId, type: 'dislike' };
     } else {
-      // 순수 좋아요
       updates.likes = increment(1);
     }
-  
-    // 먼저 기존 reactions에서 제거 (Firestore에서는 수동으로)
+
     const newReactions = post.reactions?.filter(r => !(r.userId === userId)) || [];
     await updateDoc(ref, {
       ...updates,
       reactions: [...newReactions, { userId, type: 'like' }]
     });
   };
-  
+
   const handleDislike = async (postId: string) => {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
-  
+
     const ref = doc(db, 'posts', postId);
     const currentReaction = userReactionMap[postId];
-  
-    if (currentReaction === 'dislike') return; // ✅ 이미 싫어요 누름
-  
+
+    if (currentReaction === 'dislike') return;
+
     const updates: any = {
       reactions: arrayUnion({ userId, type: 'dislike' }),
     };
-  
+
     if (currentReaction === 'like') {
-      // 좋아요 취소하고 싫어요로 전환
       updates.likes = increment(-1);
       updates.dislikes = increment(1);
     } else {
-      // 순수 싫어요
       updates.dislikes = increment(1);
     }
-  
-    // 기존 reactions 배열에서 userId 제거 후 새로 추가
+
     const newReactions = post.reactions?.filter(r => !(r.userId === userId)) || [];
     await updateDoc(ref, {
       ...updates,
       reactions: [...newReactions, { userId, type: 'dislike' }]
     });
   };
-  
-    // ✅ 댓글 작성 시 닉네임 사용
-    const handleComment = async (postId: string, text: string) => {
-      const ref = doc(db, 'posts', postId);
-      await updateDoc(ref, {
-        comments: arrayUnion({ user: userNickname, userId, text }),
-      });
-    };
 
-    const handleDeleteComment = async (postId: string, idx: number) => {
-      const postRef = doc(db, 'posts', postId);
-      const post = posts.find((p) => p.id === postId);
-      if (!post || !post.comments) return;
-    
-      const targetComment = post.comments[idx];
-      if (!targetComment || targetComment.userId !== userId) return; // 🔒 본인 댓글이 아니면 차단
-    
-      const updatedComments = post.comments.filter((_, i) => i !== idx);
-      await updateDoc(postRef, { comments: updatedComments });
-    };
+  const handleMessageRequest = async (targetUserId: string) => {
+    if (userId === 'anonymous') {
+      alert('로그인이 필요합니다.');
+      return;
+    }
   
-    const handleEditComment = async (postId: string, idx: number, newText: string) => {
-      const postRef = doc(db, 'posts', postId);
-      const post = posts.find((p) => p.id === postId);
-      if (!post || !post.comments) return;
-    
-      const targetComment = post.comments[idx];
-      if (!targetComment || targetComment.userId !== userId) return; // 🔒 본인 댓글이 아니면 차단
-    
-      const updatedComments = [...post.comments];
-      updatedComments[idx].text = newText;
-      await updateDoc(postRef, { comments: updatedComments });
-    };
+    try {
+      await addDoc(collection(db, 'messageRequests'), {
+        fromUserId: userId,
+        toUserId: targetUserId,
+        message: '안녕하세요! 프로필 보고 연락드려요.',
+        timestamp: serverTimestamp(),
+      });
+      alert('메시지 요청을 보냈습니다!');
+    } catch (error) {
+      console.error('메시지 요청 실패:', error);
+      alert('요청에 실패했습니다.');
+    }
+  };
+
+  const handleComment = async (postId: string, text: string) => {
+    const ref = doc(db, 'posts', postId);
+    await updateDoc(ref, {
+      comments: arrayUnion({ user: userNickname, userId, text }),
+    });
+  };
+
+  const handleDeleteComment = async (postId: string, idx: number) => {
+    const postRef = doc(db, 'posts', postId);
+    const post = posts.find((p) => p.id === postId);
+    if (!post || !post.comments) return;
+
+    const targetComment = post.comments[idx];
+    if (!targetComment || targetComment.userId !== userId) return;
+
+    const updatedComments = post.comments.filter((_, i) => i !== idx);
+    await updateDoc(postRef, { comments: updatedComments });
+  };
+
+  const handleEditComment = async (postId: string, idx: number, newText: string) => {
+    const postRef = doc(db, 'posts', postId);
+    const post = posts.find((p) => p.id === postId);
+    if (!post || !post.comments) return;
+
+    const targetComment = post.comments[idx];
+    if (!targetComment || targetComment.userId !== userId) return;
+
+    const updatedComments = [...post.comments];
+    updatedComments[idx].text = newText;
+    await updateDoc(postRef, { comments: updatedComments });
+  };
+
+  const handleNicknameClick = (_nickname: string, userId: string) => {
+    setSelectedUserId(userId);
+  };
 
   return (
     <div className="p-4">
-      <PostUploadForm /> {/* ✅ 포스트 탭 상단 고정 글쓰기 UI */}
-      
+      <PostUploadForm />
+
       {posts.map((post) => (
         <Post
-        key={post.id}
-        postId={post.id}
-        user={post.user}
-        content={post.content}
-        imageUrls={post.imageUrls || []}
-        likes={post.likes || 0}
-        dislikes={post.dislikes || 0}
-        userReaction={userReactionMap[post.id] || null}
-        comments={post.comments?.map(c => ({
-          user: c.user,
-          text: c.text,
-          userId: c.userId || 'anonymous', // ✅ 예외 처리
-        })) || []}
-        onLike={handleLike}
-        onDislike={handleDislike}
-        onComment={handleComment}
-        onDeleteComment={handleDeleteComment}
-        onEditComment={handleEditComment}
-        currentUserId={userId} // ✅ 여기 추가!
-      />
+          key={post.id}
+          postId={post.id}
+          user={{ nickname: post.user.nickname, userId: post.user.userId }} // ✅ userId 포함
+          content={post.content}
+          imageUrls={post.imageUrls || []}
+          likes={post.likes || 0}
+          dislikes={post.dislikes || 0}
+          userReaction={userReactionMap[post.id] || null}
+          comments={post.comments?.map(c => ({
+            user: c.user,
+            text: c.text,
+            userId: c.userId || 'anonymous',
+          })) || []}
+          onLike={handleLike}
+          onDislike={handleDislike}
+          onComment={handleComment}
+          onDeleteComment={handleDeleteComment}
+          onEditComment={handleEditComment}
+          currentUserId={userId}
+          onNicknameClick={handleNicknameClick} // ✅ 핵심 연결
+        />
       ))}
+
+      {/* ✅ 모달 호출 */}
+      {selectedUserId && (
+        <ProfileModal
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          onMessageRequest={handleMessageRequest}
+        />
+      )}
     </div>
   );
-  
 };

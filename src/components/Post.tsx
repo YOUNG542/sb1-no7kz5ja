@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 interface SimplifiedUser {
   nickname: string;
+  userId: string;
 }
 
 interface PostProps {
@@ -19,6 +20,7 @@ interface PostProps {
   onComment: (postId: string, comment: string) => void;
   onDeleteComment: (postId: string, idx: number) => void;
   onEditComment: (postId: string, idx: number, newText: string) => void;
+  onNicknameClick: (nickname: string, userId: string) => void;
 }
 
 export const Post: React.FC<PostProps> = ({
@@ -36,6 +38,7 @@ export const Post: React.FC<PostProps> = ({
   onComment,
   onDeleteComment, // ✅ props로 받아옴
   onEditComment,   // ✅ props로 받아옴
+  onNicknameClick,
 }) => {
   const [commentInput, setCommentInput] = useState('');
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
@@ -63,7 +66,12 @@ export const Post: React.FC<PostProps> = ({
 
   return (
     <div className="border rounded-xl p-4 mb-4 bg-white shadow-md">
-      <div className="text-sm text-gray-600 mb-2">{user.nickname}</div>
+      <span
+          className="text-sm text-blue-600 font-semibold cursor-pointer mb-2 inline-block"
+          onClick={() => onNicknameClick(user.nickname, user.userId)} // 🔄 userId도 전달해야 함
+  >
+       {user.nickname}
+      </span>
       <p className="mb-2 text-base">{content}</p>
       {imageUrls.length > 0 && (
         <div className="flex gap-2 overflow-x-scroll mb-2">
@@ -94,7 +102,12 @@ export const Post: React.FC<PostProps> = ({
         <div className="mt-2 text-sm text-gray-700">
           {comments.map((c, idx) => (
             <div key={idx} className="border-t pt-1 mt-1">
-              <strong>{c.user}</strong>:&nbsp;
+              <strong
+  className="text-blue-600 cursor-pointer"
+  onClick={() => onNicknameClick(c.user, c.userId)}
+>
+  {c.user}
+</strong>:&nbsp;
               {editingIdx === idx ? (
                 <>
                   <input
