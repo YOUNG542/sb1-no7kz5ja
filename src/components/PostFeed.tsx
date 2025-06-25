@@ -12,7 +12,7 @@ import {
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { PostUploadForm } from './PostUploadForm';
-import { ProfileModal } from './ProfileModal'; // ✅ 추가
+ // ✅ 추가
 import { addDoc, serverTimestamp } from 'firebase/firestore';
 interface PostData {
   id: string;
@@ -206,14 +206,8 @@ export const PostFeed: React.FC = () => {
         />
       ))}
 
-      {/* ✅ 모달 호출 */}
-      {selectedUserId && (
-        <ProfileModal
-          userId={selectedUserId}
-          onClose={() => setSelectedUserId(null)}
-          onMessageRequest={handleMessageRequest}
-        />
-      )}
+      
+     
     </div>
   );
 };

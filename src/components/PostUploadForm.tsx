@@ -49,6 +49,7 @@ export const PostUploadForm: React.FC = () => {
       await addDoc(collection(db, 'posts'), {
         user: {
           nickname,
+          userId: user.uid,
         },
         userId: user.uid,
         content,
