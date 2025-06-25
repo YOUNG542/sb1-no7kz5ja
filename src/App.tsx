@@ -313,7 +313,7 @@ function App() {
       console.error('❌ 메시지 요청 수 계산 실패:', err);
     }
   };
-
+ㅇㄹㅇㄹ
   // ✅ 앱 시작 시 1회 실행: 운영자 콘솔에 수치 출력됨
   useEffect(() => {
     logTotalMessageRequestCount();
