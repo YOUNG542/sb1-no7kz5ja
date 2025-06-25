@@ -59,7 +59,7 @@ function App() {
   const [selectedChatRoom, setSelectedChatRoom] = useState<string | null>(null);
   const [showMessageModal, setShowMessageModal] = useState<User | null>(null);
   const [showIntro, setShowIntro] = useState(true);
-
+  const [showNotice, setShowNotice] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadCountMap, setUnreadCountMap] = useState<Map<string, number>>(new Map());
   const [enrichedChatRooms, setEnrichedChatRooms] = useState<{
@@ -80,6 +80,14 @@ function App() {
     const introSeen = localStorage.getItem('introSeen');
     if (introSeen === 'true') {
       setShowIntro(false); // 이미 봤다면 생략
+    }
+  }, []);
+
+  useEffect(() => {
+    const hasSeenPostNotice = localStorage.getItem('hasSeenPostNotice');
+    if (!hasSeenPostNotice) {
+      setShowNotice(true);
+      localStorage.setItem('hasSeenPostNotice', 'true');
     }
   }, []);
 
@@ -496,11 +504,26 @@ function App() {
 
   return (
     <div className="relative w-screen min-h-screen overflow-hidden">
-      <BackgroundAura /> {/* 🔥 오오라 배경 추가 */}
+      <BackgroundAura />
   
-      {/* 기존 구조 그대로 유지 */}
       <PwaPrompt />
-      
+  
+     {/* ✅ 테스트 공지 배너 */}
+{showNotice && (
+  <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded shadow text-sm">
+    ⚠️ 현재 더 나은 사용자 경험을 위해 포스트 기능은 테스트 중이며, 일부 기능이 제대로 작동하지 않을 수 있습니다. 
+    <br className="hidden sm:block" />
+    가능하면 사용을 자제해 주세요.
+    <button
+      className="ml-3 text-xs underline"
+      onClick={() => setShowNotice(false)}
+    >
+      닫기
+    </button>
+  </div>
+)}
+  
+      {/* 아래 기존 화면 전환 로직들 */}
       {currentScreen === 'feed' && (
         <ProfileFeed
           users={users}
@@ -510,11 +533,8 @@ function App() {
           onRefresh={() => window.location.reload()}
         />
       )}
-
-{currentScreen === 'posts' && (
-  <PostFeed />
-)}
   
+      {currentScreen === 'posts' && <PostFeed />}
       {currentScreen === 'requests' && (
         <MessageRequests
           requests={messageRequests.filter((r) => r.toUserId === currentUser.id)}
@@ -523,7 +543,6 @@ function App() {
           onReject={handleRejectRequest}
         />
       )}
-  
       {currentScreen === 'chat' && (
         <ChatList
           users={users}
@@ -533,11 +552,7 @@ function App() {
           setEnrichedChatRooms={setEnrichedChatRooms}
         />
       )}
-
-{currentScreen === 'profile' && (
-  <ProfileScreen />
-)}
-
+      {currentScreen === 'profile' && <ProfileScreen />}
   
       <BottomNavigation
         currentScreen={currentScreen}
@@ -554,18 +569,18 @@ function App() {
           onClose={() => setShowMessageModal(null)}
         />
       )}
-
-       {/* ✅ 여기! 성별 알림 모달 */}
-    {showGenderNotice && (
-      <GenderNoticeModal
-        onClose={() => {
-          localStorage.setItem('genderNoticeSeen', 'true');
-          setShowGenderNotice(false);
-        }}
-      />
-    )}
+  
+      {showGenderNotice && (
+        <GenderNoticeModal
+          onClose={() => {
+            localStorage.setItem('genderNoticeSeen', 'true');
+            setShowGenderNotice(false);
+          }}
+        />
+      )}
     </div>
   );
+  
 }
 
 export default App;
