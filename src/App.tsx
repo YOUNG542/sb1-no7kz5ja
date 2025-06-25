@@ -509,7 +509,7 @@ function App() {
       <PwaPrompt />
   
      {/* ✅ 테스트 공지 배너 */}
-{showNotice && (ㅎ
+{showNotice && (
   <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded shadow text-sm">
     ⚠️ 현재 더 나은 사용자 경험을 위해 포스트 기능은 테스트 중이며, 일부 기능이 제대로 작동하지 않을 수 있습니다. 
     <br className="hidden sm:block" />
