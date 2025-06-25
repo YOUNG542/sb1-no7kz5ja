@@ -9,14 +9,17 @@ import {
   arrayUnion,
   onSnapshot,
   getDoc,
+  addDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { PostUploadForm } from './PostUploadForm';
- // ✅ 추가
-import { addDoc, serverTimestamp } from 'firebase/firestore';
+import { MessageRequestModal } from './MessageRequestModal';
+import { User } from '../types';
+
 interface PostData {
   id: string;
-  user: { nickname: string; userId: string }; // ✅ userId 포함
+  user: { nickname: string; userId: string };
   content: string;
   imageUrls?: string[];
   likes?: number;
@@ -29,7 +32,7 @@ export const PostFeed: React.FC = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [userReactionMap, setUserReactionMap] = useState<Record<string, 'like' | 'dislike' | null>>({});
   const [userNickname, setUserNickname] = useState('익명');
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // ✅ 상태 추가
+  const [messageTargetUser, setMessageTargetUser] = useState<User | null>(null); // ✅ 핵심 추가
 
   const auth = getAuth();
   const userId = auth.currentUser?.uid || 'anonymous';
@@ -121,17 +124,17 @@ export const PostFeed: React.FC = () => {
     });
   };
 
-  const handleMessageRequest = async (targetUserId: string) => {
+  const handleMessageRequest = async (targetUserId: string, message: string) => {
     if (userId === 'anonymous') {
       alert('로그인이 필요합니다.');
       return;
     }
-  
+
     try {
       await addDoc(collection(db, 'messageRequests'), {
         fromUserId: userId,
         toUserId: targetUserId,
-        message: '안녕하세요! 프로필 보고 연락드려요.',
+        message,
         timestamp: serverTimestamp(),
       });
       alert('메시지 요청을 보냈습니다!');
@@ -173,8 +176,12 @@ export const PostFeed: React.FC = () => {
     await updateDoc(postRef, { comments: updatedComments });
   };
 
-  const handleNicknameClick = (_nickname: string, userId: string) => {
-    setSelectedUserId(userId);
+  const handleNicknameClick = async (_nickname: string, targetUserId: string) => {
+    const userRef = doc(db, 'users', targetUserId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      setMessageTargetUser({ ...(userSnap.data() as User), id: targetUserId });
+    }
   };
 
   return (
@@ -185,7 +192,7 @@ export const PostFeed: React.FC = () => {
         <Post
           key={post.id}
           postId={post.id}
-          user={{ nickname: post.user.nickname, userId: post.user.userId }} // ✅ userId 포함
+          user={{ nickname: post.user.nickname, userId: post.user.userId }}
           content={post.content}
           imageUrls={post.imageUrls || []}
           likes={post.likes || 0}
@@ -202,12 +209,17 @@ export const PostFeed: React.FC = () => {
           onDeleteComment={handleDeleteComment}
           onEditComment={handleEditComment}
           currentUserId={userId}
-          onNicknameClick={handleNicknameClick} // ✅ 핵심 연결
+          onNicknameClick={handleNicknameClick}
         />
       ))}
 
-      
-     
+      {messageTargetUser && (
+        <MessageRequestModal
+          targetUser={messageTargetUser}
+          onSend={(message) => handleMessageRequest(messageTargetUser.id, message)}
+          onClose={() => setMessageTargetUser(null)}
+        />
+      )}
     </div>
   );
 };
