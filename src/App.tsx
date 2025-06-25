@@ -66,6 +66,7 @@ function App() {
     [roomId: string]: {
       lastMessage?: Message;
       unreadCount: number;
+      participants: string[];
     };
   }>({});
 
@@ -189,6 +190,7 @@ function App() {
             ...prevState[room.id],
             lastMessage,
             unreadCount: unreadCountMap.get(room.id) || 0,
+            participants: room.participants || [],
           },
         }));
       });

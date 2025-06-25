@@ -13,6 +13,7 @@ interface ChatListProps {
     [roomId: string]: {
       lastMessage?: Message;
       unreadCount: number;
+      participants: string[];
     };
   };
   setEnrichedChatRooms: React.Dispatch<React.SetStateAction<any>>; // setEnrichedChatRooms 전달 받기
@@ -49,6 +50,7 @@ export const ChatList: React.FC<ChatListProps> = ({
         updatedChatRooms[doc.id] = {
           lastMessage: data.lastMessage || null,
           unreadCount: data.unreadCounts?.[currentUserId] || 0,
+          participants: data.participants || [],
         };
       });
   
@@ -116,16 +118,23 @@ export const ChatList: React.FC<ChatListProps> = ({
           </div>
         ) : (
           <div className="space-y-3">
-            {sortedRoomIds.map((roomId) => {
-              const roomInfo = enrichedChatRooms[roomId];
-              const lastMessage = roomInfo.lastMessage;
-              const unreadCount = roomInfo.unreadCount;
-              const room = { id: roomId }; // 최소한의 방 정보
-              const otherUserId =
-                lastMessage?.senderId === currentUserId ? lastMessage?.to : lastMessage?.senderId;
-              const otherUser = getUserById(otherUserId || '');
+          {sortedRoomIds.map((roomId) => {
+  const roomInfo = enrichedChatRooms[roomId];
+  const lastMessage = roomInfo.lastMessage;
+  const unreadCount = roomInfo.unreadCount;
 
-              if (!otherUser) return null;
+  const participants = roomInfo.participants || [];
+
+  // ✅ 상대방 ID 추론: lastMessage 기반 → 없으면 participants 기반
+  const inferredOtherUserId =
+    lastMessage?.senderId === currentUserId ? lastMessage?.to : lastMessage?.senderId;
+
+  const otherUserId =
+    inferredOtherUserId || participants.find((id: string) => id !== currentUserId) || '';
+
+  const otherUser = getUserById(otherUserId);
+  if (!otherUser) return null;
+
 
               return (
                 <button
