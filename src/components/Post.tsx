@@ -68,7 +68,7 @@ export const Post: React.FC<PostProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-pink-50 via-white to-blue-50 border border-pink-100 rounded-2xl shadow-md p-5 mb-6 max-w-md w-[90%] mx-auto space-y-4 animate-fade-in">
+    <div className="bg-gradient-to-br from-pink-200 via-pink-100 to-blue-200 border border-pink-100 rounded-2xl shadow-md p-5 mb-6 max-w-md w-[90%] mx-auto space-y-4 animate-fade-in">
 
 <div
   className="text-pink-600 text-sm font-medium underline underline-offset-2 cursor-pointer hover:opacity-80 transition"
