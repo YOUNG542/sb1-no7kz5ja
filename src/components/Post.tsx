@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
-
+import { useNavigate } from 'react-router-dom';
 interface SimplifiedUser {
   nickname: string;
   userId: string;
@@ -46,7 +46,7 @@ export const Post: React.FC<PostProps> = ({
   const [commentInput, setCommentInput] = useState('');
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
-
+  const navigate = useNavigate();
   const handleCommentSubmit = () => {
     if (commentInput.trim()) {
       onComment(postId, commentInput);
@@ -68,9 +68,11 @@ export const Post: React.FC<PostProps> = ({
   };
 
   return (
-    <div className="px-4 pt-8 pb-20 w-full flex flex-col items-center bg-gradient-to-b from-pink-100 via-white to-blue-100 min-h-screen">
-<div
-  className="text-pink-600 text-sm font-medium underline underline-offset-2 cursor-pointer hover:opacity-80 transition"
+    <div
+  className="relative bg-gradient-to-br from-pink-200 via-pink-100 to-blue-200 border border-pink-100 rounded-2xl shadow-md p-5 pt-12 mb-4 max-w-md w-[90%] mx-auto space-y-3 cursor-pointer hover:shadow-lg transition"
+  onClick={() => navigate(`/posts/${postId}`)}
+>
+<div className="absolute top-4 left-4 text-pink-600 text-base font-bold cursor-pointer hover:opacity-80 transition"
   onClick={() => onNicknameClick(user.nickname, user.userId)}
 >
   {user.nickname}
