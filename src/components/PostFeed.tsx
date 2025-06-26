@@ -136,6 +136,7 @@ export const PostFeed: React.FC = () => {
         toUserId: targetUserId,
         message,
         timestamp: serverTimestamp(),
+        status: 'pending',
       });
       alert('메시지 요청을 보냈습니다!');
     } catch (error) {
