@@ -10,6 +10,8 @@ import {
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { ThumbsUp, ThumbsDown, Send } from 'lucide-react';
+import { MessageRequestModal } from './MessageRequestModal';
+import { User } from '../types';
 
 interface PostData {
   id: string;
@@ -32,6 +34,10 @@ export const PostDetail: React.FC = () => {
   const [commentInput, setCommentInput] = useState('');
   const [userNickname, setUserNickname] = useState('익명');
   const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editText, setEditText] = useState('');
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [messageTargetUser, setMessageTargetUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -69,10 +75,33 @@ export const PostDetail: React.FC = () => {
     setCommentInput('');
   };
 
+  const handleDeleteComment = async (idx: number) => {
+    if (!post) return;
+    const updatedComments = [...(post.comments || [])];
+    if (updatedComments[idx].userId !== userId) return;
+    updatedComments.splice(idx, 1);
+    await updateDoc(doc(db, 'posts', postId!), {
+      comments: updatedComments,
+    });
+    setPost({ ...post, comments: updatedComments });
+  };
+
+  const handleEditSubmit = async () => {
+    if (editingIdx === null || !editText.trim() || !post) return;
+    const updatedComments = [...(post.comments || [])];
+    if (updatedComments[editingIdx].userId !== userId) return;
+    updatedComments[editingIdx].text = editText;
+    await updateDoc(doc(db, 'posts', postId!), {
+      comments: updatedComments,
+    });
+    setPost({ ...post, comments: updatedComments });
+    setEditingIdx(null);
+    setEditText('');
+  };
+
   const handleReaction = async (type: 'like' | 'dislike') => {
     if (!post) return;
     const ref = doc(db, 'posts', postId!);
-
     if (userReaction === type) return;
 
     const updates: any = {
@@ -96,6 +125,14 @@ export const PostDetail: React.FC = () => {
     });
   };
 
+  const handleNicknameClick = async (targetUserId: string) => {
+    const userRef = doc(db, 'users', targetUserId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      setMessageTargetUser({ ...(userSnap.data() as User), id: targetUserId });
+    }
+  };
+
   if (!post) return <div className="p-4">로딩 중...</div>;
 
   return (
@@ -105,7 +142,12 @@ export const PostDetail: React.FC = () => {
       </button>
 
       <div className="bg-white rounded-2xl shadow-md p-6 space-y-4 max-w-xl mx-auto">
-        <div className="text-pink-600 font-bold text-lg">{post.user.nickname}</div>
+        <div
+          className="text-pink-600 font-bold text-lg cursor-pointer hover:underline"
+          onClick={() => handleNicknameClick(post.user.userId)}
+        >
+          {post.user.nickname}
+        </div>
         <p className="text-gray-800 text-sm whitespace-pre-line">{post.content}</p>
 
         {post.imageUrls?.length > 0 && (
@@ -115,7 +157,8 @@ export const PostDetail: React.FC = () => {
                 key={idx}
                 src={url}
                 alt={`img-${idx}`}
-                className="h-40 rounded-xl object-cover"
+                className="h-40 rounded-xl object-cover cursor-pointer"
+                onClick={() => setEnlargedImage(url)}
               />
             ))}
           </div>
@@ -152,13 +195,80 @@ export const PostDetail: React.FC = () => {
           <div className="mt-4 space-y-2">
             {post.comments?.map((c, idx) => (
               <div key={idx} className="text-sm border-t pt-2">
-                <span className="text-pink-600 font-semibold">{c.user}</span>
-                <span className="ml-2">{c.text}</span>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span
+                      className="text-pink-600 font-semibold cursor-pointer hover:underline"
+                      onClick={() => handleNicknameClick(c.userId)}
+                    >
+                      {c.user}
+                    </span>
+                    {editingIdx === idx ? null : <span className="ml-2">{c.text}</span>}
+                  </div>
+                  {c.userId === userId && editingIdx !== idx && (
+                    <div className="text-xs space-x-2">
+                      <button
+                        className="text-pink-500"
+                        onClick={() => {
+                          setEditingIdx(idx);
+                          setEditText(c.text);
+                        }}
+                      >
+                        수정
+                      </button>
+                      <button
+                        className="text-gray-400"
+                        onClick={() => handleDeleteComment(idx)}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {editingIdx === idx && (
+                  <div className="mt-2 space-y-1">
+                    <input
+                      type="text"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="w-full px-3 py-1 border border-pink-300 rounded-md text-sm"
+                    />
+                    <div className="text-xs space-x-2 text-right">
+                      <button className="text-pink-600" onClick={handleEditSubmit}>
+                        저장
+                      </button>
+                      <button
+                        className="text-gray-500"
+                        onClick={() => setEditingIdx(null)}
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {enlargedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setEnlargedImage(null)}
+        >
+          <img src={enlargedImage} alt="확대 이미지" className="max-w-full max-h-full rounded-lg shadow-lg" />
+        </div>
+      )}
+
+      {messageTargetUser && (
+        <MessageRequestModal
+          targetUser={messageTargetUser}
+          onSend={() => alert('메시지 요청 기능은 메인에서 처리됩니다.')}
+          onClose={() => setMessageTargetUser(null)}
+        />
+      )}
     </div>
   );
 };
