@@ -1,8 +1,7 @@
-// EditProfile.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 export const EditProfile: React.FC = () => {
@@ -45,10 +44,30 @@ export const EditProfile: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!user) return;
+    const confirmDelete = window.confirm('정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteDoc(doc(db, 'users', user.uid));
+      alert('계정이 삭제되었습니다. 앱을 종료합니다.');
+      window.close(); // 또는 navigate('/') 등 처리 가능
+    } catch (error) {
+      console.error('삭제 실패:', error);
+      alert('❌ 삭제 중 문제가 발생했습니다.');
+    }
+  };
+
   if (loading) return <div className="p-4 text-center">불러오는 중...</div>;
 
   return (
     <div className="p-4 max-w-md mx-auto">
+      {/* 돌아가기 버튼 */}
+      <button onClick={() => navigate('/profile')} className="text-sm text-blue-500 underline mb-4">
+        ← 프로필로 돌아가기
+      </button>
+
       <h2 className="text-xl font-bold mb-4">프로필 수정</h2>
 
       <label className="block text-sm font-medium mb-1">닉네임</label>
@@ -79,6 +98,13 @@ export const EditProfile: React.FC = () => {
       </button>
 
       {message && <p className="mt-3 text-sm text-center">{message}</p>}
+
+      <button
+        onClick={handleDelete}
+        className="mt-6 w-full bg-gray-100 text-red-500 py-2 rounded-lg font-semibold hover:bg-red-200"
+      >
+        계정 삭제하기
+      </button>
     </div>
   );
 };

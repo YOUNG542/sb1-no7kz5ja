@@ -45,11 +45,13 @@ export const ProfileScreen: React.FC = () => {
         <AlertCircle size={24} />
       </button>
 
-      {/* 프로필 사진 (기본 아이콘) */}
-      <div className="flex justify-center mb-4">
-        <UserCircle size={80} className="text-gray-400" />
-      </div>
-
+      {/* ⏬ 이렇게 바꿔주세요 */}
+<div className="flex flex-col items-center mb-4">
+  <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
+    <UserCircle size={40} className="text-gray-400" />
+  </div>
+  <p className="text-xs text-gray-400 mt-2">프로필 사진 기능은 준비 중이에요 🙏</p>
+</div>
       {/* 닉네임 + 성별 아이콘 + 수정 버튼 */}
       <div className="flex items-center justify-center gap-2 mb-1">
         <h2 className="text-xl font-bold">{nickname}</h2>

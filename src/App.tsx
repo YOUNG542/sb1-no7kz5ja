@@ -689,11 +689,14 @@ function App() {
     </div>
      } />
 
+  {/* 프로필 페이지 라우트 추가! */}
+  <Route path="/profile" element={<ProfileScreen />} />
+
        {/* ✅ 세부 페이지 라우트 추가 */}
     <Route path="/edit-profile" element={<EditProfile />} />
     <Route path="/my-posts" element={<MyPosts />} />
     <Route path="/complaint" element={<ComplaintPage />} />
-    
+
      <Route path="/posts/:id" element={<PostDetail />} />
    </Routes>
  );
