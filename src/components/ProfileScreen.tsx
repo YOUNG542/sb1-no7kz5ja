@@ -114,21 +114,49 @@ export const ProfileScreen: React.FC = () => {
       <input className="w-full border rounded-lg p-2 mb-4" value={intro} onChange={(e) => setIntro(e.target.value)} maxLength={50} placeholder="한 줄 소개를 입력하세요" />
 
       <label className="block text-sm font-medium mb-1">성별</label>
-      <div className="flex gap-3 mb-4">
-        {(['male', 'female'] as const).map((g) => (
-          <button key={g} type="button" disabled={genderSet} onClick={() => setGender(g)}
-            className={`w-full py-2 rounded-lg font-semibold border transition ${gender === g ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300'} ${genderSet ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >{g === 'male' ? '남자' : '여자'}</button>
-        ))}
-      </div>
+      <div className="flex gap-3 mb-2">
+  {(['male', 'female'] as const).map((g) => (
+    <button
+      key={g}
+      type="button"
+      disabled={genderSet}
+      onClick={() => setGender(g)}
+      className={`w-full py-2 rounded-md font-semibold border text-sm transition ${
+        gender === g
+          ? 'bg-pink-100 border-pink-400 text-pink-700'
+          : 'bg-white border-gray-300 text-gray-500'
+      } ${genderSet ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      {g === 'male' ? '남자' : '여자'}
+    </button>
+  ))}
+</div>
+
       {!genderSet && <p className="text-xs text-red-500 mb-4">⚠️ 성별은 한 번 설정하면 변경할 수 없습니다.</p>}
 
-      <button className="w-full bg-pink-500 text-white py-2 rounded-lg font-semibold hover:bg-pink-600 transition" onClick={handleSave}>저장하기</button>
-      <button className="w-full mt-3 bg-gray-300 text-red-600 py-2 rounded-lg font-semibold hover:bg-red-100 transition" onClick={handleDelete}>정보 삭제</button>
-      <button onClick={() => setShowComplaint(true)} className="w-full mt-3 bg-yellow-300 text-black py-2 rounded-lg font-semibold hover:bg-yellow-400 transition">불만사항 제출하기</button>
+      <div className="space-y-3 mt-6">
+  <button
+    className="w-full bg-pink-500 text-white py-2 rounded-lg font-semibold hover:bg-pink-600 transition"
+    onClick={handleSave}
+  >
+    저장하기
+  </button>
+  <button
+    className="w-full bg-gray-100 text-red-500 py-2 rounded-lg font-semibold hover:bg-red-100 transition"
+    onClick={handleDelete}
+  >
+    정보 삭제
+  </button>
+  <button
+    onClick={() => setShowComplaint(true)}
+    className="w-full bg-yellow-300 text-black py-2 rounded-lg font-semibold hover:bg-yellow-400 transition"
+  >
+    불만사항 제출하기
+  </button>
+</div>
       {message && <p className="mt-4 text-center text-sm">{message}</p>}
 
-      <h2 className="text-lg font-bold mt-8 mb-2">내가 쓴 글</h2>
+      <h2 className="text-lg font-bold mt-10 mb-3 border-b border-gray-200 pb-1">내가 쓴 글</h2>
       {myPosts.length === 0 && <p className="text-sm text-gray-500">아직 작성한 글이 없습니다.</p>}
       {myPosts.map((post) => (
         <div key={post.id} className="border p-3 rounded-lg mb-3 bg-white shadow-sm">
