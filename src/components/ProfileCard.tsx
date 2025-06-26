@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Eye, MessageCircle, Clock } from 'lucide-react';
+import { Eye, MessageCircle, Clock } from 'lucide-react';
 import { User } from '../types';
 import AdBanner from './AdBanner';
 
@@ -20,7 +20,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
   const [showAd, setShowAd] = useState(false);
 
-  const reactions = ['❤️', '👀', '😊', '🔥', '✨'];
+
 
   const getTimeAgo = (timestamp: number) => {
     const now = Date.now();
@@ -32,24 +32,14 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     return '방금 전';
   };
 
-  const handleReaction = (emoji: string) => {
-    setSelectedEmoji(emoji);
-    onReact(user.id, emoji);
-    setTimeout(() => setSelectedEmoji(null), 600);
-  };
+
 
   const handleMessageRequest = () => {
     onMessageRequest(user.id);
     setShowAd(true);
   };
 
-  const getReactionCount = (emoji: string) => {
-    return user.reactions[emoji]?.length || 0;
-  };
 
-  const hasUserReacted = (emoji: string) => {
-    return user.reactions[emoji]?.includes(currentUserId) || false;
-  };
 
   const getGenderLabel = (gender: 'male' | 'female' | undefined) => {
     if (gender === 'male') return '👨 남성';
@@ -101,34 +91,15 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {reactions.map((emoji) => {
-            const count = getReactionCount(emoji);
-            const userReacted = hasUserReacted(emoji);
-            return (
-              <button
-                key={emoji}
-                onClick={() => handleReaction(emoji)}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-all duration-200 ${
-                  userReacted
-                    ? 'bg-pink-100 text-pink-600 scale-110'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                } ${selectedEmoji === emoji ? 'animate-bounce' : ''}`}
-              >
-                <span className="text-base">{emoji}</span>
-                {count > 0 && <span className="text-xs font-medium">{count}</span>}
-              </button>
-            );
-          })}
-        </div>
+      
 
-        <button
-          onClick={handleMessageRequest}
-          className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 py-2 rounded-xl font-medium hover:from-pink-600 hover:to-red-600 transition-all duration-200 flex items-center gap-2 text-sm"
-        >
-          <MessageCircle className="w-4 h-4" />
-          메시지
-        </button>
+      <button
+  onClick={handleMessageRequest}
+  className="min-w-[120px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 py-2 rounded-xl font-medium hover:from-pink-600 hover:to-red-600 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+>
+  <MessageCircle className="w-4 h-4" />
+  메시지
+</button>
       </div>
 
       {showAd && (

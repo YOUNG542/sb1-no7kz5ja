@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
 interface SimplifiedUser {
   nickname: string;
   userId: string;
@@ -67,13 +67,13 @@ export const Post: React.FC<PostProps> = ({
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-4 mb-6 max-w-md w-[90%] mx-auto space-y-3 animate-fade-in">
+    <div className="bg-pink-50 border border-pink-200 rounded-2xl shadow-md p-4 mb-6 max-w-md w-[90%] mx-auto space-y-3 animate-fade-in">
       <div
-        className="text-blue-600 font-semibold text-sm cursor-pointer"
-        onClick={() => onNicknameClick(user.nickname, user.userId)}
-      >
-        {user.nickname}
-      </div>
+  className="text-pink-600 font-semibold text-sm cursor-pointer"
+  onClick={() => onNicknameClick(user.nickname, user.userId)}
+>
+  {user.nickname}
+</div>
   
       <p className="text-gray-800 text-sm">{content}</p>
   
@@ -92,24 +92,26 @@ export const Post: React.FC<PostProps> = ({
 )}
 
   
-      <div className="flex items-center gap-6 text-sm text-gray-600">
-        <button
-          className={`transition-colors duration-200 ${
-            userReaction === 'like' ? 'text-blue-500' : 'hover:text-blue-400'
-          }`}
-          onClick={() => onLike(postId)}
-        >
-          👍 {likes}
-        </button>
-        <button
-          className={`transition-colors duration-200 ${
-            userReaction === 'dislike' ? 'text-red-500' : 'hover:text-red-400'
-          }`}
-          onClick={() => onDislike(postId)}
-        >
-          👎 {dislikes}
-        </button>
-      </div>
+<div className="flex items-center gap-6 text-sm text-pink-600">
+  <button
+    className={`flex items-center gap-1 transition-colors duration-200 ${
+      userReaction === 'like' ? 'text-pink-500' : 'hover:text-pink-400'
+    }`}
+    onClick={() => onLike(postId)}
+  >
+    <ThumbsUp className="w-4 h-4" />
+    {likes}
+  </button>
+  <button
+    className={`flex items-center gap-1 transition-colors duration-200 ${
+      userReaction === 'dislike' ? 'text-pink-500' : 'hover:text-pink-400'
+    }`}
+    onClick={() => onDislike(postId)}
+  >
+    <ThumbsDown className="w-4 h-4" />
+    {dislikes}
+  </button>
+</div>
   
       <div className="pt-2 border-t border-gray-100">
         <input
@@ -120,11 +122,11 @@ export const Post: React.FC<PostProps> = ({
           className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300"
         />
         <button
-          onClick={handleCommentSubmit}
-          className="text-blue-600 hover:underline text-xs mt-1"
-        >
-          댓글 달기
-        </button>
+  onClick={handleCommentSubmit}
+  className="text-pink-600 hover:text-pink-400 mt-1"
+>
+  <MessageCircle className="w-4 h-4" />
+</button>
   
         <div className="mt-3 space-y-2 text-sm text-gray-700">
           {comments.map((c, idx) => (
