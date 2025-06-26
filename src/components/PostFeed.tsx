@@ -189,34 +189,39 @@ export const PostFeed: React.FC = () => {
     }
   };
 
+  
   return (
-    <div className="p-4">
-      <PostUploadForm />
+    <div className="px-4 pt-4 pb-16 w-full flex flex-col items-center">
+      <div className="w-full max-w-md">
+        <PostUploadForm />
+      </div>
 
-      {posts.map((post) => (
-        <Post
-          key={post.id}
-          postId={post.id}
-          user={{ nickname: post.user.nickname, userId: post.user.userId }}
-          content={post.content}
-          imageUrls={post.imageUrls || []}
-          likes={post.likes || 0}
-          dislikes={post.dislikes || 0}
-          userReaction={userReactionMap[post.id] || null}
-          comments={post.comments?.map(c => ({
-            user: c.user,
-            text: c.text,
-            userId: c.userId || 'anonymous',
-          })) || []}
-          onLike={handleLike}
-          onDislike={handleDislike}
-          onComment={handleComment}
-          onDeleteComment={handleDeleteComment}
-          onEditComment={handleEditComment}
-          currentUserId={userId}
-          onNicknameClick={handleNicknameClick}
-        />
-      ))}
+      <div className="mt-6 w-full max-w-md space-y-6">
+        {posts.map((post) => (
+          <Post
+            key={post.id}
+            postId={post.id}
+            user={{ nickname: post.user.nickname, userId: post.user.userId }}
+            content={post.content}
+            imageUrls={post.imageUrls || []}
+            likes={post.likes || 0}
+            dislikes={post.dislikes || 0}
+            userReaction={userReactionMap[post.id] || null}
+            comments={post.comments?.map(c => ({
+              user: c.user,
+              text: c.text,
+              userId: c.userId || 'anonymous',
+            })) || []}
+            onLike={handleLike}
+            onDislike={handleDislike}
+            onComment={handleComment}
+            onDeleteComment={handleDeleteComment}
+            onEditComment={handleEditComment}
+            currentUserId={userId}
+            onNicknameClick={handleNicknameClick}
+          />
+        ))}
+      </div>
 
       {messageTargetUser && (
         <MessageRequestModal

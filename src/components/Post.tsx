@@ -65,70 +65,112 @@ export const Post: React.FC<PostProps> = ({
   };
 
   return (
-    <div className="border rounded-xl p-4 mb-4 bg-white shadow-md">
-      <span
-          className="text-sm text-blue-600 font-semibold cursor-pointer mb-2 inline-block"
-          onClick={() => onNicknameClick(user.nickname, user.userId)} // 🔄 userId도 전달해야 함
-  >
-       {user.nickname}
-      </span>
-      <p className="mb-2 text-base">{content}</p>
+    <div className="bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-4 mb-6 max-w-md w-[90%] mx-auto space-y-3 animate-fade-in">
+      <div
+        className="text-blue-600 font-semibold text-sm cursor-pointer"
+        onClick={() => onNicknameClick(user.nickname, user.userId)}
+      >
+        {user.nickname}
+      </div>
+  
+      <p className="text-gray-800 text-sm">{content}</p>
+  
       {imageUrls.length > 0 && (
-        <div className="flex gap-2 overflow-x-scroll mb-2">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           {imageUrls.map((url, idx) => (
-            <img key={idx} src={url} alt={`post-img-${idx}`} className="h-40 object-cover rounded-lg" />
+            <img
+              key={idx}
+              src={url}
+              alt={`post-img-${idx}`}
+              className="rounded-xl h-36 object-cover flex-shrink-0"
+            />
           ))}
         </div>
       )}
-      <div className="flex items-center gap-4 mb-2">
-        <button className={`text-sm ${userReaction === 'like' ? 'text-blue-600' : 'text-gray-600'}`} onClick={() => onLike(postId)}>
+  
+      <div className="flex items-center gap-6 text-sm text-gray-600">
+        <button
+          className={`transition-colors duration-200 ${
+            userReaction === 'like' ? 'text-blue-500' : 'hover:text-blue-400'
+          }`}
+          onClick={() => onLike(postId)}
+        >
           👍 {likes}
         </button>
-        <button className={`text-sm ${userReaction === 'dislike' ? 'text-red-600' : 'text-gray-600'}`} onClick={() => onDislike(postId)}>
+        <button
+          className={`transition-colors duration-200 ${
+            userReaction === 'dislike' ? 'text-red-500' : 'hover:text-red-400'
+          }`}
+          onClick={() => onDislike(postId)}
+        >
           👎 {dislikes}
         </button>
       </div>
-
-      <div className="mt-2">
+  
+      <div className="pt-2 border-t border-gray-100">
         <input
           type="text"
           value={commentInput}
           onChange={(e) => setCommentInput(e.target.value)}
           placeholder="댓글을 입력하세요"
-          className="w-full border rounded px-3 py-1 text-sm mb-1"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300"
         />
-        <button onClick={handleCommentSubmit} className="text-xs text-blue-600 hover:underline">댓글 달기</button>
-
-        <div className="mt-2 text-sm text-gray-700">
+        <button
+          onClick={handleCommentSubmit}
+          className="text-blue-600 hover:underline text-xs mt-1"
+        >
+          댓글 달기
+        </button>
+  
+        <div className="mt-3 space-y-2 text-sm text-gray-700">
           {comments.map((c, idx) => (
-            <div key={idx} className="border-t pt-1 mt-1">
-              <strong
-  className="text-blue-600 cursor-pointer"
-  onClick={() => onNicknameClick(c.user, c.userId)}
->
-  {c.user}
-</strong>:&nbsp;
-              {editingIdx === idx ? (
-                <>
+            <div key={idx} className="border-t pt-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span
+                    className="text-blue-600 font-medium cursor-pointer"
+                    onClick={() => onNicknameClick(c.user, c.userId)}
+                  >
+                    {c.user}
+                  </span>
+                  <span className="ml-2">{editingIdx === idx ? null : c.text}</span>
+                </div>
+  
+                {c.userId === currentUserId && editingIdx !== idx && (
+                  <div className="text-xs space-x-2">
+                    <button
+                      className="text-blue-500"
+                      onClick={() => handleEdit(idx, c.text)}
+                    >
+                      수정
+                    </button>
+                    <button
+                      className="text-red-500"
+                      onClick={() => onDeleteComment(postId, idx)}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
+              </div>
+  
+              {editingIdx === idx && (
+                <div className="mt-2 space-y-1">
                   <input
                     type="text"
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="border px-2 py-1 text-sm w-full"
+                    className="w-full px-3 py-1 border rounded-md text-sm"
                   />
-                  <button className="text-blue-500 text-xs mr-2" onClick={handleEditSubmit}>저장</button>
-                  <button className="text-gray-500 text-xs" onClick={() => setEditingIdx(null)}>취소</button>
-                </>
-              ) : (
-                <>
-                  {c.text}
-                  {c.userId === currentUserId && (
-                    <div className="text-xs mt-1 text-right">
-                      <button className="text-blue-600 mr-2" onClick={() => handleEdit(idx, c.text)}>수정</button>
-                      <button className="text-red-600" onClick={() => onDeleteComment(postId, idx)}>삭제</button>
-                    </div>
-                  )}
-                </>
+                  <div className="text-xs space-x-2 text-right">
+                    <button className="text-blue-600" onClick={handleEditSubmit}>
+                      저장
+                    </button>
+                    <button className="text-gray-500" onClick={() => setEditingIdx(null)}>
+                      취소
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           ))}
@@ -136,4 +178,5 @@ export const Post: React.FC<PostProps> = ({
       </div>
     </div>
   );
+  
 };
