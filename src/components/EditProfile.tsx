@@ -37,7 +37,7 @@ export const EditProfile: React.FC = () => {
         intro,
       });
       setMessage('✅ 저장 완료!');
-      setTimeout(() => navigate('/profile'), 1000);
+      setTimeout(() => navigate(-1), 1000);
     } catch (error) {
       console.error(error);
       setMessage('❌ 저장 실패');
