@@ -132,27 +132,26 @@ export const Post: React.FC<PostProps> = ({
         {dislikes}
       </button>
     </div>
-        {/* 댓글 입력창 */}
-    <div className="pt-2 border-t border-pink-100">
-      <div className="flex items-center gap-2 mt-3">
-        <input
-          type="text"
-          value={commentInput}
-          onChange={(e) => setCommentInput(e.target.value)}
-          placeholder="댓글 달기..."
-          className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-pink-300"
-        />
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCommentSubmit();
-          }}
-          className="text-pink-500 hover:text-pink-600 flex items-center justify-center w-8 h-8 rounded-full"
-        >
-          {/* ← 네모 밖으로 나가는 문제를 방지하고, 크기 고정 */}
-          <Send className="w-5 h-5" />
-        </button>
-      </div>
+      {/* 댓글 입력창 */}
+<div className="pt-2 border-t border-pink-100">
+  <div className="flex items-center gap-2 mt-3">
+    <input
+      type="text"
+      value={commentInput}
+      onChange={(e) => setCommentInput(e.target.value)}
+      placeholder="댓글 달기..."
+      className="flex-[0.9] px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-pink-300"
+    />
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        handleCommentSubmit();
+      }}
+      className="w-9 h-9 min-w-[2.25rem] min-h-[2.25rem] text-pink-500 hover:text-pink-600 flex items-center justify-center rounded-full bg-white border border-gray-200"
+    >
+      <Send className="w-5 h-5" />
+    </button>
+  </div>
         {/* 댓글 목록 */}
         <div className="mt-4 space-y-2 text-sm">
           {comments.map((c, idx) => (
