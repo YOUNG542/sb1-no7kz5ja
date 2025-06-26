@@ -47,6 +47,9 @@ import { db } from './firebase/config';
 
 import { incrementDailyMessageRequest } from './components/incrementDailyMessageRequest';
 import { addDoc, collection, doc, updateDoc, increment } from 'firebase/firestore';
+import { isMaintenanceTime } from './utils/timeUtils';
+import { MaintenanceModal } from './components/MaintenanceModal';
+
 
 function App() {
   const [showGenderNotice, setShowGenderNotice] = useState(false);
@@ -70,6 +73,15 @@ function App() {
     };
   }>({});
   const [showRoomNotice, setShowRoomNotice] = useState(false);
+  const [showMaintenance, setShowMaintenance] = useState(false);
+
+
+  useEffect(() => {
+    const exceptionUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83', 'Pvzyoi8VgPMtME0GwstPCXf7wsK2'];
+    if (isMaintenanceTime() && !exceptionUIDs.includes(uid || '')) {
+      setShowMaintenance(true);
+    }
+  }, [uid]);
 
 
   useEffect(() => {
@@ -78,6 +90,8 @@ function App() {
       setShowGenderNotice(true);
     }
   }, []);
+
+
 
   useEffect(() => {
     const introSeen = localStorage.getItem('introSeen');
@@ -395,6 +409,15 @@ function App() {
     setUsers(updatedUsers);
     setShowMessageModal(null);
   };
+
+  const handleMaintenanceClose = () => {
+    window.close(); // 브라우저에서 작동안 할 수 있으니 대안 추가
+    window.location.href = 'about:blank';
+  };
+
+  if (showMaintenance) {
+    return <MaintenanceModal onClose={handleMaintenanceClose} />;
+  }
 
   const handleAcceptRequest = async (requestId: string) => {
     const request = messageRequests.find((r) => r.id === requestId);
