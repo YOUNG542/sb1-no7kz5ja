@@ -7,6 +7,7 @@ import {
   updateDoc,
   arrayUnion,
   increment,
+  setDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { ThumbsUp, ThumbsDown, Send } from 'lucide-react';
@@ -61,6 +62,21 @@ export const PostDetail: React.FC = () => {
     };
     fetch();
   }, [postId, userId]);
+
+  const handleSendMessageRequest = async (message: string) => {
+    if (!messageTargetUser || userId === 'anonymous') return;
+    const requestId = `req_${Date.now()}`;
+    await setDoc(doc(db, 'messageRequests', requestId), {
+      id: requestId,
+      fromUserId: userId,
+      toUserId: messageTargetUser.id,
+      message,
+      status: 'pending',
+      timestamp: Date.now(),
+    });
+    alert('메시지 요청을 보냈습니다!');
+    setMessageTargetUser(null);
+  };
 
   const handleCommentSubmit = async () => {
     if (!post || !commentInput.trim()) return;
@@ -151,18 +167,21 @@ export const PostDetail: React.FC = () => {
         <p className="text-gray-800 text-sm whitespace-pre-line">{post.content}</p>
 
         {post.imageUrls?.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto">
-            {post.imageUrls.map((url, idx) => (
-              <img
-                key={idx}
-                src={url}
-                alt={`img-${idx}`}
-                className="h-40 rounded-xl object-cover cursor-pointer"
-                onClick={() => setEnlargedImage(url)}
-              />
-            ))}
-          </div>
-        )}
+  <div className="flex gap-2 overflow-x-auto">
+    {post.imageUrls.map((url, idx) => (
+      <img
+        key={idx}
+        src={url}
+        alt={`img-${idx}`}
+        className="h-40 rounded-xl object-cover cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation(); // ✅ 다른 이벤트로부터 분리
+          setEnlargedImage(url); // ✅ 확대
+        }}
+      />
+    ))}
+  </div>
+)}
 
         <div className="flex gap-4">
           <button
@@ -269,6 +288,14 @@ export const PostDetail: React.FC = () => {
           onClose={() => setMessageTargetUser(null)}
         />
       )}
+
+{messageTargetUser && (
+  <MessageRequestModal
+    targetUser={messageTargetUser}
+    onSend={handleSendMessageRequest}
+    onClose={() => setMessageTargetUser(null)}
+  />
+)}
     </div>
   );
 };
