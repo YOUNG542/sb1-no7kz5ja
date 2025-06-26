@@ -10,11 +10,13 @@ import {
 import { db } from '../firebase/config';
 import { getAuth } from 'firebase/auth';
 import { ComplaintForm } from './ComplaintForm';
-
+import { useNavigate } from 'react-router-dom';
 interface PostData {
   id: string;
   content: string;
   imageUrls?: string[];
+  likes?: number;
+  comments?: { user: string; userId: string; text: string }[];
 }
 
 export const ProfileScreen: React.FC = () => {
@@ -34,7 +36,7 @@ export const ProfileScreen: React.FC = () => {
   const [editImages, setEditImages] = useState<string[]>([]);
   const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
-
+  const navigate = useNavigate();
   const storage = getStorage();
 
   useEffect(() => {
@@ -159,9 +161,9 @@ export const ProfileScreen: React.FC = () => {
       <h2 className="text-lg font-bold mt-10 mb-3 border-b border-gray-200 pb-1">내가 쓴 글</h2>
       {myPosts.length === 0 && <p className="text-sm text-gray-500">아직 작성한 글이 없습니다.</p>}
       {myPosts.map((post) => (
-        <div key={post.id} className="border p-3 rounded-lg mb-3 bg-white shadow-sm">
-          {editPostId === post.id ? (
-            <>
+  <div key={post.id} className="border p-3 rounded-lg mb-3 bg-white shadow-sm">
+    {editPostId === post.id ? (
+      <>
               <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full border rounded p-2 text-sm mb-2" />
               <div className="flex gap-2 mb-2 overflow-x-auto">
                 {editImages.map((url, idx) => (
@@ -212,40 +214,61 @@ export const ProfileScreen: React.FC = () => {
                   setRemovedImageUrls([]);
                 }}>취소</button>
               </div>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-gray-800 mb-1">{post.content}</p>
-              {post.imageUrls && post.imageUrls.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto mb-2">
-                  {post.imageUrls.map((url, idx) => (
-                    <img key={idx} src={url} className="h-24 rounded" />
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-4 text-xs">
-                <button className="text-blue-500 underline" onClick={() => {
-                  setEditPostId(post.id);
-                  setEditContent(post.content);
-                  setEditImages(post.imageUrls || []);
-                  setNewImageFiles([]);
-                  setRemovedImageUrls([]);
-                }}>수정</button>
-                <button className="text-red-500 underline" onClick={async () => {
-                  const ok = window.confirm('정말 삭제할까요?');
-                  if (!ok) return;
-                  try {
-                    await deleteDoc(doc(db, 'posts', post.id));
-                    alert('삭제되었습니다.');
-                  } catch (err) {
-                    alert('삭제 실패');
-                  }
-                }}>삭제하기</button>
-              </div>
-            </>
-          )}
+              </>
+    ) : (
+      <div
+        onClick={() => navigate(`/posts/${post.id}`)}
+        className="cursor-pointer hover:shadow-md transition"
+      >
+        <p className="text-sm text-gray-800 mb-1">{post.content}</p>
+        {post.imageUrls && post.imageUrls.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto mb-2">
+            {post.imageUrls.map((url, idx) => (
+              <img key={idx} src={url} className="h-24 rounded" />
+            ))}
+          </div>
+        )}
+        <div className="flex justify-between items-center text-xs text-gray-500">
+          <div className="flex gap-3">
+            <span>♥ {post.likes || 0}</span>
+            <span>💬 {post.comments?.length || 0}</span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="text-blue-500 underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditPostId(post.id);
+                setEditContent(post.content);
+                setEditImages(post.imageUrls || []);
+                setNewImageFiles([]);
+                setRemovedImageUrls([]);
+              }}
+            >
+              수정
+            </button>
+            <button
+              className="text-red-500 underline"
+              onClick={async (e) => {
+                e.stopPropagation();
+                const ok = window.confirm('정말 삭제할까요?');
+                if (!ok) return;
+                try {
+                  await deleteDoc(doc(db, 'posts', post.id));
+                  alert('삭제되었습니다.');
+                } catch (err) {
+                  alert('삭제 실패');
+                }
+              }}
+            >
+              삭제하기
+            </button>
+          </div>
         </div>
-      ))}
-    </div>
-  );
-};
+      </div>
+    )}
+  </div>
+))}
+  </div>  // ✅ 요거 추가해줘야 함!
+);
+            }
