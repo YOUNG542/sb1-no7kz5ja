@@ -38,4 +38,4 @@ export interface Message {
 }
 
 
-export type Screen = 'setup' | 'feed' | 'posts' | 'chat' | 'requests' | 'profile';
+export type Screen = 'setup' | 'feed' | 'posts' | 'chat' | 'requests' | 'profile' | 'upload';

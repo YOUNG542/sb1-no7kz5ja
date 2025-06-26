@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Pencil } from 'lucide-react';
 import { Post } from './Post';
 import { db } from '../firebase/config';
 import {
@@ -12,9 +13,13 @@ import {
   setDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { PostUploadForm } from './PostUploadForm';
 import { MessageRequestModal } from './MessageRequestModal';
 import { User } from '../types';
+
+
+interface PostFeedProps {
+  onGoToUpload: () => void;
+}
 
 interface PostData {
   id: string;
@@ -27,7 +32,8 @@ interface PostData {
   comments?: { user: string; userId: string; text: string }[];
 }
 
-export const PostFeed: React.FC = () => {
+export const PostFeed: React.FC<PostFeedProps> = ({ onGoToUpload }) => {
+
   const [posts, setPosts] = useState<PostData[]>([]);
   const [userReactionMap, setUserReactionMap] = useState<Record<string, 'like' | 'dislike' | null>>({});
   const [userNickname, setUserNickname] = useState('익명');
@@ -191,38 +197,47 @@ export const PostFeed: React.FC = () => {
 
   
   return (
-    <div className="px-4 pt-4 pb-16 w-full flex flex-col items-center">
-      <div className="w-full max-w-md">
-        <PostUploadForm />
+    <div className="px-4 pt-6 pb-16 w-full flex flex-col items-center">
+      {/* ✅ 상단 제목 + 펜 버튼 */}
+      <div className="w-full max-w-md flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-gray-800">포스트</h2>
+        <button
+          onClick={onGoToUpload}
+          className="text-gray-500 hover:text-pink-500 transition"
+        >
+          <Pencil size={20} />
+        </button>
       </div>
 
-      <div className="mt-6 w-full max-w-md space-y-6">
+      {/* ✅ 포스트 리스트 */}
+      <div className="w-full max-w-md space-y-6">
         {posts.map((post) => (
-          <Post
-            key={post.id}
-            postId={post.id}
-            user={{ nickname: post.user.nickname, userId: post.user.userId }}
-            content={post.content}
-            imageUrls={post.imageUrls || []}
-            likes={post.likes || 0}
-            dislikes={post.dislikes || 0}
-            userReaction={userReactionMap[post.id] || null}
-            comments={post.comments?.map(c => ({
-              user: c.user,
-              text: c.text,
-              userId: c.userId || 'anonymous',
-            })) || []}
-            onLike={handleLike}
-            onDislike={handleDislike}
-            onComment={handleComment}
-            onDeleteComment={handleDeleteComment}
-            onEditComment={handleEditComment}
-            currentUserId={userId}
-            onNicknameClick={handleNicknameClick}
-          />
+         <Post
+         key={post.id}
+         postId={post.id}
+         user={{ nickname: post.user.nickname, userId: post.user.userId }}
+         content={post.content}
+         imageUrls={post.imageUrls || []}
+         likes={post.likes || 0}
+         dislikes={post.dislikes || 0}
+         userReaction={userReactionMap[post.id] || null}
+         comments={post.comments?.map(c => ({
+           user: c.user,
+           text: c.text,
+           userId: c.userId || 'anonymous',
+         })) || []}
+         onLike={handleLike}
+         onDislike={handleDislike}
+         onComment={handleComment}
+         onDeleteComment={handleDeleteComment}
+         onEditComment={handleEditComment}
+         currentUserId={userId}
+         onNicknameClick={handleNicknameClick}
+       />
         ))}
       </div>
 
+      {/* 쪽지 모달 */}
       {messageTargetUser && (
         <MessageRequestModal
           targetUser={messageTargetUser}

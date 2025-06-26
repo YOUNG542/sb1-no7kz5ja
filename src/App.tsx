@@ -12,7 +12,7 @@ import { getDAUForDates } from './components/checkDAU';
 import { BackgroundAura } from './components/BackgroundAura';
 import { limit, orderBy } from 'firebase/firestore';
 import { onSnapshot, query, where } from 'firebase/firestore';
-
+import { PostUploadForm } from './components/PostUploadForm';
 import React, { useState, useEffect } from 'react';
 import { ProfileSetup } from './components/ProfileSetup';
 import { ProfileFeed } from './components/ProfileFeed';
@@ -599,7 +599,16 @@ function App() {
         />
       )}
   
-      {currentScreen === 'posts' && <PostFeed />}
+  {currentScreen === 'posts' && (
+  <PostFeed onGoToUpload={() => setCurrentScreen('upload')} />
+)}
+
+      {currentScreen === 'upload' && (
+  <div className="px-4 pt-6 pb-20 max-w-md mx-auto">
+    <PostUploadForm />
+  </div>
+)}
+
       {currentScreen === 'requests' && (
         <MessageRequests
           requests={messageRequests.filter((r) => r.toUserId === currentUser.id)}

@@ -72,25 +72,25 @@ export const PostUploadForm: React.FC = () => {
   };
 
   return (
-    <div className="p-4 bg-white border-b border-gray-200 shadow-sm">
+    <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-6 w-full max-w-md mx-auto space-y-4">
+      <h2 className="text-lg font-semibold text-gray-800">오늘의 이야기 작성하기</h2>
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="오늘 있었던 일을 공유해보세요..."
-        className="w-full border rounded-lg p-2 text-sm mb-2"
-        rows={3}
+        className="w-full border rounded-xl p-3 text-sm resize-none h-32"
       />
       <input
         type="file"
         multiple
         accept="image/*"
         onChange={handleImageChange}
-        className="mb-2"
+        className="text-sm"
       />
       <button
         onClick={handleSubmit}
         disabled={isSubmitting}
-        className="px-4 py-1 bg-pink-600 text-white text-sm rounded hover:bg-pink-700"
+        className="w-full py-2 rounded-xl bg-pink-600 text-white text-sm hover:bg-pink-700 transition"
       >
         {isSubmitting ? '업로드 중...' : '게시하기'}
       </button>
