@@ -15,7 +15,7 @@ import {
 import { getAuth } from 'firebase/auth';
 import { MessageRequestModal } from './MessageRequestModal';
 import { User } from '../types';
-
+import { query, orderBy } from 'firebase/firestore';
 
 interface PostFeedProps {
   onGoToUpload: () => void;
@@ -56,22 +56,27 @@ export const PostFeed: React.FC<PostFeedProps> = ({ onGoToUpload }) => {
   }, [userId]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'posts'), (snapshot) => {
+    const postsQuery = query(
+      collection(db, 'posts'),
+      orderBy('createdAt', 'desc') // 최신순 정렬!
+    );
+  
+    const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
       const data: PostData[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data()
       } as PostData));
-
+  
       const reactionState: Record<string, 'like' | 'dislike' | null> = {};
       data.forEach((post) => {
         const reaction = post.reactions?.find((r) => r.userId === userId);
         reactionState[post.id] = reaction?.type ?? null;
       });
-
+  
       setPosts(data);
       setUserReactionMap(reactionState);
     });
-
+  
     return () => unsubscribe();
   }, [userId]);
 
