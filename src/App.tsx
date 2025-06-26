@@ -3,6 +3,7 @@ declare global {
     standalone?: boolean;
   }
 }
+import { BrowserRouter } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { PostFeed } from './components/PostFeed';
 import { trackDAU } from './components/trackDAU';
@@ -676,4 +677,12 @@ function App() {
   
 }
 
-export default App;
+
+
+export default function WrappedApp() {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+}
