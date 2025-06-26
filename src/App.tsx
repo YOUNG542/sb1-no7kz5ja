@@ -50,8 +50,8 @@ import { db } from './firebase/config';
 
 import { incrementDailyMessageRequest } from './components/incrementDailyMessageRequest';
 import { addDoc, collection, doc, updateDoc, increment } from 'firebase/firestore';
-import { isMaintenanceTime } from './utils/timeUtils';
-import { MaintenanceModal } from './components/MaintenanceModal';
+
+
 
 
 function App() {
@@ -76,26 +76,19 @@ function App() {
     };
   }>({});
   const [showRoomNotice, setShowRoomNotice] = useState(false);
-  const [showMaintenance, setShowMaintenance] = useState(false);
+  const POST_NOTICE_VERSION = 'v2-post-feature';
 
-
-  useEffect(() => {
-    if (!uid) return; // ✅ uid가 아직 undefined/null이면 실행하지 않음
-  
-    const exceptionUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83', 'Pvzyoi8VgPMtME0GwstPCXf7wsK2'];
-  
-    if (isMaintenanceTime() && !exceptionUIDs.includes(uid)) {
-      setShowMaintenance(true); // ✅ 유지보수 중 + 예외 아님 → 모달 띄움
-    }
-  }, [uid]);
 
 
   useEffect(() => {
-    const seen = localStorage.getItem('genderNoticeSeen');
-    if (!seen) {
-      setShowGenderNotice(true);
+    const seenVersion = localStorage.getItem('seenPostNoticeVersion');
+    if (seenVersion !== POST_NOTICE_VERSION) {
+      setShowNotice(true);
+      localStorage.setItem('seenPostNoticeVersion', POST_NOTICE_VERSION);
     }
   }, []);
+
+ 
 
 
 
@@ -106,13 +99,7 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    const hasSeenPostNotice = localStorage.getItem('hasSeenPostNotice');
-    if (!hasSeenPostNotice) {
-      setShowNotice(true);
-      localStorage.setItem('hasSeenPostNotice', 'true');
-    }
-  }, []);
+ 
 
   // ✅ 새 버전 서비스워커 적용 시 자동 새로고침
   useEffect(() => {
@@ -416,15 +403,9 @@ function App() {
     setShowMessageModal(null);
   };
 
-  const handleMaintenanceClose = () => {
-    window.close(); // 브라우저에서 작동안 할 수 있으니 대안 추가
-    window.location.href = 'about:blank';
-  };
+  
 
-  if (showMaintenance) {
-    return <MaintenanceModal onClose={handleMaintenanceClose} />;
-  }
-
+  
   const handleAcceptRequest = async (requestId: string) => {
     const request = messageRequests.find((r) => r.id === requestId);
     if (!request || !currentUser) return;
@@ -568,17 +549,44 @@ function App() {
       <PwaPrompt />
   
      {/* ✅ 테스트 공지 배너 */}
-{showNotice && (
-  <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded shadow text-sm">
-    ⚠️ 현재 더 나은 사용자 경험을 위해 포스트 기능은 테스트 중이며, 일부 기능이 제대로 작동하지 않을 수 있습니다. 
-    <br className="hidden sm:block" />
-    가능하면 사용을 자제해 주세요.
-    <button
-      className="ml-3 text-xs underline"
-      onClick={() => setShowNotice(false)}
-    >
-      닫기
-    </button>
+     {showNotice && (
+  <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-md bg-white/90 backdrop-blur-md border border-blue-300 text-blue-900 px-6 py-4 rounded-2xl shadow-lg animate-fade-in">
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-3">
+        <div className="mt-1 text-blue-500">
+          <svg
+            className="w-5 h-5 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M13 16h-1v-4h-1m1-4h.01M12 19c4 0 7-3 7-7s-3-7-7-7-7 3-7 7 3 7 7 7z"
+            />
+          </svg>
+        </div>
+        <div className="text-sm leading-snug">
+          <p className="font-semibold">✨ 새로운 기능이 추가되었어요!</p>
+          <p className="mt-1">
+            이제 <span className="font-semibold text-blue-600">포스트</span>를 통해
+            여러분의 일상을 자유롭게 공유할 수 있어요. <br />
+            사진과 글을 남기고, 앱 내 다른 학우들과 더욱 가까워지세요!
+          </p>
+          <p className="mt-1 text-sm text-blue-700">
+            포스트를 올린 사람에게 직접 <span className="font-semibold">메시지</span>도 보낼 수 있답니다 💬
+          </p>
+        </div>
+      </div>
+      <button
+        onClick={() => setShowNotice(false)}
+        className="text-sm text-blue-500 hover:underline mt-1"
+      >
+        닫기
+      </button>
+    </div>
   </div>
 )}
 
