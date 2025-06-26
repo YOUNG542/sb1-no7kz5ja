@@ -197,68 +197,73 @@ export const PostFeed: React.FC<PostFeedProps> = ({ onGoToUpload }) => {
 
   
   return (
-    <div className="px-4 pt-6 pb-16 w-full flex flex-col items-center">
+    <div className="px-4 pt-8 pb-20 w-full flex flex-col items-center bg-pink-50 min-h-screen">
       {/* ✅ 상단 제목 + 펜 버튼 */}
-      <div className="w-full max-w-md flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">포스트</h2>
+      <div className="w-full max-w-md flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-pink-600 tracking-tight">포스트 피드</h2>
         <button
           onClick={onGoToUpload}
-          className="text-gray-500 hover:text-pink-500 transition"
+          className="text-pink-500 hover:text-pink-700 transition"
+          title="글쓰기"
         >
-          <Pencil size={20} />
+          <Pencil size={22} />
         </button>
       </div>
-
+  
       {/* ✅ 포스트 리스트 */}
       <div className="w-full max-w-md space-y-6">
         {posts.map((post) => (
-         <Post
-         key={post.id}
-         postId={post.id}
-         user={{ nickname: post.user.nickname, userId: post.user.userId }}
-         content={post.content}
-         imageUrls={post.imageUrls || []}
-         likes={post.likes || 0}
-         dislikes={post.dislikes || 0}
-         userReaction={userReactionMap[post.id] || null}
-         comments={post.comments?.map(c => ({
-           user: c.user,
-           text: c.text,
-           userId: c.userId || 'anonymous',
-         })) || []}
-         onLike={handleLike}
-         onDislike={handleDislike}
-         onComment={handleComment}
-         onDeleteComment={handleDeleteComment}
-         onEditComment={handleEditComment}
-         currentUserId={userId}
-         onNicknameClick={handleNicknameClick}
-         onImageClick={setEnlargedImage}
-       />
+          <Post
+            key={post.id}
+            postId={post.id}
+            user={{ nickname: post.user.nickname, userId: post.user.userId }}
+            content={post.content}
+            imageUrls={post.imageUrls || []}
+            likes={post.likes || 0}
+            dislikes={post.dislikes || 0}
+            userReaction={userReactionMap[post.id] || null}
+            comments={post.comments?.map((c) => ({
+              user: c.user,
+              text: c.text,
+              userId: c.userId || 'anonymous',
+            })) || []}
+            onLike={handleLike}
+            onDislike={handleDislike}
+            onComment={handleComment}
+            onDeleteComment={handleDeleteComment}
+            onEditComment={handleEditComment}
+            currentUserId={userId}
+            onNicknameClick={handleNicknameClick}
+            onImageClick={setEnlargedImage}
+          />
         ))}
       </div>
-
+  
       {/* 쪽지 모달 */}
       {messageTargetUser && (
         <MessageRequestModal
           targetUser={messageTargetUser}
-          onSend={(message) => handleMessageRequest(messageTargetUser.id, message)}
+          onSend={(message) =>
+            handleMessageRequest(messageTargetUser.id, message)
+          }
           onClose={() => setMessageTargetUser(null)}
         />
       )}
-     {/* ✅ 확대 이미지 모달 */}
-     {enlargedImage && (
-      <div
-        className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-        onClick={() => setEnlargedImage(null)}
-      >
-        <img
-          src={enlargedImage}
-          alt="확대 이미지"
-          className="max-w-full max-h-full rounded-lg shadow-lg"
-        />
-      </div>
-    )}
-  </div>
+  
+      {/* ✅ 확대 이미지 모달 */}
+      {enlargedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setEnlargedImage(null)}
+        >
+          <img
+            src={enlargedImage}
+            alt="확대 이미지"
+            className="max-w-full max-h-full rounded-lg shadow-lg"
+          />
+        </div>
+      )}
+    </div>
   );
+  
 };

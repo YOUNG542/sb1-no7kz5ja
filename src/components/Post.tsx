@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
+
 interface SimplifiedUser {
   nickname: string;
   userId: string;
@@ -34,11 +35,11 @@ export const Post: React.FC<PostProps> = ({
   likes,
   dislikes,
   userReaction,
-  currentUserId, // ✅ props로 받아옴
+  currentUserId,
   comments,
   onComment,
-  onDeleteComment, // ✅ props로 받아옴
-  onEditComment,   // ✅ props로 받아옴
+  onDeleteComment,
+  onEditComment,
   onNicknameClick,
   onImageClick
 }) => {
@@ -67,91 +68,91 @@ export const Post: React.FC<PostProps> = ({
   };
 
   return (
-    <div className="bg-pink-50 border border-pink-200 rounded-2xl shadow-md p-4 mb-6 max-w-md w-[90%] mx-auto space-y-3 animate-fade-in">
+    <div className="bg-pink-50 border border-pink-100 rounded-2xl shadow-md p-5 mb-6 max-w-md w-[90%] mx-auto space-y-4 animate-fade-in">
       <div
-  className="text-pink-600 font-semibold text-sm cursor-pointer"
-  onClick={() => onNicknameClick(user.nickname, user.userId)}
->
-  {user.nickname}
-</div>
-  
-      <p className="text-gray-800 text-sm">{content}</p>
-  
-      {imageUrls.length > 0 && (
-  <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-    {imageUrls.map((url, idx) => (
-      <img
-        key={idx}
-        src={url}
-        alt={`post-img-${idx}`}
-        className="rounded-xl h-36 object-cover flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
-        onClick={() => onImageClick(url)} // ✅ 이미지 클릭 시 확대
-      />
-    ))}
-  </div>
-)}
+        className="text-pink-600 text-sm font-medium cursor-pointer"
+        onClick={() => onNicknameClick(user.nickname, user.userId)}
+      >
+        {user.nickname}
+      </div>
 
-  
-<div className="flex items-center gap-6 text-sm text-pink-600">
-  <button
-    className={`flex items-center gap-1 transition-colors duration-200 ${
-      userReaction === 'like' ? 'text-pink-500' : 'hover:text-pink-400'
-    }`}
-    onClick={() => onLike(postId)}
-  >
-    <ThumbsUp className="w-4 h-4" />
-    {likes}
-  </button>
-  <button
-    className={`flex items-center gap-1 transition-colors duration-200 ${
-      userReaction === 'dislike' ? 'text-pink-500' : 'hover:text-pink-400'
-    }`}
-    onClick={() => onDislike(postId)}
-  >
-    <ThumbsDown className="w-4 h-4" />
-    {dislikes}
-  </button>
-</div>
-  
-      <div className="pt-2 border-t border-gray-100">
-        <input
-          type="text"
-          value={commentInput}
-          onChange={(e) => setCommentInput(e.target.value)}
-          placeholder="댓글을 입력하세요"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300"
-        />
+      <p className="text-gray-800 text-sm leading-relaxed">{content}</p>
+
+      {imageUrls.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          {imageUrls.map((url, idx) => (
+            <img
+              key={idx}
+              src={url}
+              alt={`post-img-${idx}`}
+              className="rounded-xl h-36 object-cover flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+              onClick={() => onImageClick(url)}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center gap-4 text-sm">
         <button
-  onClick={handleCommentSubmit}
-  className="text-pink-600 hover:text-pink-400 mt-1"
->
-  <MessageCircle className="w-4 h-4" />
-</button>
-  
-        <div className="mt-3 space-y-2 text-sm text-gray-700">
+          onClick={() => onLike(postId)}
+          className={`flex items-center gap-1 px-3 py-1 rounded-full text-pink-600 hover:bg-pink-100 transition ${
+            userReaction === 'like' ? 'bg-pink-200 font-semibold' : ''
+          }`}
+        >
+          <ThumbsUp className="w-4 h-4" />
+          {likes}
+        </button>
+        <button
+          onClick={() => onDislike(postId)}
+          className={`flex items-center gap-1 px-3 py-1 rounded-full text-pink-600 hover:bg-pink-100 transition ${
+            userReaction === 'dislike' ? 'bg-pink-200 font-semibold' : ''
+          }`}
+        >
+          <ThumbsDown className="w-4 h-4" />
+          {dislikes}
+        </button>
+      </div>
+
+      <div className="pt-3 border-t border-pink-100">
+        <div className="flex items-center gap-2 mt-2">
+          <input
+            type="text"
+            value={commentInput}
+            onChange={(e) => setCommentInput(e.target.value)}
+            placeholder="댓글 달기..."
+            className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-pink-300"
+          />
+          <button
+            onClick={handleCommentSubmit}
+            className="text-pink-500 hover:text-pink-600"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="mt-4 space-y-2 text-sm">
           {comments.map((c, idx) => (
-            <div key={idx} className="border-t pt-2">
+            <div key={idx} className="bg-white border border-gray-200 rounded-lg px-3 py-2">
               <div className="flex justify-between items-start">
                 <div>
                   <span
-                    className="text-blue-600 font-medium cursor-pointer"
+                    className="text-pink-600 font-medium cursor-pointer"
                     onClick={() => onNicknameClick(c.user, c.userId)}
                   >
                     {c.user}
                   </span>
                   <span className="ml-2">{editingIdx === idx ? null : c.text}</span>
                 </div>
-  
                 {c.userId === currentUserId && editingIdx !== idx && (
                   <div className="text-xs space-x-2">
                     <button
-                      className="text-blue-500"
+                      className="text-pink-500"
                       onClick={() => handleEdit(idx, c.text)}
                     >
                       수정
                     </button>
                     <button
-                      className="text-red-500"
+                      className="text-gray-400"
                       onClick={() => onDeleteComment(postId, idx)}
                     >
                       삭제
@@ -159,17 +160,17 @@ export const Post: React.FC<PostProps> = ({
                   </div>
                 )}
               </div>
-  
+
               {editingIdx === idx && (
                 <div className="mt-2 space-y-1">
                   <input
                     type="text"
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="w-full px-3 py-1 border rounded-md text-sm"
+                    className="w-full px-3 py-1 border border-pink-300 rounded-md text-sm"
                   />
                   <div className="text-xs space-x-2 text-right">
-                    <button className="text-blue-600" onClick={handleEditSubmit}>
+                    <button className="text-pink-600" onClick={handleEditSubmit}>
                       저장
                     </button>
                     <button className="text-gray-500" onClick={() => setEditingIdx(null)}>
@@ -184,5 +185,4 @@ export const Post: React.FC<PostProps> = ({
       </div>
     </div>
   );
-  
 };
