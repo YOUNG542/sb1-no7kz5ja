@@ -15,14 +15,13 @@ export const MessageRequestModal: React.FC<MessageRequestModalProps> = ({
 }) => {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-
+  
   const handleSend = async () => {
     if (!message.trim()) return;
-    
+  
     setIsSending(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    onSend(message);
-    onClose();
+    await onSend(message);  // ✅ 먼저 보내고
+    onClose();              // ✅ 그다음 닫기
   };
 
   return (

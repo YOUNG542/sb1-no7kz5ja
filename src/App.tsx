@@ -44,7 +44,7 @@ import {
   getChatRoomsForUser,
 } from './firebase/firestore';
 import { db } from './firebase/config';
-import GenderNoticeModal from './components/GenderNoticeModal';
+
 import { incrementDailyMessageRequest } from './components/incrementDailyMessageRequest';
 import { addDoc, collection, doc, updateDoc, increment } from 'firebase/firestore';
 
@@ -635,14 +635,7 @@ function App() {
         />
       )}
   
-      {showGenderNotice && (
-        <GenderNoticeModal
-          onClose={() => {
-            localStorage.setItem('genderNoticeSeen', 'true');
-            setShowGenderNotice(false);
-          }}
-        />
-      )}
+     
     </div>
   );
   
