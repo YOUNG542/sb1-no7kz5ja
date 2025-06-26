@@ -68,13 +68,14 @@ export const Post: React.FC<PostProps> = ({
   };
 
   return (
-    <div className="bg-pink-50 border border-pink-100 rounded-2xl shadow-md p-5 mb-6 max-w-md w-[90%] mx-auto space-y-4 animate-fade-in">
-      <div
-        className="text-pink-600 text-sm font-medium cursor-pointer"
-        onClick={() => onNicknameClick(user.nickname, user.userId)}
-      >
-        {user.nickname}
-      </div>
+    <div className="bg-gradient-to-br from-pink-50 via-white to-blue-50 border border-pink-100 rounded-2xl shadow-md p-5 mb-6 max-w-md w-[90%] mx-auto space-y-4 animate-fade-in">
+
+<div
+  className="text-pink-600 text-sm font-medium underline underline-offset-2 cursor-pointer hover:opacity-80 transition"
+  onClick={() => onNicknameClick(user.nickname, user.userId)}
+>
+  {user.nickname}
+</div>
 
       <p className="text-gray-800 text-sm leading-relaxed">{content}</p>
 
@@ -135,12 +136,12 @@ export const Post: React.FC<PostProps> = ({
             <div key={idx} className="bg-white border border-gray-200 rounded-lg px-3 py-2">
               <div className="flex justify-between items-start">
                 <div>
-                  <span
-                    className="text-pink-600 font-medium cursor-pointer"
-                    onClick={() => onNicknameClick(c.user, c.userId)}
-                  >
-                    {c.user}
-                  </span>
+                <span
+  className="text-pink-600 font-medium underline underline-offset-2 cursor-pointer hover:opacity-80 transition"
+  onClick={() => onNicknameClick(c.user, c.userId)}
+>
+  {c.user}
+</span>
                   <span className="ml-2">{editingIdx === idx ? null : c.text}</span>
                 </div>
                 {c.userId === currentUserId && editingIdx !== idx && (
