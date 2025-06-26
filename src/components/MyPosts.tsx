@@ -39,11 +39,11 @@ export const MyPosts: React.FC = () => {
     <div className="p-4 max-w-md mx-auto">
       <h2 className="text-xl font-bold mb-4">내가 쓴 글</h2>
       <button
-        onClick={() => navigate('/profile')}
-        className="mb-4 text-sm text-blue-500 underline"
-      >
-        ← 프로필로 돌아가기
-      </button>
+  onClick={() => navigate(-1)}
+  className="mb-4 text-sm text-blue-500 underline"
+>
+  ← 돌아가기
+</button>
 
       {myPosts.length === 0 ? (
         <p className="text-sm text-gray-500">아직 작성한 글이 없습니다.</p>

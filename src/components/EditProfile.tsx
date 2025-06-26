@@ -64,9 +64,9 @@ export const EditProfile: React.FC = () => {
   return (
     <div className="p-4 max-w-md mx-auto">
       {/* 돌아가기 버튼 */}
-      <button onClick={() => navigate('/profile')} className="text-sm text-blue-500 underline mb-4">
-        ← 프로필로 돌아가기
-      </button>
+      <button onClick={() => navigate(-1)} className="text-sm text-blue-500 underline mb-4">
+  ← 돌아가기
+</button>
 
       <h2 className="text-xl font-bold mb-4">프로필 수정</h2>
 
