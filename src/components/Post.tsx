@@ -72,86 +72,87 @@ export const Post: React.FC<PostProps> = ({
       className="relative bg-white border border-pink-100 rounded-xl shadow-lg p-4 mb-6 max-w-md w-[90%] mx-auto space-y-4 transition hover:shadow-xl"
       onClick={() => navigate(`/posts/${postId}`)}
     >
-      {/* 닉네임 */}
-      <div
-        className="absolute top-3 left-4 text-pink-600 text-sm font-bold cursor-pointer hover:opacity-80 z-10"
-        onClick={(e) => {
-          e.stopPropagation();
-          onNicknameClick(user.nickname, user.userId);
-        }}
-      >
-        {user.nickname}
-      </div>
+       {/* 닉네임 */}
+    <div
+      className="absolute top-2 left-4 text-pink-600 text-sm font-bold cursor-pointer hover:opacity-80 z-10"
+      onClick={(e) => {
+        e.stopPropagation();
+        onNicknameClick(user.nickname, user.userId);
+      }}
+    >
+      {user.nickname}
+    </div>
 
-      {/* 이미지 */}
-      {imageUrls.length > 0 && (
-        <div className="w-full rounded-xl overflow-hidden aspect-[4/3]">
-          <img
-            src={imageUrls[0]}
-            alt="post"
-            className="w-full h-full object-cover cursor-pointer transition-transform hover:scale-105"
-            onClick={(e) => {
-              e.stopPropagation();
-              onImageClick(imageUrls[0]);
-            }}
-          />
-        </div>
-      )}
+       {/* 이미지 */}
+    {imageUrls.length > 0 && (
+      <div className="w-full rounded-xl overflow-hidden aspect-[4/3] mt-6">
+        {/* ← 닉네임과 간격 확보를 위해 mt-6 추가 */}
+        <img
+          src={imageUrls[0]}
+          alt="post"
+          className="w-full h-full object-cover cursor-pointer transition-transform hover:scale-105"
+          onClick={(e) => {
+            e.stopPropagation();
+            onImageClick(imageUrls[0]);
+          }}
+        />
+      </div>
+    )}
 
       {/* 본문 내용 */}
-      <div className="text-gray-800 text-[15px] leading-relaxed break-words whitespace-pre-line">
-        {content}
-      </div>
+    <div className="text-gray-800 text-[15px] leading-relaxed break-words whitespace-pre-line">
+      {content}
+    </div>
+
 
       {/* 좋아요 / 싫어요 버튼 */}
       <div className="flex items-center gap-3 text-sm">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onLike(postId);
+        }}
+        className={`flex items-center gap-1 px-3 py-1 rounded-full text-pink-600 hover:bg-pink-100 transition ${
+          userReaction === 'like' ? 'bg-pink-200 font-semibold' : ''
+        }`}
+      >
+        <ThumbsUp className="w-4 h-4" />
+        {likes}
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDislike(postId);
+        }}
+        className={`flex items-center gap-1 px-3 py-1 rounded-full text-pink-600 hover:bg-pink-100 transition ${
+          userReaction === 'dislike' ? 'bg-pink-200 font-semibold' : ''
+        }`}
+      >
+        <ThumbsDown className="w-4 h-4" />
+        {dislikes}
+      </button>
+    </div>
+        {/* 댓글 입력창 */}
+    <div className="pt-2 border-t border-pink-100">
+      <div className="flex items-center gap-2 mt-3">
+        <input
+          type="text"
+          value={commentInput}
+          onChange={(e) => setCommentInput(e.target.value)}
+          placeholder="댓글 달기..."
+          className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-pink-300"
+        />
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onLike(postId);
+            handleCommentSubmit();
           }}
-          className={`flex items-center gap-1 px-3 py-1 rounded-full text-pink-600 hover:bg-pink-100 transition ${
-            userReaction === 'like' ? 'bg-pink-200 font-semibold' : ''
-          }`}
+          className="text-pink-500 hover:text-pink-600 flex items-center justify-center w-8 h-8 rounded-full"
         >
-          <ThumbsUp className="w-4 h-4" />
-          {likes}
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDislike(postId);
-          }}
-          className={`flex items-center gap-1 px-3 py-1 rounded-full text-pink-600 hover:bg-pink-100 transition ${
-            userReaction === 'dislike' ? 'bg-pink-200 font-semibold' : ''
-          }`}
-        >
-          <ThumbsDown className="w-4 h-4" />
-          {dislikes}
+          {/* ← 네모 밖으로 나가는 문제를 방지하고, 크기 고정 */}
+          <Send className="w-5 h-5" />
         </button>
       </div>
-
-      {/* 댓글 입력창 */}
-      <div className="pt-2 border-t border-pink-100">
-        <div className="flex items-center gap-2 mt-3">
-          <input
-            type="text"
-            value={commentInput}
-            onChange={(e) => setCommentInput(e.target.value)}
-            placeholder="댓글 달기..."
-            className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-pink-300"
-          />
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCommentSubmit();
-            }}
-            className="text-pink-500 hover:text-pink-600"
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </div>
-
         {/* 댓글 목록 */}
         <div className="mt-4 space-y-2 text-sm">
           {comments.map((c, idx) => (
