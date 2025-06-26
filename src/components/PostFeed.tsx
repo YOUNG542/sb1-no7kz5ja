@@ -9,8 +9,7 @@ import {
   arrayUnion,
   onSnapshot,
   getDoc,
-  addDoc,
-  serverTimestamp,
+  setDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { PostUploadForm } from './PostUploadForm';
@@ -32,7 +31,7 @@ export const PostFeed: React.FC = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [userReactionMap, setUserReactionMap] = useState<Record<string, 'like' | 'dislike' | null>>({});
   const [userNickname, setUserNickname] = useState('익명');
-  const [messageTargetUser, setMessageTargetUser] = useState<User | null>(null); // ✅ 핵심 추가
+  const [messageTargetUser, setMessageTargetUser] = useState<User | null>(null);
 
   const auth = getAuth();
   const userId = auth.currentUser?.uid || 'anonymous';
@@ -131,13 +130,18 @@ export const PostFeed: React.FC = () => {
     }
 
     try {
-      await addDoc(collection(db, 'messageRequests'), {
+      const timestamp = Date.now();
+      const customId = `req_${timestamp}`;
+
+      await setDoc(doc(db, 'messageRequests', customId), {
+        id: customId,
         fromUserId: userId,
         toUserId: targetUserId,
         message,
-        timestamp: serverTimestamp(),
+        timestamp,
         status: 'pending',
       });
+
       alert('메시지 요청을 보냈습니다!');
     } catch (error) {
       console.error('메시지 요청 실패:', error);
