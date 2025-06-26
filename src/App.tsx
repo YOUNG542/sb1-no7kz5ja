@@ -50,7 +50,9 @@ import { db } from './firebase/config';
 
 import { incrementDailyMessageRequest } from './components/incrementDailyMessageRequest';
 import { addDoc, collection, doc, updateDoc, increment } from 'firebase/firestore';
-
+import { EditProfile } from './components/EditProfile';
+import { MyPosts } from './components/MyPosts';
+import { ComplaintPage } from './components/ComplaintPage';
 
 
 
@@ -686,6 +688,12 @@ function App() {
      
     </div>
      } />
+
+       {/* ✅ 세부 페이지 라우트 추가 */}
+    <Route path="/edit-profile" element={<EditProfile />} />
+    <Route path="/my-posts" element={<MyPosts />} />
+    <Route path="/complaint" element={<ComplaintPage />} />
+    
      <Route path="/posts/:id" element={<PostDetail />} />
    </Routes>
  );
