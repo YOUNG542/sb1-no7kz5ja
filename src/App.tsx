@@ -3,7 +3,9 @@ declare global {
     standalone?: boolean;
   }
 }
+import { Routes, Route } from 'react-router-dom';
 import { BrowserRouter } from 'react-router-dom';
+import { PostDetail } from './components/PostDetail';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { PostFeed } from './components/PostFeed';
 import { trackDAU } from './components/trackDAU';
@@ -558,6 +560,8 @@ function App() {
   }
 
   return (
+    <Routes>
+      <Route path="/" element={
     <div className="relative w-screen min-h-screen overflow-hidden">
       <BackgroundAura />
   
@@ -673,8 +677,10 @@ function App() {
   
      
     </div>
-  );
-  
+     } />
+     <Route path="/posts/:id" element={<PostDetail />} />
+   </Routes>
+ );
 }
 
 
