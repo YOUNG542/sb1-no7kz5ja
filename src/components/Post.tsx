@@ -21,6 +21,7 @@ interface PostProps {
   onDeleteComment: (postId: string, idx: number) => void;
   onEditComment: (postId: string, idx: number, newText: string) => void;
   onNicknameClick: (nickname: string, userId: string) => void;
+  onImageClick: (url: string) => void;
 }
 
 export const Post: React.FC<PostProps> = ({
@@ -39,6 +40,7 @@ export const Post: React.FC<PostProps> = ({
   onDeleteComment, // ✅ props로 받아옴
   onEditComment,   // ✅ props로 받아옴
   onNicknameClick,
+  onImageClick
 }) => {
   const [commentInput, setCommentInput] = useState('');
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
@@ -76,17 +78,19 @@ export const Post: React.FC<PostProps> = ({
       <p className="text-gray-800 text-sm">{content}</p>
   
       {imageUrls.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-          {imageUrls.map((url, idx) => (
-            <img
-              key={idx}
-              src={url}
-              alt={`post-img-${idx}`}
-              className="rounded-xl h-36 object-cover flex-shrink-0"
-            />
-          ))}
-        </div>
-      )}
+  <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+    {imageUrls.map((url, idx) => (
+      <img
+        key={idx}
+        src={url}
+        alt={`post-img-${idx}`}
+        className="rounded-xl h-36 object-cover flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+        onClick={() => onImageClick(url)} // ✅ 이미지 클릭 시 확대
+      />
+    ))}
+  </div>
+)}
+
   
       <div className="flex items-center gap-6 text-sm text-gray-600">
         <button

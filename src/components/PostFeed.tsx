@@ -38,7 +38,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({ onGoToUpload }) => {
   const [userReactionMap, setUserReactionMap] = useState<Record<string, 'like' | 'dislike' | null>>({});
   const [userNickname, setUserNickname] = useState('익명');
   const [messageTargetUser, setMessageTargetUser] = useState<User | null>(null);
-
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const auth = getAuth();
   const userId = auth.currentUser?.uid || 'anonymous';
 
@@ -233,6 +233,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({ onGoToUpload }) => {
          onEditComment={handleEditComment}
          currentUserId={userId}
          onNicknameClick={handleNicknameClick}
+         onImageClick={setEnlargedImage}
        />
         ))}
       </div>
@@ -245,6 +246,19 @@ export const PostFeed: React.FC<PostFeedProps> = ({ onGoToUpload }) => {
           onClose={() => setMessageTargetUser(null)}
         />
       )}
-    </div>
+     {/* ✅ 확대 이미지 모달 */}
+     {enlargedImage && (
+      <div
+        className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+        onClick={() => setEnlargedImage(null)}
+      >
+        <img
+          src={enlargedImage}
+          alt="확대 이미지"
+          className="max-w-full max-h-full rounded-lg shadow-lg"
+        />
+      </div>
+    )}
+  </div>
   );
 };

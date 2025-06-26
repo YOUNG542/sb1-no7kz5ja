@@ -77,9 +77,12 @@ function App() {
 
 
   useEffect(() => {
+    if (!uid) return; // ✅ uid가 아직 undefined/null이면 실행하지 않음
+  
     const exceptionUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83', 'Pvzyoi8VgPMtME0GwstPCXf7wsK2'];
-    if (isMaintenanceTime() && !exceptionUIDs.includes(uid || '')) {
-      setShowMaintenance(true);
+  
+    if (isMaintenanceTime() && !exceptionUIDs.includes(uid)) {
+      setShowMaintenance(true); // ✅ 유지보수 중 + 예외 아님 → 모달 띄움
     }
   }, [uid]);
 
