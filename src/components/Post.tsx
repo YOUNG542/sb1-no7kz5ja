@@ -69,9 +69,9 @@ export const Post: React.FC<PostProps> = ({
 
   return (
     <div
-      className="relative bg-white border border-pink-100 rounded-xl shadow-lg p-4 mb-6 max-w-md w-[90%] mx-auto space-y-4 transition hover:shadow-xl"
-      onClick={() => navigate(`/posts/${postId}`)}
-    >
+  className="relative bg-white border border-pink-200 rounded-2xl shadow-sm p-4 mb-6 max-w-md w-[90%] mx-auto space-y-4 transition hover:shadow-lg"
+  onClick={() => navigate(`/posts/${postId}`)}
+>
        {/* 닉네임 */}
     <div
       className="absolute top-2 left-4 text-pink-600 text-sm font-bold cursor-pointer hover:opacity-80 z-10"

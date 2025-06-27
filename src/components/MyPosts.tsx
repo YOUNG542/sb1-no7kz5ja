@@ -69,7 +69,10 @@ export const MyPosts: React.FC = () => {
         <p className="text-sm text-gray-500">아직 작성한 글이 없습니다.</p>
       ) : (
         myPosts.map((post) => (
-          <div key={post.id} className="border p-3 rounded-lg mb-3 bg-white shadow-sm">
+          <div
+            key={post.id}
+            className="relative bg-white border border-pink-100 rounded-xl shadow-lg p-4 mb-6 max-w-md w-full mx-auto space-y-4 transition hover:shadow-xl"
+          >
             {editPostId === post.id ? (
               <>
                 <textarea
@@ -156,17 +159,21 @@ export const MyPosts: React.FC = () => {
             ) : (
               <div
                 onClick={() => navigate(`/posts/${post.id}`)}
-                className="cursor-pointer hover:shadow-md transition"
+                className="cursor-pointer"
               >
-                <p className="text-sm text-gray-800 mb-1">{post.content}</p>
                 {post.imageUrls && post.imageUrls.length > 0 && (
-                  <div className="flex gap-2 overflow-x-auto mb-2">
-                    {post.imageUrls.map((url, idx) => (
-                      <img key={idx} src={url} className="h-24 rounded" />
-                    ))}
+                  <div className="w-full rounded-xl overflow-hidden aspect-[4/3]">
+                    <img
+                      src={post.imageUrls[0]}
+                      alt="post"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 )}
-                <div className="flex justify-between items-center text-xs text-gray-500">
+                <div className="text-gray-800 text-[15px] leading-relaxed break-words whitespace-pre-line mt-2">
+                  {post.content}
+                </div>
+                <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
                   <div className="flex gap-3">
                     <span>♥ {post.likes || 0}</span>
                     <span>💬 {post.comments?.length || 0}</span>

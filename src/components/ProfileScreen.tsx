@@ -63,9 +63,9 @@ export const ProfileScreen: React.FC = () => {
           <Pencil size={18} />
         </button>
       </div>
-
-      {/* 한줄 소개 */}
-      <p className="text-center text-gray-500 text-sm mb-6">{intro || '소개글이 없습니다.'}</p>
+      <p className="text-center text-[15px] text-gray-700 font-medium mb-6 italic">
+  {intro || '아직 소개글이 없어요!'}
+</p>
 
       {/* 내가 쓴 글 보기 */}
       <div className="flex justify-center">
