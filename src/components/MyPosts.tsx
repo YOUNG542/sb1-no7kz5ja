@@ -11,6 +11,13 @@ import {
   updateDoc,
   deleteDoc
 } from 'firebase/firestore';
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject
+} from 'firebase/storage';
 import { db } from '../firebase/config';
 
 interface PostData {
@@ -28,17 +35,21 @@ export const MyPosts: React.FC = () => {
   const [myPosts, setMyPosts] = useState<PostData[]>([]);
   const [editPostId, setEditPostId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [editImages, setEditImages] = useState<string[]>([]);
+  const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+
   useEffect(() => {
     if (!user) return;
     const q = query(collection(db, 'posts'), where('userId', '==', user.uid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-        const posts = snapshot.docs.map((doc) => {
-            const data = doc.data() as Omit<PostData, 'id'>;
-            return {
-              id: doc.id,
-              ...data,
-            };
-          });
+      const posts = snapshot.docs.map((doc) => {
+        const data = doc.data() as Omit<PostData, 'id'>;
+        return {
+          id: doc.id,
+          ...data,
+        };
+      });
       setMyPosts(posts);
     });
     return () => unsubscribe();
@@ -53,7 +64,7 @@ export const MyPosts: React.FC = () => {
       >
         ← 돌아가기
       </button>
-  
+
       {myPosts.length === 0 ? (
         <p className="text-sm text-gray-500">아직 작성한 글이 없습니다.</p>
       ) : (
@@ -66,12 +77,63 @@ export const MyPosts: React.FC = () => {
                   onChange={(e) => setEditContent(e.target.value)}
                   className="w-full border rounded p-2 text-sm mb-2"
                 />
+                <div className="flex gap-2 mb-2 overflow-x-auto">
+                  {editImages.map((url, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={url} className="h-24 rounded" />
+                      <button
+                        onClick={() => {
+                          setEditImages(editImages.filter((_, i) => i !== idx));
+                          setRemovedImageUrls([...removedImageUrls, url]);
+                        }}
+                        className="absolute top-1 right-1 bg-black bg-opacity-60 text-white text-xs px-1 rounded"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files) setNewImageFiles(Array.from(e.target.files));
+                  }}
+                  className="mb-2"
+                />
                 <div className="flex gap-4 text-sm">
                   <button
                     onClick={async () => {
-                      await updateDoc(doc(db, 'posts', post.id), { content: editContent });
+                      const storage = getStorage();
+                      const updatedUrls = [...editImages];
+
+                      for (const url of removedImageUrls) {
+                        try {
+                          const decodedPath = decodeURIComponent(new URL(url).pathname.split('/o/')[1]);
+                          await deleteObject(ref(storage, decodedPath));
+                        } catch (e) {
+                          console.warn('이미지 삭제 실패:', url);
+                        }
+                      }
+
+                      for (const file of newImageFiles) {
+                        const imageRef = ref(storage, `postImages/${post.id}/${file.name}`);
+                        await uploadBytes(imageRef, file);
+                        const url = await getDownloadURL(imageRef);
+                        updatedUrls.push(url);
+                      }
+
+                      await updateDoc(doc(db, 'posts', post.id), {
+                        content: editContent,
+                        imageUrls: updatedUrls,
+                      });
+
                       setEditPostId(null);
                       setEditContent('');
+                      setEditImages([]);
+                      setRemovedImageUrls([]);
+                      setNewImageFiles([]);
                     }}
                     className="text-blue-500 underline"
                   >
@@ -81,6 +143,9 @@ export const MyPosts: React.FC = () => {
                     onClick={() => {
                       setEditPostId(null);
                       setEditContent('');
+                      setEditImages([]);
+                      setRemovedImageUrls([]);
+                      setNewImageFiles([]);
                     }}
                     className="text-gray-500 underline"
                   >
@@ -112,6 +177,9 @@ export const MyPosts: React.FC = () => {
                         e.stopPropagation();
                         setEditPostId(post.id);
                         setEditContent(post.content);
+                        setEditImages(post.imageUrls || []);
+                        setRemovedImageUrls([]);
+                        setNewImageFiles([]);
                       }}
                       className="text-blue-500 underline"
                     >
@@ -138,5 +206,4 @@ export const MyPosts: React.FC = () => {
       )}
     </div>
   );
-  
 };
