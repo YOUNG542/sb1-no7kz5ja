@@ -36,7 +36,7 @@ export const ProfileScreen: React.FC = () => {
   if (loading) return <div className="p-4 text-center">불러오는 중...</div>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-start justify-center pt-20">
       <div className="p-6 max-w-md w-full relative">
         {/* 불만사항 아이콘 */}
         <button
@@ -45,7 +45,7 @@ export const ProfileScreen: React.FC = () => {
         >
           <AlertCircle size={24} />
         </button>
-
+  
         {/* 프로필 사진 */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center">
@@ -53,7 +53,7 @@ export const ProfileScreen: React.FC = () => {
           </div>
           <p className="text-sm text-gray-400 mt-2">프로필 사진 기능은 준비 중이에요 🙏</p>
         </div>
-
+  
         {/* 닉네임 + 성별 + 수정 */}
         <div className="flex items-center justify-center gap-2 mb-2">
           <h2 className="text-xl font-bold">{nickname}</h2>
@@ -67,12 +67,12 @@ export const ProfileScreen: React.FC = () => {
             <Pencil size={18} />
           </button>
         </div>
-
+  
         {/* 한 줄 소개 */}
         <p className="text-center text-base text-gray-700 font-normal mb-6">
           {intro || '아직 소개글이 없어요!'}
         </p>
-
+  
         {/* 내가 쓴 글 보기 */}
         <div className="flex justify-center">
           <button
@@ -85,4 +85,5 @@ export const ProfileScreen: React.FC = () => {
       </div>
     </div>
   );
+  
 };
