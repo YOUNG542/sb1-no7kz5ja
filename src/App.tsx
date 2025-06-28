@@ -92,13 +92,17 @@ useEffect(() => {
   }
 }, [currentUser]);
 
-  useEffect(() => {
-    const seenVersion = localStorage.getItem('seenPostNoticeVersion');
-    if (seenVersion !== POST_NOTICE_VERSION) {
-      setShowNotice(true);
-      localStorage.setItem('seenPostNoticeVersion', POST_NOTICE_VERSION);
-    }
-  }, []);
+useEffect(() => {
+  // 'seenPostNoticeVersion' 값을 삭제하여 다시 알림을 보이게 함
+  localStorage.removeItem('seenPostNoticeVersion');
+
+  // 새 버전 알림을 표시
+  const seenVersion = localStorage.getItem('seenPostNoticeVersion');
+  if (seenVersion !== POST_NOTICE_VERSION) {
+    setShowNotice(true);
+    localStorage.setItem('seenPostNoticeVersion', POST_NOTICE_VERSION);
+  }
+}, []);
 
  
 
@@ -603,14 +607,15 @@ useEffect(() => {
           </svg>
         </div>
         <div className="text-sm leading-snug">
-          <p className="font-semibold">✨ 새로운 기능이 추가되었어요!</p>
+        <p className="font-semibold">🚀 새로운 기능이 추가되었습니다!</p>
           <p className="mt-1">
-            이제 <span className="font-semibold text-blue-600">포스트</span>를 통해
-            여러분의 일상을 자유롭게 공유할 수 있어요. <br />
-            사진과 글을 남기고, 앱 내 다른 학우들과 더욱 가까워지세요!
+            이제 <span className="font-semibold text-blue-600">채팅방 내 아이스브레이킹</span> 기능, 
+            <span className="font-semibold text-blue-600">포스트 신고</span> 기능, 
+            <span className="font-semibold text-blue-600">채팅방 나가기</span> 기능 등이 추가되었습니다. <br />
+            더 많은 기능을 통해 앱 내에서 학우들과 더욱 활발히 소통하세요!
           </p>
           <p className="mt-1 text-sm text-blue-700">
-            포스트를 올린 사람에게 직접 <span className="font-semibold">메시지</span>도 보낼 수 있답니다 💬
+          또한, 이제 <span className="font-semibold">개인정보처리방침</span>과 <span className="font-semibold">이용약관</span>도 확인하실 수 있습니다. 📜
           </p>
         </div>
       </div>
