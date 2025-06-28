@@ -13,7 +13,7 @@ import { getAuth } from 'firebase/auth';
 import { ThumbsUp, ThumbsDown, Send } from 'lucide-react';
 import { MessageRequestModal } from './MessageRequestModal';
 import { User } from '../types';
-
+import { ReportModal } from './ReportModal'; // 경로는 실제 위치에 맞게 조정
 interface PostData {
   id: string;
   user: { nickname: string; userId: string };
@@ -39,7 +39,7 @@ export const PostDetail: React.FC = () => {
   const [editText, setEditText] = useState('');
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [messageTargetUser, setMessageTargetUser] = useState<User | null>(null);
-
+  const [showReport, setShowReport] = useState(false);
   useEffect(() => {
     const fetch = async () => {
       const docRef = doc(db, 'posts', postId!);
@@ -149,6 +149,10 @@ export const PostDetail: React.FC = () => {
     }
   };
 
+  const handleReportButtonClick = () => {
+    setShowReport(true); // 신고 모달 열기
+  };
+
   if (!post) return <div className="p-4">로딩 중...</div>;
 
   return (
@@ -164,6 +168,15 @@ export const PostDetail: React.FC = () => {
         >
           {post.user.nickname}
         </div>
+
+    {/* 신고 버튼 추가 */}
+    <button
+          onClick={handleReportButtonClick}
+          className="text-red-500 hover:text-red-600"
+        >
+          신고
+        </button>
+
         <p className="text-gray-800 text-sm whitespace-pre-line">{post.content}</p>
 
         {post.imageUrls?.length > 0 && (
