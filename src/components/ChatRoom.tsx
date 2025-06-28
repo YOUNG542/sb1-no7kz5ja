@@ -6,6 +6,7 @@ import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, where,
 import { IcebreakerQuestion } from './IcebreakerQuestion';
 import { getDoc, setDoc } from 'firebase/firestore'; // 추가
 import { IcebreakerReveal } from './IcebreakerReveal';
+import { deleteDoc } from 'firebase/firestore'; // 상단에 추가
 interface ChatRoomProps {
   roomId: string;
   currentUser: User;
@@ -265,6 +266,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     setShowIcebreaker(false);
   };
 
+  const handleLeaveChatRoom = async () => {
+    const confirmLeave = window.confirm('정말 이 채팅방을 나가시겠어요?\n대화 내용은 모두 사라집니다.');
+    if (!confirmLeave) return;
+  
+    try {
+      await deleteDoc(doc(db, 'chatRooms', roomId));
+      onBack(); // 채팅방 리스트로 돌아감
+    } catch (error) {
+      console.error('❌ 채팅방 삭제 중 오류:', error);
+      alert('채팅방을 나가는 데 실패했어요.');
+    }
+  };
+
   return (
     <div className="h-screen w-full flex flex-col bg-gradient-to-br from-pink-50 via-orange-50 to-red-50">
       {showIcebreaker && (
@@ -298,6 +312,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           <h2 className="font-semibold text-gray-900">{otherUser?.nickname || '❓ 닉네임 없음'}</h2>
           <p className="text-sm text-gray-600 truncate">{otherUser?.intro || ''}</p>
         </div>
+
+        <button
+    onClick={handleLeaveChatRoom}
+    className="text-xs text-red-500 font-medium px-2 py-1 border border-red-200 rounded-lg hover:bg-red-50 transition ml-auto"
+  >
+    나가기
+  </button>
       </div>
 
       {/* 메시지 영역 */}
