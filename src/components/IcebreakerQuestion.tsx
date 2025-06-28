@@ -51,6 +51,12 @@ export const IcebreakerQuestion: React.FC<IcebreakerQuestionProps> = ({
     ※ 작성한 답변은 상대방에게 그대로 공개돼요. 솔직하게 작성해보세요!
   </p>
 
+  {step === QUESTIONS.length - 1 && (
+  <p className="text-xs text-gray-400 mb-2">
+    ※ 제출 후, 상대방도 모두 작성하면 서로의 답변을 확인할 수 있어요!
+  </p>
+)}
+
         <p className="text-gray-800 mb-4">{QUESTIONS[step]}</p>
         <textarea
           value={answers[step]}
