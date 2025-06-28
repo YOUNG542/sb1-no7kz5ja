@@ -71,6 +71,11 @@ export const Post: React.FC<PostProps> = ({
     }
   };
 
+  const handleReportButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();  // 부모 이벤트 전파 차단
+    setShowReport(true);  // 신고 모달 상태 변경
+  };
+
   return (
     <div
   className="relative bg-white border border-pink-200 rounded-2xl shadow-sm p-4 mb-6 max-w-md w-[90%] mx-auto space-y-4 transition hover:shadow-lg"
@@ -88,14 +93,11 @@ export const Post: React.FC<PostProps> = ({
   </span>
 
   <button
-    onClick={(e) => {
-      e.stopPropagation();
-      setShowReport(true);
-    }}
-    className="text-red-500 hover:text-red-600"
-  >
-    <AlertCircle size={16} />
-  </button>
+          onClick={handleReportButtonClick}  // 신고 버튼 클릭 시 모달 열기
+          className="text-red-500 hover:text-red-600"
+        >
+          <AlertCircle size={16} />
+        </button>
 </div>
 
        {/* 이미지 */}
@@ -242,6 +244,15 @@ export const Post: React.FC<PostProps> = ({
           ))}
         </div>
       </div>
+
+ {/* 신고 모달 조건부 렌더링 */}
+ {showReport && (
+        <ReportModal
+          targetUserId={post.user.userId}
+          onClose={() => setShowReport(false)} // 모달 닫기
+        />
+      )}
+
     </div>
   );
 };
