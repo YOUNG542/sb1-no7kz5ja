@@ -46,6 +46,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     '혹시 바람… 핀 적 있으세요?',
     '소개팅 많이 해보셨어요?',
   ];
+  const [showIcebreakerSelect, setShowIcebreakerSelect] = useState(false);
 
   
   useEffect(() => {
@@ -286,36 +287,58 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     }
   };
 
-  const handleSendIcebreaker = async () => {
-    const roomRef = doc(db, 'chatRooms', roomId);
-    const roomSnap = await getDoc(roomRef);
-  
-    let selectedQuestion = '';
-  
-    if (roomSnap.exists()) {
-      const data = roomSnap.data();
-      selectedQuestion = data.icebreakerQuestion;
-    }
-  
-    if (!selectedQuestion) {
-      selectedQuestion = icebreakerQuestions[Math.floor(Math.random() * icebreakerQuestions.length)];
-      await updateDoc(roomRef, { icebreakerQuestion: selectedQuestion });
-    }
+  const handleSendIcebreaker = async (selectedQuestion: string) => {
+    const messageText = `❄ ${currentUser.nickname}님이 아이스브레이킹 질문을 보냈어요:\n👉 "${selectedQuestion}"`;
   
     await addDoc(collection(db, 'chatRooms', roomId, 'messages'), {
       senderId: 'system',
       to: null,
       isRead: false,
-      content: selectedQuestion,
+      content: `❄ ${currentUser.nickname}님이 아이스브레이킹 질문을 보냈어요:\n👉 "${selectedQuestion}"`,
+      meta: {
+        type: 'icebreaker',
+        askedBy: currentUser.id,
+        question: selectedQuestion,
+      },
       timestamp: serverTimestamp(),
     });
+    setShowIcebreakerSelect(false);
   };
+  
   
 
 
 
   return (
     <div className="h-screen w-full flex flex-col bg-gradient-to-br from-pink-50 via-orange-50 to-red-50">
+      {showIcebreakerSelect && (
+  <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
+      <h2 className="text-lg font-semibold mb-4 text-pink-600">❄ 질문 선택</h2>
+      <ul className="space-y-2 max-h-[60vh] overflow-y-auto">
+        {icebreakerQuestions.map((q, idx) => (
+          <li key={idx}>
+            <button
+              onClick={() => handleSendIcebreaker(q)}
+              className="w-full text-left text-sm text-gray-800 hover:bg-pink-100 px-4 py-2 rounded-lg transition"
+            >
+              {q}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-4 text-center">
+        <button
+          onClick={() => setShowIcebreakerSelect(false)}
+          className="text-sm text-gray-500 hover:text-gray-700"
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {showIcebreaker && (
   <IcebreakerQuestion onComplete={handleIcebreakerComplete} />
 )}
@@ -359,12 +382,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
       {/* 아이스브레이킹 버튼 줄 */}
 <div className="bg-white/90 backdrop-blur-lg px-4 pt-1 pb-2 flex gap-2 border-b border-gray-200">
-  <button
-    onClick={handleSendIcebreaker}
-    className="text-sm bg-pink-100 text-pink-600 px-3 py-1 rounded-xl hover:bg-pink-200 transition"
-  >
-    ❄ 아이스브레이킹 질문
-  </button>
+<button
+  onClick={() => setShowIcebreakerSelect(true)}
+  className="text-sm bg-pink-100 text-pink-600 px-3 py-1 rounded-xl hover:bg-pink-200 transition"
+>
+  ❄ 아이스브레이킹 질문
+</button>
+
 </div>
 
       {/* 메시지 영역 */}
