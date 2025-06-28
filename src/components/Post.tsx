@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
+import { ReportModal } from './ReportModal'; // 경로는 실제 위치에 따라 조정
+
 interface SimplifiedUser {
   nickname: string;
   userId: string;
@@ -46,6 +49,7 @@ export const Post: React.FC<PostProps> = ({
   const [commentInput, setCommentInput] = useState('');
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
+  const [showReport, setShowReport] = useState(false);
   const navigate = useNavigate();
   const handleCommentSubmit = () => {
     if (commentInput.trim()) {
@@ -72,16 +76,27 @@ export const Post: React.FC<PostProps> = ({
   className="relative bg-white border border-pink-200 rounded-2xl shadow-sm p-4 mb-6 max-w-md w-[90%] mx-auto space-y-4 transition hover:shadow-lg"
   onClick={() => navigate(`/posts/${postId}`)}
 >
-       {/* 닉네임 */}
-    <div
-      className="absolute top-2 left-4 text-pink-600 text-sm font-bold cursor-pointer hover:opacity-80 z-10"
-      onClick={(e) => {
-        e.stopPropagation();
-        onNicknameClick(user.nickname, user.userId);
-      }}
-    >
-      {user.nickname}
-    </div>
+<div className="absolute top-2 left-4 flex items-center gap-1 z-10">
+  <span
+    className="text-pink-600 text-sm font-bold cursor-pointer hover:opacity-80"
+    onClick={(e) => {
+      e.stopPropagation();
+      onNicknameClick(user.nickname, user.userId);
+    }}
+  >
+    {user.nickname}
+  </span>
+
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      setShowReport(true);
+    }}
+    className="text-red-500 hover:text-red-600"
+  >
+    <AlertCircle size={16} />
+  </button>
+</div>
 
        {/* 이미지 */}
     {imageUrls.length > 0 && (

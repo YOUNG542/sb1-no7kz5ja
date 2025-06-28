@@ -86,10 +86,8 @@ function App() {
   const maintenanceAllowUIDs: string[] = [];
   const [showTermsModal, setShowTermsModal] = useState(false);
 
-  if (!isUidLoaded) {
-    return <div>잠시만요... 확인 중입니다</div>; // ✅ 로딩 상태 처리
-  }
 
+  
   if (isUidLoaded && isMaintenance && (!uid || !maintenanceAllowUIDs.includes(uid))) {
     return <MaintenanceModal onClose={() => window.close()} />;
   }
