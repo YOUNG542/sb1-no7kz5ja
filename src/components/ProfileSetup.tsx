@@ -16,6 +16,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     if (!nickname.trim() || !intro.trim() || !gender) return;
 
     setIsLoading(true);

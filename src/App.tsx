@@ -53,7 +53,7 @@ import { addDoc, collection, doc, updateDoc, increment } from 'firebase/firestor
 import { EditProfile } from './components/EditProfile';
 import { MyPosts } from './components/MyPosts';
 import { ComplaintPage } from './components/ComplaintPage';
-
+import { MaintenanceModal } from './components/MaintenanceModal';
 
 
 function App() {
@@ -78,8 +78,9 @@ function App() {
     };
   }>({});
   const [showRoomNotice, setShowRoomNotice] = useState(false);
-  const POST_NOTICE_VERSION = 'v2-post-feature';
-
+  const POST_NOTICE_VERSION = 'v3-post-feature';
+  const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
+  const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83'];
 
 
   useEffect(() => {
@@ -508,6 +509,11 @@ function App() {
       [`unreadCounts.${otherUser.id}`]: increment(1),
     });
   };
+
+    // ✅ 여기에 추가
+    if (isMaintenance && (!uid || !maintenanceAllowUIDs.includes(uid))) {
+      return <MaintenanceModal onClose={() => window.close()} />;
+    }
 
   if (showIntro) {
     return <Intro onFinish={handleIntroFinish} />;
