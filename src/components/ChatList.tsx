@@ -153,75 +153,64 @@ export const ChatList: React.FC<ChatListProps> = ({
           </div>
         ) : (
           <SwipeableList>
-          {sortedRoomIds
-            .filter((roomId) => {
-              const roomInfo = enrichedChatRooms[roomId];
-              const participants = roomInfo.participants || [];
-        
-              const lastMessage = roomInfo.lastMessage;
-              const inferredOtherUserId =
-                lastMessage?.senderId === currentUserId ? lastMessage?.to : lastMessage?.senderId;
-        
-              const otherUserId =
-                inferredOtherUserId || participants.find((id: string) => id !== currentUserId);
-        
-              return !!getUserById(otherUserId || '');
-            })
-            .map((roomId) => {
-              const roomInfo = enrichedChatRooms[roomId];
-              const lastMessage = roomInfo.lastMessage;
-              const unreadCount = roomInfo.unreadCount;
-              const participants = roomInfo.participants || [];
-        
-              const inferredOtherUserId =
-                lastMessage?.senderId === currentUserId ? lastMessage?.to : lastMessage?.senderId;
-        
-              const otherUserId =
-                inferredOtherUserId || participants.find((id: string) => id !== currentUserId) || '';
-        
-              const otherUser = getUserById(otherUserId);
-        
-              return (
-                <SwipeableListItem key={roomId} trailingActions={trailingActions(roomId)}>
-                  <button
-                    onClick={() => handleRoomClick(roomId)}
-                    className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 text-left"
-                  >
-                    {/* 카드 내용 동일 */}
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">{otherUser?.nickname}</h3>
-                      {lastMessage && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Clock className="w-3 h-3" />
-                          {getTimeAgo(lastMessage.timestamp || 0)}
-                        </div>
-                      )}
-                    </div>
-        
-                    <p className="text-sm text-gray-600 mb-2">{otherUser?.intro}</p>
-        
-                    {lastMessage ? (
-                      <p className="text-sm text-gray-800 truncate">
-                        {lastMessage.senderId === currentUserId ? '나: ' : ''}
-                        {lastMessage.content}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-gray-500 italic">대화를 시작해보세요!</p>
-                    )}
-        
-                    {unreadCount > 0 && (
-                      <span className="text-xs bg-red-500 text-white rounded-full px-2 mt-1 inline-block">
-                        안 읽음 {unreadCount}
-                      </span>
-                    )}
-                  </button>
-                </SwipeableListItem>
-              );
-            })}
-        </SwipeableList>
+        {sortedRoomIds.map((roomId) => {
+  const roomInfo = enrichedChatRooms[roomId];
+  const lastMessage = roomInfo.lastMessage;
+  const unreadCount = roomInfo.unreadCount;
+  const participants = roomInfo.participants || [];
 
+  const inferredOtherUserId =
+    lastMessage?.senderId === currentUserId ? lastMessage?.to : lastMessage?.senderId;
+
+  const otherUserId =
+    inferredOtherUserId || participants.find((id: string) => id !== currentUserId) || '';
+
+  const otherUser = getUserById(otherUserId);
+
+  return (
+    <SwipeableListItem key={roomId} trailingActions={trailingActions(roomId)}>
+      <button
+        onClick={() => handleRoomClick(roomId)}
+        className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 text-left"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-gray-900">
+            {otherUser?.nickname ?? '탈퇴한 사용자'}
+          </h3>
+          {lastMessage && (
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <Clock className="w-3 h-3" />
+              {getTimeAgo(lastMessage.timestamp || 0)}
+            </div>
+          )}
+        </div>
+
+        <p className="text-sm text-gray-600 mb-2">
+          {otherUser?.intro ?? '소개글 없음'}
+        </p>
+
+        {lastMessage ? (
+          <p className="text-sm text-gray-800 truncate">
+            {lastMessage.senderId === currentUserId ? '나: ' : ''}
+            {lastMessage.content}
+          </p>
+        ) : (
+          <p className="text-sm text-gray-500 italic">대화를 시작해보세요!</p>
         )}
-      </div>
-    </div>
+
+        {unreadCount > 0 && (
+          <span className="text-xs bg-red-500 text-white rounded-full px-2 mt-1 inline-block">
+            안 읽음 {unreadCount}
+          </span>
+        )}
+      </button>
+    </SwipeableListItem>
   );
+})}
+        </SwipeableList>
+      )}
+    </div>
+  </div>
+);
+
 };
