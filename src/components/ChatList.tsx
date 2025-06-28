@@ -110,10 +110,13 @@ export const ChatList: React.FC<ChatListProps> = ({
   const trailingActions = (roomId: string) => (
     <TrailingActions>
       <SwipeAction
-        destructive={true}
+        destructive
         onClick={() => handleLeaveChatRoom(roomId)}
       >
-        나가기
+        {/* ✅ 사용자에게 슬라이드 시 애니메이션으로 나타나는 UI */}
+        <div className="flex items-center justify-center h-full px-6 text-white bg-red-500 transition-all duration-300">
+          <span className="text-sm font-semibold">← 그대로 넘기시면 나가기</span>
+        </div>
       </SwipeAction>
     </TrailingActions>
   );
