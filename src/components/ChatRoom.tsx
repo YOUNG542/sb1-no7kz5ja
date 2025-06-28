@@ -48,7 +48,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       const alreadySeen = localStorage.getItem(localKey);
       if (alreadySeen) return; // 🔒 이미 본 적 있으면 스킵
   
-      const myRef = doc(db, 'icebreakerAnswers', roomId, currentUser.id);
+      const myRef = doc(db, 'chatRooms', roomId, 'icebreakerAnswers', currentUser.id);
       const otherRef = doc(db, 'icebreakerAnswers', roomId, otherUser.id);
   
       const [mySnap, otherSnap] = await Promise.all([
