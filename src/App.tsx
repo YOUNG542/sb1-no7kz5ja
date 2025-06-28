@@ -82,7 +82,7 @@ function App() {
   const [showRoomNotice, setShowRoomNotice] = useState(false);
   const POST_NOTICE_VERSION = 'v3-post-feature';
   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
-  const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83', '4zw6fYFHEoQb4tsPqoPaDSF2h873'];
+  const maintenanceAllowUIDs: string[] = [];
   const [showTermsModal, setShowTermsModal] = useState(false);
 
   // 유저 정보 불러온 후 조건 검사
