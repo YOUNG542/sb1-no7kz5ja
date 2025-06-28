@@ -70,21 +70,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     checkRevealReady();
   }, [roomId, currentUser?.id, otherUser?.id, icebreakerCompleted]);
   
-
   useEffect(() => {
+    console.log('🧪 Icebreaker useEffect triggered', roomId, currentUser?.id);
+  
     const checkIcebreaker = async () => {
-      if (!roomId || !currentUser?.id) return;
+      console.log('🧪 checkIcebreaker 시작');
+  
+      if (!roomId || !currentUser?.id) {
+        console.log('❌ roomId 또는 currentUser.id 없음 → 종료');
+        return;
+      }
   
       const answerDocRef = doc(db, 'icebreakerAnswers', roomId, currentUser.id);
       const answerSnap = await getDoc(answerDocRef);
   
       if (!answerSnap.exists()) {
+        console.log('✅ icebreakerAnswers 문서 없음 → 모달 보여줌');
         setShowIcebreaker(true);
+      } else {
+        console.log('🟡 이미 존재하는 문서 → 모달 생략');
       }
     };
   
     checkIcebreaker();
   }, [roomId, currentUser?.id]);
+  
 
   useEffect(() => {
     if (!roomId) {
