@@ -102,21 +102,28 @@ export const Post: React.FC<PostProps> = ({
     setShowReport(true);  // 신고 모달 상태 변경
   };
 
-  return (
-    <div
-  className="relative bg-white border border-pink-200 rounded-2xl shadow-sm p-4 mb-6 max-w-md w-[90%] mx-auto space-y-4 transition hover:shadow-lg"
-  onClick={() => navigate(`/posts/${postId}`)}
->
-<div className="absolute top-2 left-4 flex items-center gap-1 z-10">
-  <span
-    className="text-pink-600 text-sm font-bold cursor-pointer hover:opacity-80"
-    onClick={(e) => {
-      e.stopPropagation();
-      onNicknameClick(user.nickname, user.userId);
-    }}
+
+// 클릭 시 다른 동작이 실행되지 않도록 이벤트 분리
+const handlePostClick = (e: React.MouseEvent) => {
+  e.stopPropagation(); // 부모 이벤트 전파 차단
+  navigate(`/posts/${postId}`); // 포스트 상세로 네비게이션
+};
+
+return (
+  <div
+    className="relative bg-white border border-pink-200 rounded-2xl shadow-sm p-4 mb-6 max-w-md w-[90%] mx-auto space-y-4 transition hover:shadow-lg"
+    onClick={handlePostClick} // 포스트 클릭 시 네비게이션
   >
-    {user.nickname}
-  </span>
+    <div className="absolute top-2 left-4 flex items-center gap-1 z-10">
+      <span
+        className="text-pink-600 text-sm font-bold cursor-pointer hover:opacity-80"
+        onClick={(e) => {
+          e.stopPropagation();
+          onNicknameClick(user.nickname, user.userId);
+        }}
+      >
+        {user.nickname}
+      </span>
 
   <button
           onClick={handleReportButtonClick}  // 신고 버튼 클릭 시 모달 열기
