@@ -93,14 +93,11 @@ useEffect(() => {
 }, [currentUser]);
 
 useEffect(() => {
-  // 'seenPostNoticeVersion' 값을 삭제하여 다시 알림을 보이게 함
-  localStorage.removeItem('seenPostNoticeVersion');
-
-  // 새 버전 알림을 표시
+  // 'seenPostNoticeVersion' 값을 체크하여 이전에 표시한 적이 있는지 확인
   const seenVersion = localStorage.getItem('seenPostNoticeVersion');
   if (seenVersion !== POST_NOTICE_VERSION) {
-    setShowNotice(true);
-    localStorage.setItem('seenPostNoticeVersion', POST_NOTICE_VERSION);
+    setShowNotice(true); // 공지 표시
+    localStorage.setItem('seenPostNoticeVersion', POST_NOTICE_VERSION); // 공지 표시 후 버전 기록
   }
 }, []);
 
