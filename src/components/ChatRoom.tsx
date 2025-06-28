@@ -255,7 +255,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const messageGroups = groupMessagesByDate(messages);
 
   const handleIcebreakerComplete = async (answers: string[]) => {
-    const answerDocRef = doc(db, 'icebreakerAnswers', roomId, currentUser.id);
+    const answerDocRef = doc(db, 'chatRooms', roomId, 'icebreakerAnswers', currentUser.id);
     await setDoc(answerDocRef, {
       answers,
       completedAt: serverTimestamp(),
