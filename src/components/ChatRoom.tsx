@@ -49,7 +49,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
       if (alreadySeen) return; // 🔒 이미 본 적 있으면 스킵
   
       const myRef = doc(db, 'chatRooms', roomId, 'icebreakerAnswers', currentUser.id);
-      const otherRef = doc(db, 'icebreakerAnswers', roomId, otherUser.id);
+      const otherRef = doc(db, 'chatRooms', roomId, 'icebreakerAnswers', otherUser.id);
   
       const [mySnap, otherSnap] = await Promise.all([
         getDoc(myRef),
@@ -81,7 +81,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         return;
       }
   
-      const answerDocRef = doc(db, 'icebreakerAnswers', roomId, currentUser.id);
+      const answerDocRef = doc(db, 'chatRooms', roomId, 'icebreakerAnswers', currentUser.id);
       const answerSnap = await getDoc(answerDocRef);
   
       if (!answerSnap.exists()) {
