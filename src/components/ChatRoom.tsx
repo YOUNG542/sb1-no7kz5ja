@@ -3,7 +3,9 @@ import { Send, ArrowLeft } from 'lucide-react';
 import { User, Message } from '../types';
 import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, where, getDocs, writeBatch, doc, updateDoc } from 'firebase/firestore'; // updateDoc 임포트 추가
-
+import { IcebreakerQuestion } from './IcebreakerQuestion';
+import { getDoc, setDoc } from 'firebase/firestore'; // 추가
+import { IcebreakerReveal } from './IcebreakerReveal';
 interface ChatRoomProps {
   roomId: string;
   currentUser: User;
@@ -30,6 +32,59 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [showIcebreaker, setShowIcebreaker] = useState(false);
+  const [icebreakerCompleted, setIcebreakerCompleted] = useState(false);
+  const [showReveal, setShowReveal] = useState(false);
+  const [myAnswers, setMyAnswers] = useState<string[]>([]);
+  const [otherAnswers, setOtherAnswers] = useState<string[]>([]);
+
+
+  
+  useEffect(() => {
+    const checkRevealReady = async () => {
+      if (!roomId || !currentUser?.id || !otherUser?.id) return;
+  
+      const localKey = `icebreakerShown-${roomId}-${currentUser.id}`;
+      const alreadySeen = localStorage.getItem(localKey);
+      if (alreadySeen) return; // 🔒 이미 본 적 있으면 스킵
+  
+      const myRef = doc(db, 'icebreakerAnswers', roomId, currentUser.id);
+      const otherRef = doc(db, 'icebreakerAnswers', roomId, otherUser.id);
+  
+      const [mySnap, otherSnap] = await Promise.all([
+        getDoc(myRef),
+        getDoc(otherRef)
+      ]);
+  
+      if (mySnap.exists() && otherSnap.exists()) {
+        const myData = mySnap.data();
+        const otherData = otherSnap.data();
+  
+        setMyAnswers(myData.answers || []);
+        setOtherAnswers(otherData.answers || []);
+        setShowReveal(true);
+        localStorage.setItem(localKey, 'true'); // ✅ 캐시 저장 → 재입장 시 미표시
+      }
+    };
+  
+    checkRevealReady();
+  }, [roomId, currentUser?.id, otherUser?.id, icebreakerCompleted]);
+  
+
+  useEffect(() => {
+    const checkIcebreaker = async () => {
+      if (!roomId || !currentUser?.id) return;
+  
+      const answerDocRef = doc(db, 'icebreakerAnswers', roomId, currentUser.id);
+      const answerSnap = await getDoc(answerDocRef);
+  
+      if (!answerSnap.exists()) {
+        setShowIcebreaker(true);
+      }
+    };
+  
+    checkIcebreaker();
+  }, [roomId, currentUser?.id]);
 
   useEffect(() => {
     if (!roomId) {
@@ -189,8 +244,38 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
   const messageGroups = groupMessagesByDate(messages);
 
+  const handleIcebreakerComplete = async (answers: string[]) => {
+    const answerDocRef = doc(db, 'icebreakerAnswers', roomId, currentUser.id);
+    await setDoc(answerDocRef, {
+      answers,
+      completedAt: serverTimestamp(),
+    });
+  
+    setIcebreakerCompleted(true);
+    setShowIcebreaker(false);
+  };
+
   return (
     <div className="h-screen w-full flex flex-col bg-gradient-to-br from-pink-50 via-orange-50 to-red-50">
+      {showIcebreaker && (
+  <IcebreakerQuestion onComplete={handleIcebreakerComplete} />
+)}
+
+{showReveal && (
+  <IcebreakerReveal
+    questions={[
+      '당신의 이상형은 어떤 사람인가요?',
+      '데이트할 때 가장 중요하게 생각하는 건 뭔가요?',
+      '고백은 먼저 하는 편인가요?',
+      '사랑보다 우정을 더 중요하게 생각하나요?',
+      '헤어진 후 친구로 지낼 수 있나요?'
+    ]}
+    myAnswers={myAnswers}
+    otherAnswers={otherAnswers}
+    otherNickname={otherUser.nickname}
+    onClose={() => setShowReveal(false)}
+  />
+)}
       {/* 상단 헤더 */}
       <div className="bg-white/90 backdrop-blur-lg border-b border-gray-200 p-4 flex items-center gap-4">
         <button
