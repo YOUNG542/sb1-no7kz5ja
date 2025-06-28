@@ -5,7 +5,8 @@ import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useEffect, useState } from 'react';
-import { UserCircle, Pencil, AlertCircle } from 'lucide-react';
+import { UserCircle, Pencil, AlertCircle, Info } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@radix-ui/react-popover'; // 필요한 경우 직접 구현 가능
 
 export const ProfileScreen: React.FC = () => {
   const auth = getAuth();
@@ -38,13 +39,46 @@ export const ProfileScreen: React.FC = () => {
   return (
     <div className="min-h-screen flex items-start justify-center pt-20">
       <div className="p-6 max-w-md w-full relative">
-        {/* 불만사항 아이콘 */}
-        <button
-          className="absolute top-4 right-4 text-yellow-500 hover:text-yellow-600"
-          onClick={() => navigate('/complaint')}
-        >
-          <AlertCircle size={24} />
-        </button>
+        
+        {/* ✅ 우측 상단 아이콘 그룹 */}
+        <div className="absolute top-4 right-4 flex gap-3 items-center">
+          {/* 불만사항 아이콘 */}
+          <button
+            className="text-yellow-500 hover:text-yellow-600"
+            onClick={() => navigate('/complaint')}
+          >
+            <AlertCircle size={24} />
+          </button>
+  
+          {/* 약관 아이콘 - 팝오버 메뉴 */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="text-gray-500 hover:text-gray-700">
+                <Info size={24} />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              side="bottom"
+              align="end"
+              className="bg-white border border-gray-200 rounded-md shadow-lg p-2 w-48"
+            >
+              <div className="flex flex-col text-sm text-gray-700">
+                <button
+                  onClick={() => navigate('/terms-of-service')}
+                  className="text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                >
+                  📄 이용약관
+                </button>
+                <button
+                  onClick={() => navigate('/privacy-policy')}
+                  className="text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                >
+                  🔒 개인정보처리방침
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
   
         {/* 프로필 사진 */}
         <div className="flex flex-col items-center mb-6">
@@ -85,5 +119,6 @@ export const ProfileScreen: React.FC = () => {
       </div>
     </div>
   );
+  
   
 };
