@@ -85,6 +85,11 @@ function App() {
   const maintenanceAllowUIDs: string[] = [];
   const [showTermsModal, setShowTermsModal] = useState(false);
 
+      // ✅ 여기에 추가
+      if (isMaintenance && (!uid || !maintenanceAllowUIDs.includes(uid))) {
+        return <MaintenanceModal onClose={() => window.close()} />;
+      }
+
   // 유저 정보 불러온 후 조건 검사
 useEffect(() => {
   if (currentUser && !currentUser.termsAccepted) {
@@ -519,10 +524,6 @@ useEffect(() => {
     });
   };
 
-    // ✅ 여기에 추가
-    if (isMaintenance && (!uid || !maintenanceAllowUIDs.includes(uid))) {
-      return <MaintenanceModal onClose={() => window.close()} />;
-    }
 
   if (showIntro) {
     return <Intro onFinish={handleIntroFinish} />;
