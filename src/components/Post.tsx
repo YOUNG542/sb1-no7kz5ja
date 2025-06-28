@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // useEffect 임포트 추가
 import { ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { ReportModal } from './ReportModal'; // 경로는 실제 위치에 따라 조정
-
+import { db } from '../firebase/config'; // Firebase 설정 추가
+import { doc, getDoc } from 'firebase/firestore'; // Firebase Firestore 관련 함수
 interface SimplifiedUser {
   nickname: string;
   userId: string;
@@ -27,6 +28,18 @@ interface PostProps {
   onNicknameClick: (nickname: string, userId: string) => void;
   onImageClick: (url: string) => void;
 }
+
+
+// Firebase에서 post 데이터를 가져오는 함수 정의
+const getPostData = async (postId: string) => {
+  const postRef = doc(db, 'posts', postId);
+  const postSnap = await getDoc(postRef);
+  if (postSnap.exists()) {
+    return postSnap.data();
+  } else {
+    return null; // 데이터가 없을 경우 null 반환
+  }
+};
 
 export const Post: React.FC<PostProps> = ({
   postId,
@@ -58,6 +71,18 @@ export const Post: React.FC<PostProps> = ({
       setCommentInput('');
     }
   };
+
+
+  // 데이터 로드 (예: Firebase에서 post 데이터를 가져오는 함수 호출)
+  useEffect(() => {
+    const fetchPost = async () => {
+      // Firebase 또는 API 호출로 데이터 가져오기
+      const fetchedPost = await getPostData(postId); // getPostData는 실제 데이터를 가져오는 함수
+      setPost(fetchedPost);
+    };
+
+    fetchPost();
+  }, [postId]);
 
   const handleEdit = (idx: number, text: string) => {
     setEditingIdx(idx);
@@ -249,7 +274,7 @@ export const Post: React.FC<PostProps> = ({
  {/* 신고 모달 조건부 렌더링 */}
  {showReport && (
         <ReportModal
-          targetUserId={post.user.userId}
+          targetUserId={post.user.userId}  // post가 로드된 후 참조
           onClose={() => setShowReport(false)} // 모달 닫기
         />
       )}
