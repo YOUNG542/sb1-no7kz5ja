@@ -56,7 +56,8 @@ import { ComplaintPage } from './components/ComplaintPage';
 import { MaintenanceModal } from './components/MaintenanceModal';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { TermsOfService } from './components/TermsOfService';
-
+import { Timestamp } from 'firebase/firestore';
+import { TermsModal } from './components/TermsModal';
 function App() {
   const [showGenderNotice, setShowGenderNotice] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
@@ -82,7 +83,14 @@ function App() {
   const POST_NOTICE_VERSION = 'v3-post-feature';
   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
   const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83', '4zw6fYFHEoQb4tsPqoPaDSF2h873'];
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
+  // 유저 정보 불러온 후 조건 검사
+useEffect(() => {
+  if (currentUser && !currentUser.termsAccepted) {
+    setShowTermsModal(true);
+  }
+}, [currentUser]);
 
   useEffect(() => {
     const seenVersion = localStorage.getItem('seenPostNoticeVersion');
@@ -534,6 +542,19 @@ function App() {
     (r) => r.status === 'pending' && r.toUserId === currentUser.id
   ).length;
 
+  const handleAgreeTerms = async () => {
+    if (!currentUser) return;
+    await updateUser({
+      ...currentUser,
+      termsAccepted: {
+        privacy: true,
+        tos: true,
+        timestamp: Timestamp.fromDate(new Date()), // 또는 serverTimestamp()
+      },
+    });
+    setShowTermsModal(false);
+  };
+
   const selectedRoom = selectedChatRoom ? chatRooms.find((r) => r.id === selectedChatRoom) : null;
   const otherUser = selectedRoom ? users.find((u) => u.id === selectedRoom.participants.find((p) => p !== currentUser.id)) : null;
 
@@ -550,6 +571,10 @@ function App() {
   }
 
   return (
+    <>
+    {/* ✅ 기존 유저 동의 모달 */}
+    {showTermsModal && <TermsModal onAgree={handleAgreeTerms} />}
+
     <Routes>
       <Route path="/" element={
     <div className="relative w-screen min-h-screen overflow-hidden">
@@ -708,6 +733,7 @@ function App() {
      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
     <Route path="/terms-of-service" element={<TermsOfService />} />
    </Routes>
+   </>
  );
 }
 
