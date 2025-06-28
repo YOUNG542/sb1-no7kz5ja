@@ -61,7 +61,6 @@ import { TermsModal } from './components/TermsModal';
 function App() {
   const [showGenderNotice, setShowGenderNotice] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
-  const [isUidLoaded, setIsUidLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [messageRequests, setMessageRequests] = useState<MessageRequest[]>([]);
@@ -83,14 +82,8 @@ function App() {
   const [showRoomNotice, setShowRoomNotice] = useState(false);
   const POST_NOTICE_VERSION = 'v3-post-feature';
   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
-  const maintenanceAllowUIDs: string[] = [];
+  const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83', '4zw6fYFHEoQb4tsPqoPaDSF2h873'];
   const [showTermsModal, setShowTermsModal] = useState(false);
-
-
-  
-  if (isUidLoaded && isMaintenance && (!uid || !maintenanceAllowUIDs.includes(uid))) {
-    return <MaintenanceModal onClose={() => window.close()} />;
-  }
 
   // 유저 정보 불러온 후 조건 검사
 useEffect(() => {
@@ -130,16 +123,9 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-    initAnonymousAuth()
-      .then((fetchedUid) => {
-        setUid(fetchedUid);
-        setIsUidLoaded(true);
-      })
-      .catch((err) => {
-        console.error('❌ 익명 로그인 실패:', err);
-        setIsUidLoaded(true); // 실패해도 로딩은 끝냄
-      });
+    initAnonymousAuth().then(setUid).catch(console.error);
   }, []);
+
   useEffect(() => {
     const seen = localStorage.getItem('roomNoticeSeen');
     if (!seen) {
@@ -533,6 +519,10 @@ useEffect(() => {
     });
   };
 
+    // ✅ 여기에 추가
+    if (isMaintenance && (!uid || !maintenanceAllowUIDs.includes(uid))) {
+      return <MaintenanceModal onClose={() => window.close()} />;
+    }
 
   if (showIntro) {
     return <Intro onFinish={handleIntroFinish} />;
