@@ -45,6 +45,12 @@ export const IcebreakerQuestion: React.FC<IcebreakerQuestionProps> = ({
         <h2 className="text-lg font-semibold text-pink-600 mb-4">
           궁합 질문 {step + 1} / {QUESTIONS.length}
         </h2>
+
+  {/* 🔔 답변 공개 안내 */}
+  <p className="text-xs text-gray-500 mb-2">
+    ※ 작성한 답변은 상대방에게 그대로 공개돼요. 솔직하게 작성해보세요!
+  </p>
+
         <p className="text-gray-800 mb-4">{QUESTIONS[step]}</p>
         <textarea
           value={answers[step]}
