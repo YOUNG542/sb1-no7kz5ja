@@ -124,8 +124,29 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
             </div>
 
 
-  {/* 🔥 약관 동의 체크박스 */}
-  <div className="text-sm text-gray-600 flex items-start gap-2">
+ {/* 🔥 약관 동의 영역 (스크롤형) */}
+<div className="text-xs text-gray-600">
+  <p className="mb-2">서비스 이용을 위해 아래 약관을 읽고 동의해 주세요.</p>
+
+  <div className="h-48 overflow-y-auto text-xs border p-3 rounded-md text-gray-700 bg-gray-50 mb-3">
+    <p className="font-bold mb-1">[이용약관 요약]</p>
+    <p>
+      네버엔딩 홍개팅은 홍익대학교 소속 사용자 간 익명 기반 소개팅 및 커뮤니티 기능을 제공합니다. <br />
+      사용자는 타인에게 불쾌감을 주는 언행, 성적 표현, 도배, 도용 행위를 해서는 안 됩니다. <br />
+      위반 시 경고 없이 계정이 차단될 수 있으며, 사용자가 작성한 포스트 및 댓글 등은 
+      서비스 내 비영리적 범위에서 활용될 수 있습니다. <br />
+      운영자는 건전한 커뮤니티 유지를 위해 콘텐츠를 모니터링할 수 있으며, 사용자 간 매칭 및 대화에 대한 직접적인 책임은 지지 않습니다.
+    </p>
+
+    <p className="mt-3 font-bold">[개인정보처리방침 요약]</p>
+    <p>
+      서비스는 이름, 나이 등 법적 개인정보를 수집하지 않으며, 닉네임, 한줄소개, 성별 등 최소한의 익명 프로필 정보만 수집됩니다. <br />
+      메시지 내역, 포스트, 리액션 기록은 매칭 및 커뮤니케이션 기능 제공을 위해 저장되며, 계정 삭제 시 즉시 파기됩니다. <br />
+      제3자에게 개인정보를 제공하지 않으며 광고 플랫폼과도 연결되어 있지 않습니다.
+    </p>
+  </div>
+
+  <div className="flex items-start gap-2 mb-1">
     <input
       type="checkbox"
       id="agreeTerms"
@@ -134,28 +155,18 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
       className="mt-1"
       disabled={isLoading}
     />
-    <label htmlFor="agreeTerms">
-      <span
-        className="underline text-pink-500 cursor-pointer"
-        onClick={() => window.open('/terms-of-service', '_blank')}
-      >
-        이용약관
-      </span>{' '}
-      및{' '}
-      <span
-        className="underline text-pink-500 cursor-pointer"
-        onClick={() => window.open('/privacy-policy', '_blank')}
-      >
-        개인정보처리방침
-      </span>
-      에 동의합니다.
+    <label htmlFor="agreeTerms" className="text-sm">
+      위 약관과 개인정보처리방침에 동의합니다.
     </label>
   </div>
+</div>
+
 
             {/* 제출 버튼 */}
             <button
               type="submit"
-              disabled={!nickname.trim() || !intro.trim() || !gender || isLoading}
+              disabled={!nickname.trim() || !intro.trim() || !gender || !agreeTerms || isLoading}
+
               className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-3 px-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-pink-600 hover:to-red-600 transition-all duration-200 flex items-center justify-center gap-2"
             >
               {isLoading ? (
