@@ -46,6 +46,7 @@ export const Post: React.FC<PostProps> = ({
   onNicknameClick,
   onImageClick
 }) => {
+  const [post, setPost] = useState<any>(null);
   const [commentInput, setCommentInput] = useState('');
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
