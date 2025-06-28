@@ -7,10 +7,11 @@ interface IcebreakerQuestionProps {
 
 const QUESTIONS = [
   '당신의 이상형은 어떤 사람인가요?',
-  '데이트할 때 가장 중요하게 생각하는 건 뭔가요?',
-  '고백은 먼저 하는 편인가요?',
-  '사랑보다 우정을 더 중요하게 생각하나요?',
-  '헤어진 후 친구로 지낼 수 있나요?'
+  '당신의 남/여자친구가 같은 학교 이성친구와 단 둘이 밥을 먹을 수 있나요?',
+  '당신은 테토인가요, 에겐인가요? ㅎㅎ',
+  '당신이 이성을 좋아할 때 꼭 하는 말이나 행동이 뭔가요?',
+  '하루에 연락 몇 번 정도가 편하신가요?',
+  '마지막으로 지금부터 얘기할 같은 학교 이성친구에게 하고 싶은 말은??'
 ];
 
 export const IcebreakerQuestion: React.FC<IcebreakerQuestionProps> = ({
@@ -18,7 +19,7 @@ export const IcebreakerQuestion: React.FC<IcebreakerQuestionProps> = ({
   disabled = false
 }) => {
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<string[]>(['', '', '', '', '']);
+  const [answers, setAnswers] = useState<string[]>(['', '', '', '', '', '']);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInput = (value: string) => {
