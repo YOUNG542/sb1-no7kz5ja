@@ -13,7 +13,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
   const [intro, setIntro] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | ''>(''); // 🔥 성별 상태 추가
   const [isLoading, setIsLoading] = useState(false);
-
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
@@ -29,7 +29,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
       gender, // 🔥 성별 저장
       createdAt: Timestamp.fromDate(new Date()),
       reactions: {},
-      messageRequestCount: 0
+      messageRequestCount: 0,
+      termsAccepted: {
+        privacy: true,
+        tos: true,
+        timestamp: Timestamp.fromDate(new Date())
+      }
     };
 
     onComplete(newUser);
@@ -117,6 +122,35 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ uid, onComplete }) =
                 <p className="text-xs text-red-500 mt-1">성별을 선택해주세요</p>
               )}
             </div>
+
+
+  {/* 🔥 약관 동의 체크박스 */}
+  <div className="text-sm text-gray-600 flex items-start gap-2">
+    <input
+      type="checkbox"
+      id="agreeTerms"
+      checked={agreeTerms}
+      onChange={(e) => setAgreeTerms(e.target.checked)}
+      className="mt-1"
+      disabled={isLoading}
+    />
+    <label htmlFor="agreeTerms">
+      <span
+        className="underline text-pink-500 cursor-pointer"
+        onClick={() => window.open('/terms-of-service', '_blank')}
+      >
+        이용약관
+      </span>{' '}
+      및{' '}
+      <span
+        className="underline text-pink-500 cursor-pointer"
+        onClick={() => window.open('/privacy-policy', '_blank')}
+      >
+        개인정보처리방침
+      </span>
+      에 동의합니다.
+    </label>
+  </div>
 
             {/* 제출 버튼 */}
             <button

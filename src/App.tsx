@@ -54,7 +54,8 @@ import { EditProfile } from './components/EditProfile';
 import { MyPosts } from './components/MyPosts';
 import { ComplaintPage } from './components/ComplaintPage';
 import { MaintenanceModal } from './components/MaintenanceModal';
-
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsOfService } from './components/TermsOfService';
 
 function App() {
   const [showGenderNotice, setShowGenderNotice] = useState(false);
@@ -702,8 +703,10 @@ function App() {
     <Route path="/edit-profile" element={<EditProfile />} />
     <Route path="/my-posts" element={<MyPosts />} />
     <Route path="/complaint" element={<ComplaintPage />} />
-
      <Route path="/posts/:id" element={<PostDetail />} />
+
+     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+    <Route path="/terms-of-service" element={<TermsOfService />} />
    </Routes>
  );
 }

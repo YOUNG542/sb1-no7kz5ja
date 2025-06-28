@@ -8,6 +8,12 @@ export interface User {
   createdAt: Timestamp;
   reactions: Record<string, string[]>; // emoji -> user IDs
   messageRequestCount: number;
+   // ✅ 여기에 아래 항목을 추가하세요
+   termsAccepted?: {
+    privacy: boolean;
+    tos: boolean;
+    timestamp: Timestamp;
+  };
 }
 
 export interface MessageRequest {
