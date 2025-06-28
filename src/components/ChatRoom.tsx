@@ -287,16 +287,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   };
 
   const handleSendIcebreaker = async () => {
-    const randomQuestion = icebreakerQuestions[Math.floor(Math.random() * icebreakerQuestions.length)];
+    const roomRef = doc(db, 'chatRooms', roomId);
+    const roomSnap = await getDoc(roomRef);
+  
+    let selectedQuestion = '';
+  
+    if (roomSnap.exists()) {
+      const data = roomSnap.data();
+      selectedQuestion = data.icebreakerQuestion;
+    }
+  
+    if (!selectedQuestion) {
+      selectedQuestion = icebreakerQuestions[Math.floor(Math.random() * icebreakerQuestions.length)];
+      await updateDoc(roomRef, { icebreakerQuestion: selectedQuestion });
+    }
   
     await addDoc(collection(db, 'chatRooms', roomId, 'messages'), {
       senderId: 'system',
       to: null,
       isRead: false,
-      content: randomQuestion,
+      content: selectedQuestion,
       timestamp: serverTimestamp(),
     });
   };
+  
 
 
 
