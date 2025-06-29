@@ -487,6 +487,18 @@ useEffect(() => {
     setUsers((prev) => prev.map((u) => (u.id === currentUser.id ? updatedUser : u)));
   };
 
+  const handleAskNotification = async () => {
+    const permission = await Notification.requestPermission();
+    console.log('🔔 알림 권한 상태:', permission);
+    if (permission === 'granted' && currentUser) {
+      const token = await requestFcmToken();
+      if (token && currentUser.fcmToken !== token) {
+        await updateUser({ ...currentUser, fcmToken: token });
+        console.log('✅ iOS FCM 토큰 저장 완료');
+      }
+    }
+  };
+
   const logMonthlyMessageRequestCount = async () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -609,6 +621,16 @@ useEffect(() => {
     <>
     {/* ✅ 기존 유저 동의 모달 */}
     {showTermsModal && <TermsModal onAgree={handleAgreeTerms} />}
+
+      {/* 🔔 iOS 알림 권한 요청 버튼 (조건: 권한 허용 전) */}
+      {Notification.permission !== 'granted' && (
+      <button
+        className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white px-4 py-2 rounded-xl shadow-lg z-50"
+        onClick={handleAskNotification}
+      >
+        🔔 알림 허용하기
+      </button>
+    )}
 
     <Routes>
       <Route path="/" element={
