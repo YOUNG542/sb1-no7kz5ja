@@ -85,7 +85,7 @@ function App() {
   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
   const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83'];
   const [showTermsModal, setShowTermsModal] = useState(false);
-
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   // 유저 정보 불러온 후 조건 검사
 useEffect(() => {
   if (currentUser && !currentUser.termsAccepted) {
@@ -103,6 +103,10 @@ useEffect(() => {
 }, []);
 
  
+// permission 상태 실시간 반영 (iOS는 업데이트 안 되니 초기값만으로 충분)
+useEffect(() => {
+  setNotificationPermission(Notification.permission);
+}, []);
 
 
 
@@ -489,12 +493,14 @@ useEffect(() => {
 
   const handleAskNotification = async () => {
     const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
     console.log('🔔 알림 권한 상태:', permission);
+  
     if (permission === 'granted' && currentUser) {
       const token = await requestFcmToken();
       if (token && currentUser.fcmToken !== token) {
         await updateUser({ ...currentUser, fcmToken: token });
-        console.log('✅ iOS FCM 토큰 저장 완료');
+        console.log('✅ FCM 토큰 저장 완료');
       }
     }
   };
@@ -617,10 +623,29 @@ useEffect(() => {
     );
   }
 
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = window.navigator.standalone === true;
+const showIosAlert =
+  isIos &&
+  isStandalone &&
+  notificationPermission !== 'granted';
+
   return (
     <>
     {/* ✅ 기존 유저 동의 모달 */}
     {showTermsModal && <TermsModal onAgree={handleAgreeTerms} />}
+
+    {showIosAlert && (
+  <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white border border-gray-300 p-4 rounded-xl shadow-lg z-50 w-[90%] max-w-md text-center text-sm leading-snug">
+    <p className="text-gray-800">
+      📱 iPhone 사용자 안내<br />
+      홈 화면에 추가된 앱에서는<br />
+      <strong className="text-pink-600">‘알림 허용하기’ 버튼</strong>을 꼭 눌러야<br />
+      채팅 알림을 받을 수 있어요!
+    </p>
+  </div>
+)}
+
 
       {/* 🔔 iOS 알림 권한 요청 버튼 (조건: 권한 허용 전) */}
       {Notification.permission !== 'granted' && (
