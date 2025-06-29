@@ -81,7 +81,7 @@ function App() {
     };
   }>({});
   const [showRoomNotice, setShowRoomNotice] = useState(false);
-  const POST_NOTICE_VERSION = 'v4-feedback-acknowledged';
+  const POST_NOTICE_VERSION = 'v5-feedback-acknowledged';
   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
   const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83'];
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -692,22 +692,25 @@ const showIosAlert =
           </svg>
         </div>
         <div className="text-sm leading-snug">
-  <p className="font-semibold text-red-600">사과 말씀</p>
+  <p className="font-semibold text-blue-600">공지 드립니다</p>
   <p className="mt-1">
-    최근 <span className="font-semibold text-blue-600">불만사항</span>을 통해 알려주신 문제들을 확인했습니다.  
+    최근 여러분께서 <span className="font-semibold text-blue-600">불만사항</span>을 통해 전달해주신 문제들에 대해,  
+    다음과 같은 기능 개선을 완료했습니다.
     <br />
-    🔹 <span className="font-semibold">백그라운드 알림</span> 미작동,  
-    🔹 <span className="font-semibold">유저 리스트 내 메시지 요청 여부 확인</span> 기능 미비,  
-    🔹 그리고 <span className="font-semibold">매칭된 상대방의 대화 참여 저조</span> 등의 문제를 인지했습니다.
-  </p>
-  <p className="mt-1">
-    개발팀은 이 문제들을 <span className="font-semibold text-blue-600">즉시 수정</span> 중이며,  
-    <span className="font-semibold text-blue-600">내일 안으로 모두 반영</span>될 예정입니다.
+    🔹 <span className="font-semibold">백그라운드 알림</span> 기능이 새롭게 적용되어,  
+    <span className="text-blue-700">• 메시지 요청을 받을 때</span>,  
+    <span className="text-blue-700">• 내가 보낸 요청이 수락될 때</span>,  
+    <span className="text-blue-700">• 채팅방에서 새 메시지가 도착할 때</span>  
+    모두 즉시 알림을 받을 수 있습니다.
+    <br />
+    🔹 유저 리스트에서도 <span className="font-semibold">메시지 요청 여부 확인 기능</span>이 정상적으로 반영되었습니다.
   </p>
   <p className="mt-1 text-sm text-blue-700">
-    불편을 드려 진심으로 죄송합니다. 그럼에도 꾸준히 이용해주시는 모든 학우 여러분께 진심으로 감사드립니다.
+    더 나은 소개팅 경험을 위해 계속 개선해 나가겠습니다.  
+    소중한 의견 보내주신 모든 학우 여러분께 진심으로 감사드립니다.
   </p>
 </div>
+
       </div>
       <button
         onClick={() => setShowNotice(false)}
