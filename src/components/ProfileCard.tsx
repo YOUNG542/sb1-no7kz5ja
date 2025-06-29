@@ -4,7 +4,7 @@ import { User } from '../types';
 import AdBanner from './AdBanner';
 
 interface ProfileCardProps {
-  user: User;
+  user: User & { matchingCount?: number };
   onReact: (userId: string, emoji: string) => void;
   onMessageRequest: (userId: string) => void;
   alreadyRequested: boolean;
@@ -74,11 +74,9 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     </span>
 
     {/* 응답률 높음 뱃지 */}
-    {(user.matchingCount || 0) >= 3 && (
-      <div className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-medium">
-        응답률 높음 🔥 {user.matchingCount}회
-      </div>
-    )}
+    {Number(user.matchingCount) >= 3 && (
+  <div className="...">응답률 높음 🔥 {user.matchingCount}회</div>
+)}
 
     {/* ✅ 상위 10% 뱃지 삽입 위치 */}
     {user.isTopRequester && (
