@@ -1,15 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa'; // ✅ 추가
+import { VitePWA } from 'vite-plugin-pwa';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate', // ✅ 자동 새로고침
+      registerType: 'autoUpdate',
       workbox: {
-        skipWaiting: true,        // 새 서비스워커 즉시 적용
-        clientsClaim: true,       // 기존 열린 탭도 새 서비스워커 적용
+        skipWaiting: true,
+        clientsClaim: true,
       },
       includeAssets: ['icon-192.png', 'icon-512.png', 'favicon.ico'],
       manifest: {
@@ -35,6 +36,14 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        sw: resolve(__dirname, 'firebase-messaging-sw.js'), // ✅ 이 줄 추가됨
+      },
+    },
+  },
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
