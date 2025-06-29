@@ -46,17 +46,27 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
   }
 
   // ✅ (2) 유저별 매칭 경험 수 계산 (남자가 보는 여자 리스트용)
-  const userChatRoomCountMap: Record<string, number> = {};
+  const userMatchingCountMap: Record<string, number> = {};
 
-users.forEach((user) => {
-  if (user.gender === 'female') {
-    const count = chatRooms.filter((room) =>
-      room.participants.includes(user.id)
-    ).length;
-
-    userChatRoomCountMap[user.id] = count;
+  if (currentUser.gender === 'male') {
+    users.forEach((user) => {
+      if (user.gender === 'female') {
+        const requestsToThisUser = messageRequests.filter(
+          (req) => req.toUserId === user.id
+        );
+  
+        const matchedCount = requestsToThisUser.filter((req) =>
+          chatRooms.some(room =>
+            room.participants.includes(req.fromUserId) &&
+            room.participants.includes(req.toUserId)
+          )
+        ).length;
+  
+        userMatchingCountMap[user.id] = matchedCount;
+      }
+    });
   }
-});
+  
   
 
   // ✅ 상위 10% 요청자 계산
@@ -82,7 +92,7 @@ if (currentUser.gender === 'female') {
     .map(user => ({
       ...user,
       messageRequestCount: userRequestCountMap[user.id] || 0,
-      matchingCount: userChatRoomCountMap[user.id] || 0, // ← 요게 핵심
+      matchingCount: userMatchingCountMap[user.id] || 0, // ← 요게 핵심
       isTopRequester: topUserIds.includes(user.id),
     }))
     .sort((a, b) => {
