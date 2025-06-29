@@ -68,6 +68,9 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         <div className="flex items-center justify-between mb-1">
   <h3 className="text-xl font-bold text-gray-900">{user.nickname}</h3>
   <div className="flex items-center gap-2">
+
+  console.log(`[DEBUG] ${user.nickname}: matchingCount=`, user.matchingCount);
+
     {/* 성별 뱃지 */}
     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getGenderBadgeClass(user.gender)}`}>
       {getGenderLabel(user.gender)}
