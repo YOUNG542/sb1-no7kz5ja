@@ -7,6 +7,7 @@ interface ProfileCardProps {
   user: User;
   onReact: (userId: string, emoji: string) => void;
   onMessageRequest: (userId: string) => void;
+  alreadyRequested: boolean;
   currentUserId: string;
 }
 
@@ -14,6 +15,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   user,
   onReact,
   onMessageRequest,
+  alreadyRequested,
   currentUserId
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -95,10 +97,15 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
       <button
   onClick={handleMessageRequest}
-  className="min-w-[120px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 py-2 rounded-xl font-medium hover:from-pink-600 hover:to-red-600 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+  disabled={alreadyRequested}
+  className={`min-w-[120px] px-4 py-2 rounded-xl font-medium flex items-center justify-center gap-2 text-sm transition-all duration-200 ${
+    alreadyRequested
+      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+      : 'bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600'
+  }`}
 >
   <MessageCircle className="w-4 h-4" />
-  메시지
+  {alreadyRequested ? '요청 완료' : '메시지'}
 </button>
       </div>
 

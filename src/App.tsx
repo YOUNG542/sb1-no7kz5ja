@@ -676,6 +676,7 @@ useEffect(() => {
           onReact={handleReact}
           onMessageRequest={handleMessageRequest}
           onRefresh={() => window.location.reload()}
+          messageRequests={messageRequests}
         />
       )}
   

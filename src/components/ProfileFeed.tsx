@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, Filter, Users } from 'lucide-react';
 import { ProfileCard } from './ProfileCard';
 import { User } from '../types';
-
+import { MessageRequest } from '../types';
 interface ProfileFeedProps {
   users: User[];
   currentUser: User;
+  messageRequests: MessageRequest[];
   onReact: (userId: string, emoji: string) => void;
   onMessageRequest: (userId: string) => void;
   onRefresh: () => void;
@@ -14,6 +15,7 @@ interface ProfileFeedProps {
 export const ProfileFeed: React.FC<ProfileFeedProps> = ({
   users,
   currentUser,
+  messageRequests,
   onReact,
   onMessageRequest,
   onRefresh
@@ -50,6 +52,8 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
       return bPopularity - aPopularity;
     }
   });
+
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-red-50">
@@ -101,15 +105,22 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
               <p className="text-gray-600">새로고침을 눌러 새로운 친구들을 찾아보세요!</p>
             </div>
           ) : (
-            filteredUsers.map((user) => (
-              <ProfileCard
-                key={user.id}
-                user={user}
-                currentUserId={currentUser.id}
-                onReact={onReact}
-                onMessageRequest={onMessageRequest}
-              />
-            ))
+            filteredUsers.map((user) => {
+              const alreadyRequested = messageRequests.some((req: MessageRequest) =>
+  req.fromUserId === currentUser.id && req.toUserId === user.id
+);
+            
+              return (
+                <ProfileCard
+                  key={user.id}
+                  user={user}
+                  currentUserId={currentUser.id}
+                  onReact={onReact}
+                  onMessageRequest={onMessageRequest}
+                  alreadyRequested={alreadyRequested}
+                />
+              );
+            })
           )}
         </div>
 
