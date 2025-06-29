@@ -143,6 +143,25 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
+    const requestNotificationPermission = async () => {
+      const permission = await Notification.requestPermission();
+      console.log('🔔 알림 권한 상태:', permission);
+  
+      // iOS에서도 알림 허용 후 토큰 발급 시도
+      if (permission === 'granted' && currentUser) {
+        const token = await requestFcmToken();
+        if (token && currentUser.fcmToken !== token) {
+          await updateUser({ ...currentUser, fcmToken: token });
+          console.log('✅ iOS FCM 토큰 저장 완료');
+        }
+      }
+    };
+  
+    requestNotificationPermission();
+  }, [currentUser]);
+  
+
+  useEffect(() => {
     const seen = localStorage.getItem('roomNoticeSeen');
     if (!seen) {
       setShowRoomNotice(true);
