@@ -55,6 +55,10 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     return 'bg-gray-100 text-gray-500';
   };
 
+// ✅ JSX 밖에서 실행
+console.log(`[DEBUG] ${user.nickname}: matchingCount =`, user.matchingCount);
+
+
   return (
     <div
       className={`bg-white rounded-2xl shadow-lg border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
@@ -69,7 +73,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   <h3 className="text-xl font-bold text-gray-900">{user.nickname}</h3>
   <div className="flex items-center gap-2">
 
-  console.log(`[DEBUG] ${user.nickname}: matchingCount=`, user.matchingCount);
+  
 
     {/* 성별 뱃지 */}
     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getGenderBadgeClass(user.gender)}`}>
