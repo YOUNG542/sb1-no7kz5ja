@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { RefreshCw, Filter, Users } from 'lucide-react';
 import { ProfileCard } from './ProfileCard';
-import { User } from '../types';
-import { MessageRequest } from '../types';
+import { User, MessageRequest, ChatRoom } from '../types';
+
 interface ProfileFeedProps {
   users: User[];
   currentUser: User;
   messageRequests: MessageRequest[];
+  chatRooms: ChatRoom[];
   onReact: (userId: string, emoji: string) => void;
   onMessageRequest: (userId: string) => void;
   onRefresh: () => void;
@@ -16,6 +17,7 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
   users,
   currentUser,
   messageRequests,
+  chatRooms,
   onReact,
   onMessageRequest,
   onRefresh
@@ -30,30 +32,69 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
     setIsRefreshing(false);
   };
 
+  // ✅ (1) 유저별 메시지 요청 수 계산 (여자가 보는 남자 리스트용)
+  const userRequestCountMap: Record<string, number> = {};
+  if (currentUser.gender === 'female') {
+    users.forEach((user) => {
+      if (user.gender === 'male') {
+        const count = messageRequests.filter(
+          (req) => req.fromUserId === user.id
+        ).length;
+        userRequestCountMap[user.id] = count;
+      }
+    });
+  }
+
+  // ✅ (2) 유저별 매칭 경험 수 계산 (남자가 보는 여자 리스트용)
+  const userChatRoomCountMap: Record<string, number> = {};
+  if (currentUser.gender === 'male') {
+    chatRooms.forEach((room) => {
+      room.participants.forEach((participantId) => {
+        if (participantId !== currentUser.id) {
+          userChatRoomCountMap[participantId] = (userChatRoomCountMap[participantId] || 0) + 1;
+        }
+      });
+    });
+  }
+
+  // ✅ 상위 10% 요청자 계산
+let topUserIds: string[] = [];
+
+if (currentUser.gender === 'female') {
+  const sortedUserIds = Object.entries(userRequestCountMap)
+    .sort(([, a], [, b]) => b - a)
+    .map(([userId]) => userId);
+
+  const topCount = Math.max(1, Math.floor(sortedUserIds.length * 0.1)); // 최소 1명은 표시
+  topUserIds = sortedUserIds.slice(0, topCount);
+}
+
+  // ✅ (3) 필터링 및 정렬
   const filteredUsers = users
-  .filter(user => {
-    // 1. 나 자신 제외
-    if (user.id === currentUser.id) return false;
-
-    // 2. 성별이 없는 유저는 제외
-    if (!user.gender || !currentUser.gender) return false;
-
-    // 3. 성별이 같으면 제외
-    if (user.gender === currentUser.gender) return false;
-
-    return true;
-  })
-  .sort((a, b) => {
-    if (sortBy === 'newest') {
-      return b.createdAt.toMillis() - a.createdAt.toMillis();
-    } else {
-      const aPopularity = Object.values(a.reactions).flat().length;
-      const bPopularity = Object.values(b.reactions).flat().length;
-      return bPopularity - aPopularity;
-    }
-  });
-
-  
+    .filter(user => {
+      if (user.id === currentUser.id) return false;
+      if (!user.gender || !currentUser.gender) return false;
+      if (user.gender === currentUser.gender) return false;
+      return true;
+    })
+    .map(user => ({
+      ...user,
+      messageRequestCount: userRequestCountMap[user.id] || 0,
+      matchingCount: userChatRoomCountMap[user.id] || 0, // ← 요게 핵심
+      isTopRequester: topUserIds.includes(user.id),
+    }))
+    .sort((a, b) => {
+      if (currentUser.gender === 'female') {
+        return (b.messageRequestCount || 0) - (a.messageRequestCount || 0);
+      }
+      if (sortBy === 'newest') {
+        return b.createdAt.toMillis() - a.createdAt.toMillis();
+      } else {
+        const aPopularity = Object.values(a.reactions).flat().length;
+        const bPopularity = Object.values(b.reactions).flat().length;
+        return bPopularity - aPopularity;
+      }
+    });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-red-50">
@@ -106,10 +147,10 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
             </div>
           ) : (
             filteredUsers.map((user) => {
-              const alreadyRequested = messageRequests.some((req: MessageRequest) =>
-  req.fromUserId === currentUser.id && req.toUserId === user.id
-);
-            
+              const alreadyRequested = messageRequests.some(
+                (req: MessageRequest) =>
+                  req.fromUserId === currentUser.id && req.toUserId === user.id
+              );
               return (
                 <ProfileCard
                   key={user.id}
@@ -124,7 +165,7 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
           )}
         </div>
 
-        {/* Load more simulation */}
+        {/* Load more */}
         {filteredUsers.length > 0 && (
           <div className="text-center py-8">
             <button

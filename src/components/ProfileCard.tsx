@@ -65,15 +65,33 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-xl font-bold text-gray-900">{user.nickname}</h3>
-            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getGenderBadgeClass(user.gender)}`}>
-              {getGenderLabel(user.gender)}
-            </span>
-          </div>
+        <div className="flex items-center justify-between mb-1">
+  <h3 className="text-xl font-bold text-gray-900">{user.nickname}</h3>
+  <div className="flex items-center gap-2">
+    {/* 성별 뱃지 */}
+    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getGenderBadgeClass(user.gender)}`}>
+      {getGenderLabel(user.gender)}
+    </span>
+
+    {/* 응답률 높음 뱃지 */}
+    {(user.matchingCount || 0) >= 3 && (
+      <div className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-medium">
+        응답률 높음 🔥 {user.matchingCount}회
+      </div>
+    )}
+
+    {/* ✅ 상위 10% 뱃지 삽입 위치 */}
+    {user.isTopRequester && (
+      <div className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full text-xs font-medium">
+        상위 10% 🔺
+      </div>
+    )}
+  </div>
+</div>
+
           <p className="text-gray-700 leading-relaxed">{user.intro}</p>
         </div>
-        {user.messageRequestCount > 0 && (
+        {(user.messageRequestCount || 0) > 0 && (
           <div className="flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
             <MessageCircle className="w-3 h-3" />
             {user.messageRequestCount}

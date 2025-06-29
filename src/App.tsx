@@ -444,7 +444,10 @@ useEffect(() => {
     setMessageRequests((prev) => [...prev, request]);
     const updatedUsers = users.map((user) => {
       if (user.id === showMessageModal.id) {
-        const updatedUser = { ...user, messageRequestCount: user.messageRequestCount + 1 };
+        const updatedUser = {
+          ...user,
+          messageRequestCount: (user.messageRequestCount || 0) + 1,
+        };
         updateUser(updatedUser);
         return updatedUser;
       }
@@ -484,7 +487,7 @@ useEffect(() => {
     setChatRooms((prev) => [...prev, chatRoom]);
     const updatedUser = {
       ...currentUser,
-      messageRequestCount: Math.max(0, currentUser.messageRequestCount - 1),
+      messageRequestCount: Math.max(0, (currentUser.messageRequestCount || 0) - 1),
     };
     updateUser(updatedUser);
     setCurrentUser(updatedUser);
@@ -543,7 +546,7 @@ useEffect(() => {
     setMessageRequests((prev) => prev.map((r) => (r.id === requestId ? updatedRequest : r)));
     const updatedUser = {
       ...currentUser,
-      messageRequestCount: Math.max(0, currentUser.messageRequestCount - 1),
+      messageRequestCount: Math.max(0, (currentUser.messageRequestCount || 0) - 1),
     };
     updateUser(updatedUser);
     setCurrentUser(updatedUser);
@@ -768,6 +771,7 @@ const showIosAlert =
           onMessageRequest={handleMessageRequest}
           onRefresh={() => window.location.reload()}
           messageRequests={messageRequests}
+          chatRooms={chatRooms}
         />
       )}
   

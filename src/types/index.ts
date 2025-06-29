@@ -7,7 +7,7 @@ export interface User {
   gender: 'male' | 'female';
   createdAt: Timestamp;
   reactions: Record<string, string[]>; // emoji -> user IDs
-  messageRequestCount: number;
+  messageRequestCount?: number;
    // ✅ 여기에 아래 항목을 추가하세요
    termsAccepted?: {
     privacy: boolean;
@@ -15,6 +15,8 @@ export interface User {
     timestamp: Timestamp;
   };
   fcmToken?: string;
+  matchingCount?: number; 
+  isTopRequester?: boolean;
 }
 
 export interface MessageRequest {
