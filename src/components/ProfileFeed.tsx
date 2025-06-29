@@ -47,15 +47,17 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
 
   // ✅ (2) 유저별 매칭 경험 수 계산 (남자가 보는 여자 리스트용)
   const userChatRoomCountMap: Record<string, number> = {};
-  if (currentUser.gender === 'male') {
-    chatRooms.forEach((room) => {
-      room.participants.forEach((participantId) => {
-        if (participantId !== currentUser.id) {
-          userChatRoomCountMap[participantId] = (userChatRoomCountMap[participantId] || 0) + 1;
-        }
-      });
-    });
+
+users.forEach((user) => {
+  if (user.gender === 'female') {
+    const count = chatRooms.filter((room) =>
+      room.participants.includes(user.id)
+    ).length;
+
+    userChatRoomCountMap[user.id] = count;
   }
+});
+  
 
   // ✅ 상위 10% 요청자 계산
 let topUserIds: string[] = [];
@@ -97,20 +99,11 @@ if (currentUser.gender === 'female') {
     });
 
 
-      // ✅ 콘솔에 출력하여 확인
-  console.log('👀 필터된 유저 확인:', filteredUsers.slice(0, 3));
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-red-50">
       <div className="max-w-2xl mx-auto p-4">
-
-
-  {/* ✅ 여기에 넣으세요 */}
-  {currentUser.id === 'WkUuJHFnuBb8hZ1OQoFYDZ1IRLm2' && (
-        <div className="bg-yellow-100 text-sm p-2 mb-4 rounded-md text-gray-800 overflow-x-auto max-h-40">
-          <pre>{JSON.stringify(filteredUsers.slice(0, 3), null, 2)}</pre>
-        </div>
-      )}
 
         {/* Header */}
         <div className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20 p-4 mb-6">
