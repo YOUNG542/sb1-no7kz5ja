@@ -49,18 +49,30 @@ export const subscribeToMessageRequestsForUser = (
   userId: string,
   onUpdate: (requests: MessageRequest[]) => void
 ): (() => void) => {
-  const q = query(
-    collection(db, 'messageRequests'),
-    where('toUserId', '==', userId)
-  );
+  const ref = collection(db, 'messageRequests');
 
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const requests = snapshot.docs.map((doc) => doc.data() as MessageRequest);
-    onUpdate(requests);
+  const qTo = query(ref, where('toUserId', '==', userId));       // 내가 받은 요청
+  const qFrom = query(ref, where('fromUserId', '==', userId));   // 내가 보낸 요청
+
+  let received: MessageRequest[] = [];
+  let sent: MessageRequest[] = [];
+
+  const unsubTo = onSnapshot(qTo, (snapshot) => {
+    received = snapshot.docs.map((doc) => doc.data() as MessageRequest);
+    onUpdate([...received, ...sent]);
   });
 
-  return unsubscribe;
+  const unsubFrom = onSnapshot(qFrom, (snapshot) => {
+    sent = snapshot.docs.map((doc) => doc.data() as MessageRequest);
+    onUpdate([...received, ...sent]);
+  });
+
+  return () => {
+    unsubTo();
+    unsubFrom();
+  };
 };
+
 
 
 export const getSentMessageRequests = async (
