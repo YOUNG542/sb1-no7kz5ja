@@ -492,6 +492,12 @@ useEffect(() => {
   };
 
   const handleAskNotification = async () => {
+    if (Notification.permission === 'denied') {
+      alert('⚠️ 알림이 차단되어 있어요.\n설정 > 앱 > 네버엔딩 홍개팅 > 알림 > 허용으로 바꿔주세요.');
+
+      return;
+    }
+  
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
     console.log('🔔 알림 권한 상태:', permission);
@@ -504,6 +510,7 @@ useEffect(() => {
       }
     }
   };
+  
 
   const logMonthlyMessageRequestCount = async () => {
     const now = new Date();
