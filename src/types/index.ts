@@ -14,6 +14,7 @@ export interface User {
     tos: boolean;
     timestamp: Timestamp;
   };
+  fcmToken?: string;
 }
 
 export interface MessageRequest {

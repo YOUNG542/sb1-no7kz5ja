@@ -58,6 +58,7 @@ import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { TermsOfService } from './components/TermsOfService';
 import { Timestamp } from 'firebase/firestore';
 import { TermsModal } from './components/TermsModal';
+import { requestFcmToken } from './firebase/messaging';
 function App() {
   const [showGenderNotice, setShowGenderNotice] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
@@ -122,6 +123,20 @@ useEffect(() => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    const updateFcmToken = async () => {
+      if (!currentUser) return;
+  
+      const token = await requestFcmToken();
+      if (token && currentUser.fcmToken !== token) {
+        await updateUser({ ...currentUser, fcmToken: token }); // ✅ Firestore에 저장
+        console.log('✅ FCM 토큰 Firestore 저장 완료');
+      }
+    };
+  
+    updateFcmToken();
+  }, [currentUser]);
 
   useEffect(() => {
     initAnonymousAuth().then(setUid).catch(console.error);
