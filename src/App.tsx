@@ -80,7 +80,7 @@ function App() {
     };
   }>({});
   const [showRoomNotice, setShowRoomNotice] = useState(false);
-  const POST_NOTICE_VERSION = 'v3-post-feature';
+  const POST_NOTICE_VERSION = 'v4-feedback-acknowledged';
   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
   const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83'];
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -604,17 +604,22 @@ useEffect(() => {
           </svg>
         </div>
         <div className="text-sm leading-snug">
-        <p className="font-semibold">🚀 새로운 기능이 추가되었습니다!</p>
-          <p className="mt-1">
-            이제 <span className="font-semibold text-blue-600">채팅방 내 아이스브레이킹</span> 기능, 
-            <span className="font-semibold text-blue-600">포스트 신고</span> 기능, 
-            <span className="font-semibold text-blue-600">채팅방 나가기</span> 기능 등이 추가되었습니다. <br />
-            더 많은 기능을 통해 앱 내에서 학우들과 더욱 활발히 소통하세요!
-          </p>
-          <p className="mt-1 text-sm text-blue-700">
-          또한, 이제 <span className="font-semibold">개인정보처리방침</span>과 <span className="font-semibold">이용약관</span>도 확인하실 수 있습니다. 📜
-          </p>
-        </div>
+  <p className="font-semibold text-red-600">사과 말씀</p>
+  <p className="mt-1">
+    최근 <span className="font-semibold text-blue-600">불만사항</span>을 통해 알려주신 문제들을 확인했습니다.  
+    <br />
+    🔹 <span className="font-semibold">백그라운드 알림</span> 미작동,  
+    🔹 <span className="font-semibold">유저 리스트 내 메시지 요청 여부 확인</span> 기능 미비,  
+    🔹 그리고 <span className="font-semibold">매칭된 상대방의 대화 참여 저조</span> 등의 문제를 인지했습니다.
+  </p>
+  <p className="mt-1">
+    개발팀은 이 문제들을 <span className="font-semibold text-blue-600">즉시 수정</span> 중이며,  
+    <span className="font-semibold text-blue-600">내일 안으로 모두 반영</span>될 예정입니다.
+  </p>
+  <p className="mt-1 text-sm text-blue-700">
+    불편을 드려 진심으로 죄송합니다. 그럼에도 꾸준히 이용해주시는 모든 학우 여러분께 진심으로 감사드립니다.
+  </p>
+</div>
       </div>
       <button
         onClick={() => setShowNotice(false)}
