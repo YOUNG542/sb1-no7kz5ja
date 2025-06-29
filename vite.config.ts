@@ -40,7 +40,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        sw: resolve(__dirname, 'firebase-messaging-sw.js'), // ✅ 이 줄 추가됨
+       
       },
     },
   },
