@@ -80,9 +80,10 @@ console.log(`[DEBUG] ${user.nickname}: matchingCount =`, user.matchingCount);
       {getGenderLabel(user.gender)}
     </span>
 
-    {/* 응답률 높음 뱃지 */}
-    {Number(user.matchingCount) >= 3 && (
-  <div className="...">응답률 높음 🔥 {user.matchingCount}회</div>
+    {(user.matchingCount ?? 0) >= 3 && (
+  <div className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
+    응답률 높음 🔥 {user.matchingCount}회 수락
+  </div>
 )}
 
     {/* ✅ 상위 10% 뱃지 삽입 위치 */}
