@@ -70,24 +70,44 @@ const newUser: User = {
 
 
 {/* 프로필 사진 업로드 */}
-<div>
+{/* 프로필 사진 업로드 */}
+<div className="mb-6 text-center">
   <label className="block text-sm font-medium text-gray-700 mb-2">
     프로필 사진 업로드 (얼굴 사진이 아니어도 돼요!)
   </label>
-  <input
-    type="file"
-    accept="image/*"
-    onChange={(e) => {
-      if (e.target.files?.[0]) {
-        setPhoto(e.target.files[0]);
-      }
-    }}
-    disabled={isLoading}
-  />
-  {photo && (
-    <p className="text-sm text-gray-500 mt-1">선택한 이미지: {photo.name}</p>
-  )}
+  <div className="flex flex-col items-center justify-center">
+    <label
+      htmlFor="photo-upload"
+      className="cursor-pointer w-28 h-28 rounded-full overflow-hidden border-2 border-dashed border-pink-300 hover:border-pink-500 transition-all duration-200 bg-gray-100 flex items-center justify-center"
+    >
+      {photo ? (
+        <img
+          src={URL.createObjectURL(photo)}
+          alt="Preview"
+          className="object-cover w-full h-full"
+        />
+      ) : (
+        <span className="text-gray-400 text-sm">사진 선택</span>
+      )}
+    </label>
+    <input
+      id="photo-upload"
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={(e) => {
+        if (e.target.files?.[0]) {
+          setPhoto(e.target.files[0]);
+        }
+      }}
+      disabled={isLoading}
+    />
+    {photo && (
+      <p className="text-xs text-gray-500 mt-2">{photo.name}</p>
+    )}
+  </div>
 </div>
+
 
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-white/20 backdrop-blur-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
