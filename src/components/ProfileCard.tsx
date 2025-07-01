@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, MessageCircle, Clock } from 'lucide-react';
 import { User } from '../types';
 import AdBanner from './AdBanner';
+import UserProfileModal from './UserProfileModal';
 
 interface ProfileCardProps {
   user: User & {
@@ -26,7 +27,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
   const [showAd, setShowAd] = useState(false);
-
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
 
   const getTimeAgo = (timestamp: number) => {
@@ -78,7 +79,20 @@ console.log(`[DEBUG] ${user.nickname}: matchingCount =`, user.matchingCount);
   <h3 className="text-xl font-bold text-gray-900">{user.nickname}</h3>
   <div className="flex items-center gap-2">
 
-  
+  {/* 👁️ 프로필 보기 아이콘 */}
+<button
+  className="text-gray-400 hover:text-gray-600"
+  onClick={() => setShowProfileModal(true)}
+>
+  <Eye className="w-5 h-5" />
+</button>
+
+{showProfileModal && (
+  <UserProfileModal
+    userId={user.id}
+    onClose={() => setShowProfileModal(false)}
+  />
+)}
 
     {/* 성별 뱃지 */}
     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getGenderBadgeClass(user.gender)}`}>
