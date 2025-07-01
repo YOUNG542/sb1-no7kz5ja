@@ -208,6 +208,23 @@ useEffect(() => {
       res.forEach(({ date, count }) => console.log(`📅 ${date}: ${count}명`))
     );
   }, []);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, 'messageRequests'),
+      where('status', '==', 'accepted')
+    );
+  
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const acceptedRequests: MessageRequest[] = snapshot.docs.map((doc) => ({
+        ...(doc.data() as MessageRequest),
+        id: doc.id,
+      }));
+      setMessageRequests(acceptedRequests); // 🔥 이게 핵심!
+    });
+  
+    return () => unsubscribe();
+  }, []);
   
   
 
@@ -227,16 +244,11 @@ useEffect(() => {
       setChatRooms(rooms);
     });
 
-    const unsubscribeRequests = subscribeToMessageRequestsForUser(
-      currentUser.id,
-      setMessageRequests
-    );
+   
 
     return () => {
       unsubscribeChatRooms();
-      if (typeof unsubscribeRequests === 'function') {
-        unsubscribeRequests();
-      }
+     
     };
   }, [currentUser]);
 
