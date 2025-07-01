@@ -115,10 +115,7 @@ console.log(`[DEBUG] ${user.nickname}: matchingCount =`, user.matchingCount);
           <Clock className="w-3 h-3" />
           {getTimeAgo(user.createdAt.toDate().getTime())}
         </div>
-        <div className="flex items-center gap-1">
-          <Eye className="w-3 h-3" />
-          관심 {Object.values(user.reactions).flat().length}
-        </div>
+        
       </div>
 
       <div className="flex items-center justify-between">
