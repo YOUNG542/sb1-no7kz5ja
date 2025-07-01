@@ -59,6 +59,8 @@ import { TermsOfService } from './components/TermsOfService';
 import { Timestamp } from 'firebase/firestore';
 import { TermsModal } from './components/TermsModal';
 import { requestFcmToken } from './firebase/messaging';
+import { NewIntro } from './components/NewIntro';
+
 function App() {
   const [showGenderNotice, setShowGenderNotice] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
@@ -86,6 +88,31 @@ function App() {
   const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83'];
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [currentUserFetched, setCurrentUserFetched] = useState(false);
+  const [showReturningIntro, setShowReturningIntro] = useState(false); // 기존유저용
+
+
+  useEffect(() => {
+    const introSeen = localStorage.getItem('introSeen');
+    if (introSeen === 'true') {
+      setShowIntro(false); // 신규 인트로 생략
+      setShowReturningIntro(true); // 기존 유저용 인트로 ON
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!uid) return;
+  
+    getUserById(uid)
+      .then((user) => {
+        setCurrentUser(user ?? null);
+      })
+      .finally(() => {
+        setCurrentUserFetched(true); // ✅ 꼭 있어야 함
+      });
+  }, [uid]);
+
+
   // 유저 정보 불러온 후 조건 검사
 useEffect(() => {
   if (currentUser && !currentUser.termsAccepted) {
@@ -599,19 +626,26 @@ useEffect(() => {
       return <MaintenanceModal onClose={() => window.close()} />;
     }
 
-  if (showIntro) {
-    return <Intro onFinish={handleIntroFinish} />;
-  }
-
-  if (!uid) return <div>로그인 중...</div>;
-  if (!currentUser) {
-    return (
-      <>
-        <PwaPrompt /> {/* 🔥 안내문을 ProfileSetup 단계에서도 보여줌 */}
-        <ProfileSetup uid={uid} onComplete={handleProfileComplete} />
-      </>
-    );
-  }
+    if (showIntro) {
+      return <Intro onFinish={handleIntroFinish} />; // 신규 유저용 인트로
+    }
+    
+    if (showReturningIntro && !currentUser) {
+      return <NewIntro onFinish={() => setShowReturningIntro(false)} />; // 기존 유저용 인트로
+    }
+    
+    if (!uid || !currentUserFetched) {
+      return null; // 🔥 중간 로딩 메시지 완전 제거
+    }
+    
+    if (!currentUser) {
+      return (
+        <>
+          <PwaPrompt />
+          <ProfileSetup uid={uid} onComplete={handleProfileComplete} />
+        </>
+      );
+    }
 
   const pendingRequestCount = messageRequests.filter(
     (r) => r.status === 'pending' && r.toUserId === currentUser.id
