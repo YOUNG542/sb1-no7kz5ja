@@ -81,7 +81,7 @@ function App() {
     };
   }>({});
   const [showRoomNotice, setShowRoomNotice] = useState(false);
-  const POST_NOTICE_VERSION = 'v5-feedback-acknowledged';
+  const POST_NOTICE_VERSION = 'v6-feedback-acknowledged';
   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
   const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83'];
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -709,22 +709,24 @@ const showIosAlert =
         <div className="text-sm leading-snug">
   <p className="font-semibold text-blue-600">공지 드립니다</p>
   <p className="mt-1">
-    최근 여러분께서 <span className="font-semibold text-blue-600">불만사항</span>을 통해 전달해주신 문제들에 대해,  
-    다음과 같은 기능 개선을 완료했습니다.
+    최근 여러분께서 보내주신 피드백을 바탕으로,  
+    다음과 같은 **프로필 기능 개선**이 완료되었습니다.
     <br />
-    🔹 <span className="font-semibold">백그라운드 알림</span> 기능이 새롭게 적용되어,  
-    <span className="text-blue-700">• 메시지 요청을 받을 때</span>,  
-    <span className="text-blue-700">• 내가 보낸 요청이 수락될 때</span>,  
-    <span className="text-blue-700">• 채팅방에서 새 메시지가 도착할 때</span>  
-    모두 즉시 알림을 받을 수 있습니다.
+    🔹 <span className="font-semibold">프로필 사진 등록 및 변경 기능</span>이 추가되어,  
+    이제 나를 표현할 수 있는 이미지를 자유롭게 설정할 수 있어요.
     <br />
-    🔹 유저 리스트에서도 <span className="font-semibold">메시지 요청 여부 확인 기능</span>이 정상적으로 반영되었습니다.
+    🔹 <span className="font-semibold">관심사 선택 기능</span>이 도입되어,  
+    최대 5개의 관심사를 등록하고, 나와 잘 맞는 사람을 더 쉽게 만날 수 있어요.
+    <br />
+    🔹 상대방 카드에서 <span className="font-semibold">👁️ 아이콘</span>을 누르면  
+    해당 유저의 <span className="text-blue-700">프로필 사진 / 한 줄 소개 / 관심사</span>를 한눈에 확인할 수 있습니다.
   </p>
   <p className="mt-1 text-sm text-blue-700">
-    더 나은 소개팅 경험을 위해 계속 개선해 나가겠습니다.  
-    소중한 의견 보내주신 모든 학우 여러분께 진심으로 감사드립니다.
+    더 깊은 연결을 위한 첫걸음, 지금 바로 나만의 프로필을 완성해보세요!  
+    늘 소중한 의견 보내주시는 모든 학우 여러분께 감사드립니다.
   </p>
 </div>
+
 
       </div>
       <button
