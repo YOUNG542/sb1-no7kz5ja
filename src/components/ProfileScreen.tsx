@@ -2,11 +2,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useEffect, useState } from 'react';
 import { UserCircle, Pencil, AlertCircle, Info } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@radix-ui/react-popover'; // 필요한 경우 직접 구현 가능
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateDoc, doc } from 'firebase/firestore';
 
 export const ProfileScreen: React.FC = () => {
   const auth = getAuth();
@@ -17,6 +19,7 @@ export const ProfileScreen: React.FC = () => {
   const [intro, setIntro] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | ''>('');
   const [loading, setLoading] = useState(true);
+  const [photoURL, setPhotoURL] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -28,6 +31,7 @@ export const ProfileScreen: React.FC = () => {
         setNickname(data.nickname || '');
         setIntro(data.intro || '');
         setGender(data.gender || '');
+        setPhotoURL(data.photoURL || '');
       }
       setLoading(false);
     };
@@ -80,13 +84,43 @@ export const ProfileScreen: React.FC = () => {
           </Popover>
         </div>
   
+    
         {/* 프로필 사진 */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center">
-            <UserCircle size={56} className="text-gray-400" />
-          </div>
-          <p className="text-sm text-gray-400 mt-2">프로필 사진 기능은 준비 중이에요 🙏</p>
-        </div>
+<div className="flex flex-col items-center mb-6">
+  <label
+    htmlFor="photo-upload"
+    className="cursor-pointer w-28 h-28 rounded-full overflow-hidden border-2 border-dashed border-pink-300 hover:border-pink-500 transition-all duration-200 bg-gray-100 flex items-center justify-center"
+  >
+    {photoURL ? (
+      <img
+        src={photoURL}
+        alt="Profile"
+        className="object-cover w-full h-full"
+      />
+    ) : (
+      <UserCircle size={56} className="text-gray-400" />
+    )}
+  </label>
+  <input
+    id="photo-upload"
+    type="file"
+    accept="image/*"
+    className="hidden"
+    onChange={async (e) => {
+      if (!user || !e.target.files?.[0]) return;
+      const file = e.target.files[0];
+
+      const storage = getStorage();
+      const storageRef = ref(storage, `profilePhotos/${user.uid}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      await updateDoc(doc(db, 'users', user.uid), { photoURL: downloadURL });
+      setPhotoURL(downloadURL);
+    }}
+  />
+  <p className="text-sm text-gray-400 mt-2">사진을 눌러 변경할 수 있어요</p>
+</div>
+
   
         {/* 닉네임 + 성별 + 수정 */}
         <div className="flex items-center justify-center gap-2 mb-2">
