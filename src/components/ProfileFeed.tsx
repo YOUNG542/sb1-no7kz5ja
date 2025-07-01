@@ -94,6 +94,10 @@ if (currentUser.gender === 'female') {
       if (currentUser.gender === 'female') {
         return (b.messageRequestCount || 0) - (a.messageRequestCount || 0);
       }
+      if (currentUser.gender === 'male') {
+        return (b.matchingCount || 0) - (a.matchingCount || 0); // 🔥 이 줄 추가
+      }
+    
       if (sortBy === 'newest') {
         return b.createdAt.toMillis() - a.createdAt.toMillis();
       } else {
@@ -102,6 +106,7 @@ if (currentUser.gender === 'female') {
         return bPopularity - aPopularity;
       }
     });
+    
 
 
 
