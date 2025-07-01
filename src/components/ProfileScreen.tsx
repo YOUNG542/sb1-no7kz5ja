@@ -143,50 +143,8 @@ export const ProfileScreen: React.FC = () => {
           {intro || '아직 소개글이 없어요!'}
         </p>
 
-        {/* 관심사 선택 */}
-<div className="mb-6">
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    관심사 (최대 5개 선택)
-  </label>
-  <div className="flex flex-wrap gap-2">
-    {[
-      '전시회', '영화감상', '드로잉/그림', '사진 찍기', '글쓰기/에세이', '독서',
-      'K-POP', '인디음악', '힙합', '재즈/클래식', '유튜브 보기', '넷플릭스/OTT',
-      '카페 투어', '빵/디저트', '라멘/면 요리', '혼밥/혼술', '요리/베이킹',
-      '헬스/웨이트', '필라테스/요가', '등산/걷기', '러닝', '패션/쇼핑', '홈카페/홈꾸미기',
-      '국내 여행', '해외 여행', '당일치기 나들이', '힐링 여행', '혼자 여행',
-      '밸런스 게임', '보드게임', '롤/오버워치 등 게임', '노래방/코인노래방', '타로/MBTI/혈액형',
-      'MBTI 이야기 좋아함', '연애/썸 이야기 좋아함', '고민 상담 들어주는 거 좋아함',
-      '감정 토로하기 좋아함', '아무 말 대잔치 스타일'
-    ].map((interest) => (
-      <button
-        key={interest}
-        type="button"
-        onClick={async () => {
-          if (!user) return;
-          const newInterests = interests.includes(interest)
-            ? interests.filter((i) => i !== interest)
-            : interests.length < 5
-              ? [...interests, interest]
-              : interests;
+    
 
-          setInterests(newInterests);
-          await updateDoc(doc(db, 'users', user.uid), { interests: newInterests });
-        }}
-        className={`px-3 py-1 rounded-full border text-sm ${
-          interests.includes(interest)
-            ? 'bg-pink-500 text-white border-pink-500'
-            : 'bg-white text-gray-600 border-gray-300 hover:border-pink-400'
-        }`}
-      >
-        {interest}
-      </button>
-    ))}
-  </div>
-  {interests.length === 5 && (
-    <p className="text-xs text-gray-500 mt-1">최대 5개까지 선택할 수 있어요.</p>
-  )}
-</div>
   
         {/* 내가 쓴 글 보기 */}
         <div className="flex justify-center">
