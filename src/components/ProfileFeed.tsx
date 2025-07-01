@@ -51,18 +51,13 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
   if (currentUser.gender === 'male') {
     users.forEach((user) => {
       if (user.gender === 'female') {
-        const requestsToThisUser = messageRequests.filter(
-          (req) => req.toUserId === user.id
+        const acceptedRequestsToThisUser = messageRequests.filter(
+          (req) =>
+            req.toUserId === user.id &&
+            req.status === 'accepted' // ✅ 수락된 요청만 카운트
         );
   
-        const matchedCount = requestsToThisUser.filter((req) =>
-          chatRooms.some(room =>
-            room.participants.includes(req.fromUserId) &&
-            room.participants.includes(req.toUserId)
-          )
-        ).length;
-  
-        userMatchingCountMap[user.id] = matchedCount;
+        userMatchingCountMap[user.id] = acceptedRequestsToThisUser.length;
       }
     });
   }
