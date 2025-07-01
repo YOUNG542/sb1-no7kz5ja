@@ -102,12 +102,7 @@ console.log(`[DEBUG] ${user.nickname}: matchingCount =`, user.matchingCount);
 
           <p className="text-gray-700 leading-relaxed">{user.intro}</p>
         </div>
-        {(user.messageRequestCount || 0) > 0 && (
-          <div className="flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
-            <MessageCircle className="w-3 h-3" />
-            {user.messageRequestCount}
-          </div>
-        )}
+      
       </div>
 
       <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
