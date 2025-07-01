@@ -1,22 +1,45 @@
-// src/components/NewIntro.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
 
 interface Props {
   onFinish: () => void;
 }
 
 export const NewIntro: React.FC<Props> = ({ onFinish }) => {
+  const [fadeOut, setFadeOut] = useState(false);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onFinish(); // 1.5초 후 자동 넘어감
-    }, 1500);
-    return () => clearTimeout(timer);
+    const startFadeOut = setTimeout(() => {
+      setFadeOut(true);
+    }, 1200); // 1.2초 후 페이드아웃 시작
+
+    const finish = setTimeout(() => {
+      onFinish();
+    }, 1500); // 1.5초 후 화면 전환
+
+    return () => {
+      clearTimeout(startFadeOut);
+      clearTimeout(finish);
+    };
   }, [onFinish]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-white text-center px-6">
-      <h1 className="text-2xl font-bold mb-4 text-pink-600">👋 환영합니다!</h1>
-      <p className="text-gray-600 text-sm">다시 오신 걸 환영해요.<br /> 새로운 연결이 기다리고 있어요.</p>
+    <div
+      className={`flex flex-col justify-center items-center h-screen bg-white text-center transition-opacity duration-300 ${
+        fadeOut ? 'opacity-0' : 'opacity-100'
+      }`}
+    >
+     <img
+        src="/intrologo.png" // ✅ public 디렉토리 기준 경로
+        alt="로고"
+        className="w-20 h-20 mb-4 object-contain"
+      />
+      <h1 className="text-3xl font-extrabold text-pink-500 mb-2 tracking-wide">
+        네버엔딩 홍개팅
+      </h1>
+      <p className="text-gray-600 text-sm">
+        지금 이 순간, 새로운 연결이 시작됩니다.
+      </p>
     </div>
   );
 };
