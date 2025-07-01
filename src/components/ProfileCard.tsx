@@ -4,12 +4,17 @@ import { User } from '../types';
 import AdBanner from './AdBanner';
 
 interface ProfileCardProps {
-  user: User & { matchingCount?: number };
+  user: User & {
+    matchingCount?: number;
+    messageRequestCount?: number;
+    isTopRequester?: boolean;
+  };
   onReact: (userId: string, emoji: string) => void;
   onMessageRequest: (userId: string) => void;
   alreadyRequested: boolean;
   currentUserId: string;
 }
+
 
 export const ProfileCard: React.FC<ProfileCardProps> = ({
   user,
@@ -80,7 +85,7 @@ console.log(`[DEBUG] ${user.nickname}: matchingCount =`, user.matchingCount);
       {getGenderLabel(user.gender)}
     </span>
 
-    {(user.matchingCount ?? 0) >= 3 && (
+    {(user.matchingCount ?? 0) >= 0 && (
   <div className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
     응답률 높음 🔥 {user.matchingCount}회 수락
   </div>
