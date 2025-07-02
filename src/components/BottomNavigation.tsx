@@ -1,12 +1,8 @@
-import React from 'react';
-import {
-  Users,
-  MessageSquare,
-  Bell,
-  User,
-  Image // ✅ 포스트 탭용 아이콘 추가
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, MessageSquare, Bell, User, Image, School } from 'lucide-react';
+
 import { Screen } from '../types';
+
 
 interface BottomNavigationProps {
   currentScreen: Screen;
@@ -23,6 +19,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   unreadMessageCount,
   loadChatData
 }) => {
+  const [showComingSoon, setShowComingSoon] = useState(false);
   const navItems = [
     {
       id: 'feed' as Screen,
@@ -33,6 +30,12 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       id: 'posts' as Screen, // ✅ 포스트 탭 추가
       icon: Image,
       label: '포스트'
+    },
+    {
+      id: 'hongik' as Screen, // 👈 신규 탭 ID
+      icon: School,
+      label: '홍익대학교',
+      isComingSoon: true // 👈 coming soon 설정
     },
     {
       id: 'requests' as Screen,
@@ -53,15 +56,19 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
     }
   ];
 
-  const handleScreenChange = (screen: Screen) => {
-    onScreenChange(screen);
+  const handleScreenChange = (screen: Screen, isComingSoon?: boolean) => {
+    if (isComingSoon) {
+      setShowComingSoon(true);
+      return;
+    }
 
+    onScreenChange(screen);
     if (screen === 'chat') {
       loadChatData();
     }
   };
-
   return (
+    <>
     <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-gray-200 px-4 py-2 safe-bottom">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {navItems.map((item) => {
@@ -92,5 +99,20 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
         })}
       </div>
     </div>
+      {showComingSoon && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-xl p-6 shadow-lg text-center max-w-xs">
+            <p className="text-lg font-semibold mb-2">곧 오픈하는 기능입니다!</p>
+            <p className="text-sm text-gray-600 mb-4">조금만 기다려 주세요 🙂</p>
+            <button
+              onClick={() => setShowComingSoon(false)}
+              className="mt-2 px-4 py-2 bg-pink-500 text-white rounded-lg"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+      </>
   );
 };
