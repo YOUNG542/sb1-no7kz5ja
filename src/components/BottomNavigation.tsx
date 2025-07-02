@@ -78,7 +78,8 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => handleScreenChange(item.id)}
+              onClick={() => handleScreenChange(item.id, item.isComingSoon)}
+
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 relative ${
                 isActive
                   ? 'text-pink-600 bg-pink-50'
