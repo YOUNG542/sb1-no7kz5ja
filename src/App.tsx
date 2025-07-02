@@ -635,7 +635,7 @@ useEffect(() => {
     }
     
     if (!uid || !currentUserFetched) {
-      return null; // 🔥 중간 로딩 메시지 완전 제거
+      return <div className="h-screen flex items-center justify-center text-gray-500 text-sm">로딩 중...</div>;
     }
     
     if (!currentUser) {
@@ -679,8 +679,8 @@ useEffect(() => {
     );
   }
 
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const isStandalone = window.navigator.standalone === true;
+  const isIos = typeof window !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = typeof window !== 'undefined' && window.navigator?.standalone === true;
 const showIosAlert =
   isIos &&
   isStandalone &&
@@ -704,7 +704,7 @@ const showIosAlert =
 
 
       {/* 🔔 iOS 알림 권한 요청 버튼 (조건: 권한 허용 전) */}
-      {Notification.permission !== 'granted' && (
+      {typeof Notification !== 'undefined' && Notification.permission !== 'granted' && (
       <button
         className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white px-4 py-2 rounded-xl shadow-lg z-50"
         onClick={handleAskNotification}
