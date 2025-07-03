@@ -106,9 +106,8 @@ users.forEach((user) => {
       ...user,
       responseRate: userResponseMap[user.id]?.rate ?? 0,
       isHighResponder:
-      currentUser.gender === 'male' &&
-      userResponseMap[user.id]?.rate >= 0.7 &&
-      userResponseMap[user.id]?.total >= 3,
+  currentUser.gender === 'male' &&
+  (userMatchingCountMap[user.id] || 0) >= 1,
     
       messageRequestCount: userRequestCountMap[user.id] || 0,
       matchingCount: userMatchingCountMap[user.id] || 0, // ← 요게 핵심
