@@ -299,21 +299,43 @@ useEffect(() => {
   useEffect(() => {
     if (!currentUser) return;
   
-    const q = query(
+    const q1 = query(
       collection(db, 'messageRequests'),
-      where('participants', 'array-contains', currentUser.id)// 또는 toUserId
+      where('fromUserId', '==', currentUser.id)
+    );
+    const q2 = query(
+      collection(db, 'messageRequests'),
+      where('toUserId', '==', currentUser.id)
     );
   
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const requests: MessageRequest[] = snapshot.docs.map((doc) => ({
+    const unsub1 = onSnapshot(q1, (snapshot1) => {
+      const fromRequests = snapshot1.docs.map((doc) => ({
         ...(doc.data() as MessageRequest),
         id: doc.id,
       }));
-      setMessageRequests(requests);
-    });
   
-    return () => unsubscribe();
+      const unsub2 = onSnapshot(q2, (snapshot2) => {
+        const toRequests = snapshot2.docs.map((doc) => ({
+          ...(doc.data() as MessageRequest),
+          id: doc.id,
+        }));
+  
+        // 🔁 중복 제거 (id 기준)
+        const mergedMap = new Map();
+        [...fromRequests, ...toRequests].forEach((r) => mergedMap.set(r.id, r));
+        const merged = Array.from(mergedMap.values());
+  
+        setMessageRequests(merged);
+      });
+  
+      // cleanup
+      return () => {
+        unsub1();
+        unsub2();
+      };
+    });
   }, [currentUser]);
+  
   
   
   
