@@ -7,6 +7,7 @@ interface ProfileFeedProps {
   users: User[];
   currentUser: User;
   messageRequests: MessageRequest[];
+  acceptedRequests: MessageRequest[];
   chatRooms: ChatRoom[];
   onReact: (userId: string, emoji: string) => void;
   onMessageRequest: (userId: string) => void;
@@ -18,6 +19,7 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
   currentUser,
   messageRequests,
   chatRooms,
+  acceptedRequests,
   onReact,
   onMessageRequest,
   onRefresh
@@ -51,15 +53,14 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
 if (currentUser.gender === 'male') {
   users.forEach((user) => {
     if (user.gender === 'female') {
-      const matchedRooms = chatRooms.filter(
-        (room) =>
-          (room.fromUserId === user.id && room.toUserId === currentUser.id) ||
-          (room.toUserId === user.id && room.fromUserId === currentUser.id)
-      );
-      userMatchingCountMap[user.id] = matchedRooms.length;
+      const matchedCount = acceptedRequests.filter(
+        (req: MessageRequest) => req.toUserId === user.id
+      ).length;
+      userMatchingCountMap[user.id] = matchedCount;
     }
   });
 }
+
 
   
   

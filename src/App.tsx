@@ -92,6 +92,7 @@ function App() {
   );
   const [currentUserFetched, setCurrentUserFetched] = useState(false);
   const [showReturningIntro, setShowReturningIntro] = useState(false); // 기존유저용
+  const [acceptedRequests, setAcceptedRequests] = useState<MessageRequest[]>([]);
 
 
   console.log('🌍 [환경 확인]');
@@ -537,6 +538,24 @@ useEffect(() => {
     logMonthlyMessageRequestCount();
   }, []);
 
+  useEffect(() => {
+    const q = query(
+      collection(db, 'messageRequests'),
+      where('status', '==', 'accepted')
+    );
+  
+    const unsub = onSnapshot(q, (snapshot) => {
+      const accepted = snapshot.docs.map((doc) => ({
+        ...(doc.data() as MessageRequest),
+        id: doc.id,
+      }));
+      setAcceptedRequests(accepted);
+    });
+  
+    return () => unsub();
+  }, []);
+  
+
   const handleIntroFinish = () => {
     localStorage.setItem('introSeen', 'true');
     setShowIntro(false);
@@ -931,6 +950,7 @@ const showIosAlert =
         <ProfileFeed
           users={users} // 🔥 원본만 넘김
           currentUser={currentUser}
+          acceptedRequests={acceptedRequests} 
           onReact={handleReact}
           onMessageRequest={handleMessageRequest}
           onRefresh={() => window.location.reload()}
