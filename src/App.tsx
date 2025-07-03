@@ -92,6 +92,14 @@ function App() {
   const [showReturningIntro, setShowReturningIntro] = useState(false); // 기존유저용
 
 
+  console.log('🌍 [환경 확인]');
+  console.log('🧠 userAgent:', navigator.userAgent);
+  console.log('📱 isMobile:', /iphone|ipad|ipod|android/i.test(navigator.userAgent));
+  console.log('🏠 standalone:', window.navigator?.standalone); // undefined면 브라우저 모드
+  console.log('🌐 location.href:', window.location.href);
+  console.log('🟢 isPWA:', window.matchMedia('(display-mode: standalone)').matches);
+  
+
   useEffect(() => {
     const introSeen = localStorage.getItem('introSeen');
     if (introSeen === 'true') {
@@ -99,6 +107,29 @@ function App() {
       setShowReturningIntro(true); // 기존 유저용 인트로 ON
     }
   }, []);
+
+  useEffect(() => {
+    const isMobileBrowser =
+      /iphone|ipad|ipod|android/i.test(navigator.userAgent) &&
+      !window.navigator.standalone &&
+      !window.matchMedia('(display-mode: standalone)').matches;
+  
+    if (isMobileBrowser) {
+      const el = document.createElement('div');
+      el.innerText = '📱 모바일 브라우저에서 실행 중';
+      el.style.position = 'fixed';
+      el.style.top = '20px';
+      el.style.left = '20px';
+      el.style.zIndex = '99999';
+      el.style.padding = '6px 12px';
+      el.style.background = 'red';
+      el.style.color = 'white';
+      document.body.appendChild(el);
+  
+      console.log('🚨 모바일 브라우저에서 실행되고 있음 (standalone 아님)');
+    }
+  }, []);
+  
 
   useEffect(() => {
     if (!uid) return;
@@ -171,6 +202,16 @@ useEffect(() => {
 
   useEffect(() => {
     initAnonymousAuth().then(setUid).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('error', (e) => {
+      console.error('❌ [전역 에러 발생]', e.message, e.filename, e.lineno);
+    });
+  
+    window.addEventListener('unhandledrejection', (e) => {
+      console.error('❌ [Unhandled Promise Rejection]', e.reason);
+    });
   }, []);
 
   useEffect(() => {
@@ -686,6 +727,7 @@ const showIosAlert =
   isStandalone &&
   notificationPermission !== 'granted';
 
+  try {
   return (
     <>
     {/* ✅ 기존 유저 동의 모달 */}
@@ -886,9 +928,16 @@ const showIosAlert =
    </Routes>
    </>
  );
+} catch (err) {
+  console.error('❌ App 렌더 중 치명적 오류 발생:', err);
+  return (
+    <div className="p-6 text-red-600 text-center text-sm">
+      ❌ 앱 실행 중 오류가 발생했습니다.<br />잠시 후 다시 시도해주세요.
+    </div>
+  );
 }
 
-
+}
 
 export default function WrappedApp() {
   return (
