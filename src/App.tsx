@@ -87,7 +87,9 @@ function App() {
   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
   const maintenanceAllowUIDs = ['0aNxffVd7Bd73xk29CCWhJ0A5L83'];
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [notificationPermission, setNotificationPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'default'
+  );
   const [currentUserFetched, setCurrentUserFetched] = useState(false);
   const [showReturningIntro, setShowReturningIntro] = useState(false); // 기존유저용
 
@@ -216,21 +218,26 @@ useEffect(() => {
 
   useEffect(() => {
     const requestNotificationPermission = async () => {
+      if (typeof Notification === 'undefined') {
+        console.warn('🚫 이 브라우저는 Notification API를 지원하지 않음');
+        return;
+      }
+  
       const permission = await Notification.requestPermission();
       console.log('🔔 알림 권한 상태:', permission);
   
-      // iOS에서도 알림 허용 후 토큰 발급 시도
       if (permission === 'granted' && currentUser) {
         const token = await requestFcmToken();
         if (token && currentUser.fcmToken !== token) {
           await updateUser({ ...currentUser, fcmToken: token });
-          console.log('✅ iOS FCM 토큰 저장 완료');
+          console.log('✅ FCM 토큰 저장 완료');
         }
       }
     };
   
     requestNotificationPermission();
   }, [currentUser]);
+  
   
 
   useEffect(() => {
@@ -747,13 +754,14 @@ const showIosAlert =
 
       {/* 🔔 iOS 알림 권한 요청 버튼 (조건: 권한 허용 전) */}
       {typeof Notification !== 'undefined' && Notification.permission !== 'granted' && (
-      <button
-        className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white px-4 py-2 rounded-xl shadow-lg z-50"
-        onClick={handleAskNotification}
-      >
-        🔔 알림 허용하기
-      </button>
-    )}
+  <button
+    className="..."
+    onClick={handleAskNotification}
+  >
+    🔔 알림 허용하기
+  </button>
+)}
+
 
     <Routes>
       <Route path="/" element={
