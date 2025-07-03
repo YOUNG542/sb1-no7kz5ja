@@ -301,7 +301,7 @@ useEffect(() => {
   
     const q = query(
       collection(db, 'messageRequests'),
-      where('fromUserId', '==', currentUser.id) // 또는 toUserId
+      where('participants', 'array-contains', currentUser.id)// 또는 toUserId
     );
   
     const unsubscribe = onSnapshot(q, (snapshot) => {
