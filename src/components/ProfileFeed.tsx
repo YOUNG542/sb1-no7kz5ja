@@ -105,7 +105,11 @@ users.forEach((user) => {
     .map(user => ({
       ...user,
       responseRate: userResponseMap[user.id]?.rate ?? 0,
-isHighResponder: userResponseMap[user.id]?.rate >= 0.7 && userResponseMap[user.id]?.total >= 3,
+      isHighResponder:
+      currentUser.gender === 'male' &&
+      userResponseMap[user.id]?.rate >= 0.7 &&
+      userResponseMap[user.id]?.total >= 3,
+    
       messageRequestCount: userRequestCountMap[user.id] || 0,
       matchingCount: userMatchingCountMap[user.id] || 0, // ← 요게 핵심
       isTopRequester: topUserIds.includes(user.id),
@@ -192,8 +196,7 @@ isHighResponder: userResponseMap[user.id]?.rate >= 0.7 && userResponseMap[user.i
               const alreadyRequested = messageRequests.some(
                 (req: MessageRequest) =>
                   req.fromUserId === currentUser.id &&
-                  req.toUserId === user.id &&
-                  req.status === 'pending' // ✅ pending 상태만 "요청 보낸 상태"로 간주
+                  req.toUserId === user.id
               );
               
               return (
