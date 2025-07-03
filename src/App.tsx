@@ -290,6 +290,28 @@ useEffect(() => {
       });
   }, []);
 
+  // 응답률 계산용 유저 정보 가공
+useEffect(() => {
+  if (!currentUser || messageRequests.length === 0 || users.length === 0) return;
+
+  const updatedUsers = users.map((user) => {
+    const requestsToUser = messageRequests.filter(
+      (r) => r.toUserId === user.id
+    );
+
+    const accepted = requestsToUser.filter((r) => r.status === 'accepted').length;
+    const responseRate = requestsToUser.length > 0 ? accepted / requestsToUser.length : 0;
+
+    return {
+      ...user,
+      responseRate,
+      isHighResponder: responseRate >= 0.7 && requestsToUser.length >= 3, // 기준 조정 가능
+    };
+  });
+
+  setUsers(updatedUsers);
+}, [currentUser, messageRequests]);
+
   useEffect(() => {
     getDAUForDates(['2025-06-23', '2025-06-24', '2025-06-25']).then((res) =>
       res.forEach(({ date, count }) => console.log(`📅 ${date}: ${count}명`))
@@ -902,11 +924,12 @@ const showIosAlert =
   </div>
 )}
 
+
   
       {/* 아래 기존 화면 전환 로직들 */}
       {currentScreen === 'feed' && (
         <ProfileFeed
-          users={users}
+          users={users} // 🔥 원본만 넘김
           currentUser={currentUser}
           onReact={handleReact}
           onMessageRequest={handleMessageRequest}

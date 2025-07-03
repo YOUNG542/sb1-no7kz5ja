@@ -76,6 +76,24 @@ if (currentUser.gender === 'female') {
   topUserIds = sortedUserIds.slice(0, topCount);
 }
 
+// ✅ 유저별 응답률 계산
+const userResponseMap: Record<string, { accepted: number; total: number; rate: number }> = {};
+
+users.forEach((user) => {
+  const receivedRequests = messageRequests.filter(
+    (req) => req.toUserId === user.id
+  );
+  const accepted = receivedRequests.filter((r) => r.status === 'accepted').length;
+  const rate = receivedRequests.length > 0 ? accepted / receivedRequests.length : 0;
+
+  userResponseMap[user.id] = {
+    accepted,
+    total: receivedRequests.length,
+    rate,
+  };
+});
+
+
   // ✅ (3) 필터링 및 정렬
   const filteredUsers = users
     .filter(user => {
@@ -86,26 +104,33 @@ if (currentUser.gender === 'female') {
     })
     .map(user => ({
       ...user,
+      responseRate: userResponseMap[user.id]?.rate ?? 0,
+isHighResponder: userResponseMap[user.id]?.rate >= 0.7 && userResponseMap[user.id]?.total >= 3,
       messageRequestCount: userRequestCountMap[user.id] || 0,
       matchingCount: userMatchingCountMap[user.id] || 0, // ← 요게 핵심
       isTopRequester: topUserIds.includes(user.id),
     }))
     .sort((a, b) => {
-      if (currentUser.gender === 'female') {
-        return (b.messageRequestCount || 0) - (a.messageRequestCount || 0);
-      }
-      if (currentUser.gender === 'male') {
-        return (b.matchingCount || 0) - (a.matchingCount || 0); // 🔥 이 줄 추가
-      }
-    
-      if (sortBy === 'newest') {
-        return b.createdAt.toMillis() - a.createdAt.toMillis();
-      } else {
-        const aPopularity = Object.values(a.reactions).flat().length;
-        const bPopularity = Object.values(b.reactions).flat().length;
-        return bPopularity - aPopularity;
-      }
-    });
+     // ⚡ 응답률 높은 유저 우선
+  if (a.isHighResponder && !b.isHighResponder) return -1;
+  if (!a.isHighResponder && b.isHighResponder) return 1;
+
+  // 기존 성별별 정렬 유지
+  if (currentUser.gender === 'female') {
+    return (b.messageRequestCount || 0) - (a.messageRequestCount || 0);
+  }
+  if (currentUser.gender === 'male') {
+    return (b.matchingCount || 0) - (a.matchingCount || 0);
+  }
+
+  if (sortBy === 'newest') {
+    return b.createdAt.toMillis() - a.createdAt.toMillis();
+  } else {
+    const aPopularity = Object.values(a.reactions).flat().length;
+    const bPopularity = Object.values(b.reactions).flat().length;
+    return bPopularity - aPopularity;
+  }
+})
     
 
 
