@@ -48,19 +48,19 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({
   // ✅ (2) 유저별 매칭 경험 수 계산 (남자가 보는 여자 리스트용)
   const userMatchingCountMap: Record<string, number> = {};
 
-  if (currentUser.gender === 'male') {
-    users.forEach((user) => {
-      if (user.gender === 'female') {
-        const acceptedRequestsToThisUser = messageRequests.filter(
-          (req) =>
-            req.toUserId === user.id &&
-            req.status === 'accepted' // ✅ 수락된 요청만 카운트
-        );
-  
-        userMatchingCountMap[user.id] = acceptedRequestsToThisUser.length;
-      }
-    });
-  }
+if (currentUser.gender === 'male') {
+  users.forEach((user) => {
+    if (user.gender === 'female') {
+      const matchedRooms = chatRooms.filter(
+        (room) =>
+          (room.fromUserId === user.id && room.toUserId === currentUser.id) ||
+          (room.toUserId === user.id && room.fromUserId === currentUser.id)
+      );
+      userMatchingCountMap[user.id] = matchedRooms.length;
+    }
+  });
+}
+
   
   
 
