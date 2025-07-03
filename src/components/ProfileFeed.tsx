@@ -112,9 +112,10 @@ isHighResponder: userResponseMap[user.id]?.rate >= 0.7 && userResponseMap[user.i
     }))
     .sort((a, b) => {
      // ⚡ 응답률 높은 유저 우선
-  if (a.isHighResponder && !b.isHighResponder) return -1;
-  if (!a.isHighResponder && b.isHighResponder) return 1;
-
+   // ✅ 응답률 높은 유저가 먼저 오도록
+   if (a.isHighResponder && !b.isHighResponder) return -1;
+   if (!a.isHighResponder && b.isHighResponder) return 1;
+ 
   // 기존 성별별 정렬 유지
   if (currentUser.gender === 'female') {
     return (b.messageRequestCount || 0) - (a.messageRequestCount || 0);

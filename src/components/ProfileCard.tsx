@@ -9,11 +9,13 @@ interface ProfileCardProps {
     matchingCount?: number;
     messageRequestCount?: number;
     isTopRequester?: boolean;
+    isHighResponder?: boolean;
   };
   onReact: (userId: string, emoji: string) => void;
   onMessageRequest: (userId: string) => void;
   alreadyRequested: boolean;
   currentUserId: string;
+  
 }
 
 
@@ -99,9 +101,9 @@ console.log(`[DEBUG] ${user.nickname}: matchingCount =`, user.matchingCount);
       {getGenderLabel(user.gender)}
     </span>
 
-    {user.gender === 'female' && (user.matchingCount ?? 0) >= 1 && (
-  <div className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
-    응답률 높음 🔥 {user.matchingCount}회 수락
+    {user.isHighResponder && (
+  <div className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-medium">
+    응답률 높음 💬
   </div>
 )}
 
