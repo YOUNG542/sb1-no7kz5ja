@@ -165,8 +165,15 @@ useEffect(() => {
  
 // permission 상태 실시간 반영 (iOS는 업데이트 안 되니 초기값만으로 충분)
 useEffect(() => {
-  setNotificationPermission(Notification.permission);
+  try {
+    if (typeof Notification !== 'undefined') {
+      setNotificationPermission(Notification.permission);
+    }
+  } catch (e) {
+    console.warn('🚫 Notification 접근 중 에러:', e);
+  }
 }, []);
+
 
 
 
@@ -218,25 +225,30 @@ useEffect(() => {
 
   useEffect(() => {
     const requestNotificationPermission = async () => {
-      if (typeof Notification === 'undefined') {
-        console.warn('🚫 이 브라우저는 Notification API를 지원하지 않음');
-        return;
-      }
-  
-      const permission = await Notification.requestPermission();
-      console.log('🔔 알림 권한 상태:', permission);
-  
-      if (permission === 'granted' && currentUser) {
-        const token = await requestFcmToken();
-        if (token && currentUser.fcmToken !== token) {
-          await updateUser({ ...currentUser, fcmToken: token });
-          console.log('✅ FCM 토큰 저장 완료');
+      try {
+        if (typeof Notification === 'undefined') {
+          console.warn('🚫 이 브라우저는 Notification API를 지원하지 않음');
+          return;
         }
+  
+        const permission = await Notification.requestPermission();
+        console.log('🔔 알림 권한 상태:', permission);
+  
+        if (permission === 'granted' && currentUser) {
+          const token = await requestFcmToken();
+          if (token && currentUser.fcmToken !== token) {
+            await updateUser({ ...currentUser, fcmToken: token });
+            console.log('✅ FCM 토큰 저장 완료');
+          }
+        }
+      } catch (err) {
+        console.warn('❌ 알림 권한 요청 중 오류 발생:', err);
       }
     };
   
     requestNotificationPermission();
   }, [currentUser]);
+  
   
   
 
@@ -641,7 +653,14 @@ useEffect(() => {
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!selectedChatRoom || !currentUser || !otherUser) return;
+    if (!selectedChatRoom || !currentUser) return;
+  
+    const selectedRoom = chatRooms.find((r) => r.id === selectedChatRoom);
+    const otherUser = selectedRoom
+      ? users.find((u) => u.id === selectedRoom.participants.find((p) => p !== currentUser.id))
+      : null;
+  
+    if (!selectedRoom || !otherUser) return;
   
     const now = Date.now();
   
@@ -654,11 +673,9 @@ useEffect(() => {
       isRead: false,
     };
   
-    // 1. 메시지 저장 (기존과 동일)
-    await addDoc(collection(db, 'chatRooms', selectedChatRoom, 'messages'), message);
+    await addDoc(collection(db, 'chatRooms', selectedRoom.id, 'messages'), message);
   
-    // 2. chatRooms/{roomId} 문서에 최신 메시지 및 안 읽은 수 업데이트
-    const chatRoomRef = doc(db, 'chatRooms', selectedChatRoom);
+    const chatRoomRef = doc(db, 'chatRooms', selectedRoom.id);
     await updateDoc(chatRoomRef, {
       lastMessage: {
         content,
@@ -668,7 +685,8 @@ useEffect(() => {
       [`unreadCounts.${otherUser.id}`]: increment(1),
     });
   };
-
+  
+  try {
     // ✅ 여기에 추가
     if (isMaintenance && (!uid || !maintenanceAllowUIDs.includes(uid))) {
       return <MaintenanceModal onClose={() => window.close()} />;
@@ -734,7 +752,7 @@ const showIosAlert =
   isStandalone &&
   notificationPermission !== 'granted';
 
-  try {
+
   return (
     <>
     {/* ✅ 기존 유저 동의 모달 */}
@@ -936,7 +954,7 @@ const showIosAlert =
    </Routes>
    </>
  );
-} catch (err) {
+     } catch (err) {
   console.error('❌ App 렌더 중 치명적 오류 발생:', err);
   return (
     <div className="p-6 text-red-600 text-center text-sm">
@@ -944,8 +962,9 @@ const showIosAlert =
     </div>
   );
 }
+} 
 
-}
+
 
 export default function WrappedApp() {
   return (
