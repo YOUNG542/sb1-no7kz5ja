@@ -165,8 +165,11 @@ if (currentUser.gender === 'female') {
             filteredUsers.map((user) => {
               const alreadyRequested = messageRequests.some(
                 (req: MessageRequest) =>
-                  req.fromUserId === currentUser.id && req.toUserId === user.id
+                  req.fromUserId === currentUser.id &&
+                  req.toUserId === user.id &&
+                  req.status === 'pending' // ✅ pending 상태만 "요청 보낸 상태"로 간주
               );
+              
               return (
                 <ProfileCard
                   key={user.id}

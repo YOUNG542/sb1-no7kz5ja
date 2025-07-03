@@ -297,21 +297,24 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
+    if (!currentUser) return;
+  
     const q = query(
       collection(db, 'messageRequests'),
-      where('status', '==', 'accepted')
+      where('fromUserId', '==', currentUser.id) // 또는 toUserId
     );
   
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const acceptedRequests: MessageRequest[] = snapshot.docs.map((doc) => ({
+      const requests: MessageRequest[] = snapshot.docs.map((doc) => ({
         ...(doc.data() as MessageRequest),
         id: doc.id,
       }));
-      setMessageRequests(acceptedRequests); // 🔥 이게 핵심!
+      setMessageRequests(requests);
     });
   
     return () => unsubscribe();
-  }, []);
+  }, [currentUser]);
+  
   
   
 
